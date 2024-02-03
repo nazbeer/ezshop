@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-$^&k6)rkdqe$++!*^-(&kojpfpi*-%2#_f!1sf898rkb-ju^zq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ezshopapp.onrender.com', 'localhost', '127.0.0.1']
+
 
 
 # Application definition
