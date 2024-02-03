@@ -210,7 +210,7 @@ class SaleItem(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
-    product = models.CharField(max_length=255)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     # You can add more fields as needed
 
