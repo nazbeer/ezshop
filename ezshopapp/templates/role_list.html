@@ -1,0 +1,26 @@
+<!-- role_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Role List{% endblock %}
+
+{% block content %}
+  <h2>Role List</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <!-- Add more headers if needed -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for role in object_list %}
+        <tr>
+          <td>{{ role.id }}</td>
+          <td>{{ role.name }}</td>
+          <!-- Add more columns if needed -->
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

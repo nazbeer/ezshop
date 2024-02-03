@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            {% for category in categories %}
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">{{ category.name }}</div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for link in category.links %}
+                                    <li class="list-group-item"><a href="{% url link.url_name %}">{{ link.label }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

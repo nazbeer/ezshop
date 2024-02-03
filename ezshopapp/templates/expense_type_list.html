@@ -1,0 +1,24 @@
+<!-- expense_type_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Expense Type List{% endblock %}
+
+{% block content %}
+  <h2>Expense Type List</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Type Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for expense_type in object_list %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ expense_type.name }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!-- payment_transaction_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Payment Transaction List{% endblock %}
+
+{% block content %}
+  <h2>Payment Transaction List</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Date</th>
+        <th scope="col">Expense Type</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Narration</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for payment_transaction in object_list %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ payment_transaction.date }}</td>
+          <td>{{ payment_transaction.expense_type.name }}</td>
+          <td>{{ payment_transaction.amount }}</td>
+          <td>{{ payment_transaction.narration }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

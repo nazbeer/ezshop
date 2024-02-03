@@ -1,0 +1,30 @@
+<!-- receipt_transaction_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Receipt Transaction List{% endblock %}
+
+{% block content %}
+  <h2>Receipt Transaction List</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Date</th>
+        <th scope="col">Receipt Type</th>
+        <th scope="col">Received Amount</th>
+        <th scope="col">Narration</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for receipt_transaction in object_list %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ receipt_transaction.date }}</td>
+          <td>{{ receipt_transaction.receipt_type.name }}</td>
+          <td>{{ receipt_transaction.received_amount }}</td>
+          <td>{{ receipt_transaction.narration }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

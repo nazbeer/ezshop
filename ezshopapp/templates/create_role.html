@@ -1,0 +1,14 @@
+<!-- create_role.html -->
+{% extends 'base.html' %}
+
+{% block title %}Create Role{% endblock %}
+
+{% block content %}
+  <h2>Create Role</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create</button>
+  </form>
+  <a href="{% url 'role_list' %}">Back to Role List</a>
+{% endblock %}

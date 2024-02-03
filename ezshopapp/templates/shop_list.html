@@ -1,0 +1,47 @@
+<!-- shop_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Shop List</h2>
+  <div class="card table-responsive">
+    <table id="shopTable" class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>Shop Name</th>
+          <th>License Number</th>
+          <th>Number of Users</th>
+          <th>License Expiration</th>
+          <th>Phone Number</th>
+          <th>VAT Percentage</th>
+          <th>VAT Number</th>
+          <th>VAT Submission Date</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for shop in object_list %}
+          <tr>
+            <td>{{ shop.name }}</td>
+            <td>{{ shop.license_number }}</td>
+            <td>{{ shop.num_users }}</td>
+            {% with admin=shop.admins.first %}
+              <td>{{ admin.license_expiration }}</td>
+              <td>{{ admin.phone_number }}</td>
+              <td>{{ admin.vat_percentage }}</td>
+              <td>{{ admin.vat_number }}</td>
+              <td>{{ admin.vat_submission_date }}</td>
+              <td>{{ admin.address }}</td>
+            {% endwith %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Initialize DataTable
+    $(document).ready(function() {
+      $('#shopTable').DataTable();
+    });
+  </script>
+{% endblock %}

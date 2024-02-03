@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Create Shop</h2>
+  <form method="post" enctype="multipart/form-data" class="my-4">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+      {{ form.name.label_tag }}
+      {{ form.name }}
+    </div>
+    
+    <div class="mb-3">
+      {{ form.license_number.label_tag }}
+      {{ form.license_number }}
+    </div>
+    
+    <div class="mb-3">
+      {{ form.num_users.label_tag }}
+      {{ form.num_users }}
+    </div>
+
+    <!-- Add other form fields similarly -->
+
+    <button type="submit" class="btn btn-primary">Create Shop</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!-- bank_deposit_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Bank Deposit List{% endblock %}
+
+{% block content %}
+  <h2>Bank Deposit List</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Date</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Transaction Type</th>
+        <th scope="col">Narration</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bank_deposit in object_list %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ bank_deposit.date }}</td>
+          <td>{{ bank_deposit.amount }}</td>
+          <td>{{ bank_deposit.transaction_type }}</td>
+          <td>{{ bank_deposit.narration }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

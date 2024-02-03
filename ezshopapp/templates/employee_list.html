@@ -1,0 +1,54 @@
+<!-- ezshopapp/employee_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Employee List{% endblock %}
+
+{% block content %}
+  <h2>Employee List</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Employee ID</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Nationality</th>
+        <th>Mobile No</th>
+        <th>Passport No</th>
+        <th>Passport Expiration Date</th>
+        <th>Emirates ID</th>
+        <th>ID Expiration Date</th>
+        <th>Basic Pay</th>
+        <th>House Allowance</th>
+        <th>Transportation Allowance</th>
+        <th>Commission Percentage</th>
+        <th>Joining Date</th>
+        <th>Job Role</th>
+        <th>Username</th>
+        <!-- Add more columns as needed -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for employee in employees %}
+        <tr>
+          <td>{{ employee.employee_id }}</td>
+          <td>{{ employee.first_name }}</td>
+          <td>{{ employee.second_name }}</td>
+          <td>{{ employee.nationality }}</td>
+          <td>{{ employee.mobile_no }}</td>
+          <td>{{ employee.passport_no }}</td>
+          <td>{{ employee.passport_expiration_date }}</td>
+          <td>{{ employee.emirates_id }}</td>
+          <td>{{ employee.id_expiration_date }}</td>
+          <td>{{ employee.basic_pay }}</td>
+          <td>{{ employee.house_allowance }}</td>
+          <td>{{ employee.transportation_allowance }}</td>
+          <td>{{ employee.commission_percentage }}</td>
+          <td>{{ employee.joining_date }}</td>
+          <td>{{ employee.job_role }}</td>
+          <td>{{ employee.username }}</td>
+          <!-- Add more columns as needed -->
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

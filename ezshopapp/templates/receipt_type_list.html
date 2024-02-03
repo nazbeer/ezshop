@@ -1,0 +1,24 @@
+<!-- receipt_type_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Receipt Type List{% endblock %}
+
+{% block content %}
+  <h2>Receipt Type List</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for receipt_type in object_list %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ receipt_type.name }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

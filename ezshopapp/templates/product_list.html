@@ -1,0 +1,32 @@
+<!-- product_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Product List{% endblock %}
+
+{% block content %}
+  <h2>Product List</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Name</th>
+        <th scope="col">VAT</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Max Discount Allowed</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in object_list %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ product.name }}</td>
+          <td>{{ product.vat }}</td>
+          <td>{{ product.amount }}</td>
+          <td>{{ product.max_discount_allowed }}</td>
+          <td>{{ product.status }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
