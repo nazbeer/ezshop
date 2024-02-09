@@ -212,10 +212,62 @@ class SaleItem(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    # You can add more fields as needed
+  
+# class SalesbyAdminItem(models.Model):
+#     date = models.DateField()
+#     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+#     payment_method = models.CharField(max_length=50)
 
-    def __str__(self):
-        return f"{self.service.name} - Quantity: {self.quantity}"
+#     def __str__(self):
+#         return f"Sale by Admin Item - {self.date}"
 
+# class SalesbyAdminItemSaleItem(models.Model):
+#     sale = models.ForeignKey(SalesbyAdminItem, on_delete=models.CASCADE)
+#     item = models.ForeignKey(SaleItem, on_delete=models.CASCADE)
+#     quantity = models.IntegerField()
+
+#     def __str__(self):
+#         return f"Sale Item: {self.item.name} - Quantity: {self.quantity}"
 
 SaleItemFormSet = inlineformset_factory(Sale, SaleItem, fields=['product', 'quantity', 'price'])
+STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+    )
+class DayClosing(models.Model):
+    date = models.DateField()
+    total_services = models.DecimalField(max_digits=8, decimal_places=2)
+    total_sales = models.DecimalField(max_digits=8, decimal_places=2)
+    tip = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    total_collection = models.DecimalField(max_digits=8, decimal_places=2)
+    advance = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    net_collection = models.DecimalField(max_digits=8, decimal_places=2)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+    def __str__(self):
+        return str(self.date)
+    
+PAYMENT_METHOD_CHOICES=(
+    ("cash","Cash"),("card","Card")
+)
+
+class SaleByAdminService(models.Model):
+    date = models.DateField()
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    
+
+class SalesByAdminItem(models.Model):
+    date = models.DateField()
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    item = models.ForeignKey(SaleItem, on_delete=models.CASCADE, null=True)
+    quantity = models.PositiveIntegerField(null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)

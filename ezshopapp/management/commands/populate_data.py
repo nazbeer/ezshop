@@ -1,49 +1,22 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-from ezshopapp.models import Shop, ShopAdmin
-from faker import Faker
-
-fake = Faker()
+from django.utils import timezone
+from random import randint
+from ezshopapp.models import DayClosing
 
 class Command(BaseCommand):
-    help = 'Populate shops and shop admins'
+    help = 'Create dummy data for DayClosing model'
 
-    def handle(self, *args, **options):
-        # Create 5 Shop instances
-        shops = []
-        for _ in range(5):
-            shop = Shop.objects.create(
-                name=fake.company(),
-                license_number=fake.uuid4(),
-                num_users=fake.random_int(),
-                vat_remainder=fake.boolean(),
-                employee_transaction_window=fake.boolean(),
-                license_expiration_reminder=fake.boolean(),
-                employee_visa_expiration_reminder=fake.boolean(),
-                employee_passport_expiration_reminder=fake.boolean()
+    def handle(self, *args, **kwargs):
+        # Create 10 dummy DayClosing instances
+        for _ in range(10):
+            DayClosing.objects.create(
+                date=timezone.now().date(),
+                total_services=randint(1, 100),
+                total_sales=randint(1, 1000),
+                tip=randint(0, 100),
+                total_collection=randint(100, 1000),
+                advance=randint(0, 500),
+                net_collection=randint(100, 1000),
+                status='pending'
             )
-            shops.append(shop)
-
-        # Create ShopAdmin instances associated with the created shops
-        for shop in shops:
-            ShopAdmin.objects.create(
-                shop=shop,
-                license_expiration=fake.date_this_decade(),
-                license_file=fake.file_name(),
-                phone_number=fake.phone_number(),
-                vat_percentage=fake.random_digit(),
-                vat_number=fake.uuid4(),
-                vat_submission_date=fake.date_this_decade(),
-                vat_certificate=fake.file_name(),
-                address=fake.address(),
-                admin_user=User.objects.create_user(
-                    username=fake.user_name(),
-                    email=fake.email(),
-                    password=fake.password()
-                ),
-                license_expiration_reminder_days=fake.random_int(),
-                vat_submission_date_reminder_days=fake.random_int(),
-                employee_visa_expiration_reminder_days=fake.random_int()
-            )
-
-        self.stdout.write(self.style.SUCCESS('Data populated successfully!'))
+        self.stdout.write(self.style.SUCCESS('Dummy data created successfully.'))

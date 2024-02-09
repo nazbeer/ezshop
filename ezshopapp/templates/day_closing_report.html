@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Day Closing Report</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Total Services</th>
+                <th>Total Sales</th>
+                <th>Tip</th>
+                <th>Total Collection</th>
+                <th>Advance</th>
+                <th>Net Collection</th>
+                <th>Status</th>
+                <th>Action</th>
+                <th>
+
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day_closing in day_closings %}
+            <tr>
+                <td>{{ day_closing.date }}</td>
+                <td>{{ day_closing.total_services }}</td>
+                <td>{{ day_closing.total_sales }}</td>
+                <td>{{ day_closing.tip }}</td>
+                <td>{{ day_closing.total_collection }}</td>
+                <td>{{ day_closing.advance }}</td>
+                <td>{{ day_closing.net_collection }}</td>
+                <td class="text-capitalize">{{ day_closing.status }}</td>
+                {% if day_closing.status == 'pending' %}
+                <td><a href="{% url 'approve_day_closing' day_closing.id %}" class="btn btn-success btn-sm">Approve</a></td>
+                {% else %}
+                <td>Approved</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

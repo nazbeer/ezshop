@@ -3,18 +3,18 @@ from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login
-from .models import Shop, ShopAdmin, Role, Employee, Sale, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary
+from .models import Shop, ShopAdmin, Role, Employee, Sale, ExpenseType, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
 from .forms import ShopForm, RoleForm, EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
-from .forms import CustomLoginForm, SaleForm, SaleItemFormSet
+from .forms import CustomLoginForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
 from rest_framework import generics
 
 
 class CustomLoginView(FormView):
     template_name = 'login.html'
     form_class = CustomLoginForm
-    success_url = '/'  
+    success_url = '/home'  
 
     def form_valid(self, form):
         username = form.cleaned_data['username']
@@ -93,8 +93,8 @@ class RoleDeleteView(DeleteView):
 
 class EmployeeListView(ListView):
     model = Employee
-    template_name = 'employee_list.html'  # Update with the correct path to your template
-    context_object_name = 'employees'  # Optional, if you want to customize the context variable name in the template
+    template_name = 'employee_list.html'  
+    context_object_name = 'employees' 
 
 class EmployeeCreateView(CreateView):
     model = Employee
@@ -308,30 +308,97 @@ def login_view(request):
 
     return render(request, 'login.html', {'serializer': serializer})
 
-
 def create_sale(request):
+    employees = Employee.objects.all()
+    sale_items = SaleItem.objects.all()
+    sale_item_formset = SalesByAdminItemForm()
+    
     if request.method == 'POST':
-        sale_form = SaleForm(request.POST)
-        sale_item_formset = SaleItemFormSet(request.POST, prefix='sale_items')
-
-        if sale_form.is_valid() and sale_item_formset.is_valid():
-            sale = sale_form.save()
-            sale_items = sale_item_formset.save(commit=False)
-
-            for sale_item in sale_items:
-                sale_item.sale = sale
-                sale_item.save()
-
-            return redirect('sale_list')
+        form = SalesByAdminItemForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('success.html') 
     else:
-        sale_form = SaleForm()
-        sale_item_formset = SaleItemFormSet(prefix='sale_items')
+        form = SalesByAdminItemForm()
+    
+    return render(request, 'sales_by_admin_item_form.html', {'form': form, 'employees': employees, 'sale_item_formset': sale_item_formset, 'sale_item': sale_items})
 
-    return render(request, 'create_sale.html', {'sale_form': sale_form, 'sale_item_formset': sale_item_formset})
+def sale_by_admin_service(request):
+    employees = Employee.objects.all()
+    services = Service.objects.all()
+    sale_item_formset = SaleByAdminServiceForm()
+    if request.method == 'POST':
+        form = SaleByAdminServiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('success.html') 
+    else:
+        form = SaleByAdminServiceForm()
+    return render(request, 'sales_by_admin_service.html', {'form': form, 'employees': employees, 'sale_item_formset': sale_item_formset, 'services':services})
+
 
 class SaleListCreateView(generics.ListCreateAPIView):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
+
+def submit_sale(request):
+    form = SaleForm()
+    services = Service.objects.all()
+    
+    if request.method == 'POST':
+        form = SaleForm(request.POST)
+        if form.is_valid():
+            # Extract cleaned data from the form
+            service = form.cleaned_data['service']
+            quantity = form.cleaned_data['quantity']
+            amount = form.cleaned_data['amount']
+            discount = form.cleaned_data['discount']
+            tip = form.cleaned_data['tip']
+            payment_method = form.cleaned_data['payment_method']
+            
+    
+            sale = form.save(commit=False)
+            sale.save()
+            
+            # Redirect to a success page
+            return render(request, 'success.html')
+    return render(request, 'submit_sale.html', {'form': form, 'services': services})
+
+def DayClosingView(request):
+    if request.method == 'POST':
+        date = request.POST['date']
+        total_services = request.POST['total_services']
+        total_sales = request.POST['total_sales']
+        tip = request.POST['tip']
+        total_collection = request.POST['total_collection']
+        advance = request.POST['advance']
+        net_collection = request.POST['net_collection']
+
+        day_closing = DayClosing(
+            date=date,
+            total_services=total_services,
+            total_sales=total_sales,
+            tip=tip,
+            total_collection=total_collection,
+            advance=advance,
+            net_collection=net_collection
+        )
+        day_closing.save()
+
+        return render(request, 'success.html')
+
+    return render(request, 'dayclosing.html')
+def day_closing_report(request):
+    day_closings = DayClosing.objects.all()
+    return render(request, 'day_closing_report.html', {'day_closings': day_closings})
+
+
+def approve_day_closing(request, dayclosing_id):
+    dayclosing = DayClosing.objects.get(pk=dayclosing_id)
+    dayclosing.status = 'approved'
+    dayclosing.save()
+    return redirect('day_closing_report')
+
 
 class HomeView(TemplateView):
     template_name = 'home.html'
@@ -404,8 +471,13 @@ class HomeView(TemplateView):
             {
                 'name': 'Sales Management',
                 'links': [
-                    {'label': 'Create Sales', 'url_name': 'create_sale'},
-                    \
+                    # {'label': 'Create Sales', 'url_name': 'create_sale'},
+                     {'label': 'Sales by Admin Item', 'url_name':'sales_by_admin_item_form'},
+                     {'label': 'Sales by Admin Service', 'url_name':'sales_by_admin_service'},
+                    {'label': 'Sales by Staff', 'url_name':'submit_sale'},
+                    {'label': 'Day Closing', 'url_name':'dayclosing'},
+                    {'label': 'Day Closing Report', 'url_name':'day_closing_report'},
+                    
                   
                 ]
             },

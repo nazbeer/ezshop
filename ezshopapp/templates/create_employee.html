@@ -2,10 +2,93 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h2>Create Employee</h2>
-  <form method="post" enctype="multipart/form-data" class="form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Create Employee</button>
-  </form>
+<div class="container">
+    <h2>Create Employee</h2>
+    <form method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="employee_id">Employee ID:</label>
+                    {{ form.employee_id }}
+                </div>
+                <div class="form-group">
+                    <label for="first_name">First Name:</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group">
+                    <label for="passport_no">Passport No:</label>
+                    {{ form.passport_no }}
+                </div>
+                <div class="form-group">
+                    <label for="emirates_id">Emirates ID:</label>
+                    {{ form.emirates_id }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="second_name">Last Name:</label>
+                    {{ form.second_name }}
+                </div>
+                <div class="form-group">
+                    <label for="nationality">Nationality:</label>
+                    {{ form.nationality }}
+                </div>
+                <div class="form-group">
+                    <label for="passport_expiration_date">Passport Expiration Date:</label>
+                    {{ form.passport_expiration_date }}
+                </div>
+                <div class="form-group">
+                    <label for="id_expiration_date">ID Expiration Date:</label>
+                    {{ form.id_expiration_date }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="basic_pay">Basic Pay:</label>
+                    {{ form.basic_pay }}
+                </div>
+                <div class="form-group">
+                    <label for="house_allowance">House Allowance:</label>
+                    {{ form.house_allowance }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="transportation_allowance">Transportation Allowance:</label>
+                    {{ form.transportation_allowance }}
+                </div>
+                <div class="form-group">
+                    <label for="commission_percentage">Commission Percentage:</label>
+                    {{ form.commission_percentage }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="joining_date">Joining Date:</label>
+                    {{ form.joining_date }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="job_role">Job Role:</label>
+                    {{ form.job_role }}
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            {{ form.username }}
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            {{ form.password }}
+        </div>
+        <button type="submit" class="btn btn-primary">Create Employee</button>
+    </form>
+</div>
 {% endblock %}

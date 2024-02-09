@@ -9,7 +9,7 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 
@@ -58,7 +58,7 @@
     }
 
     #sidebar ul li a:hover {
-        color: #000;
+        color: #e3e3e3;
     }
 
     .navbar-brand {
@@ -138,7 +138,17 @@
         outline: 0;
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
+    .dropdown-menu {
+        background-color: #343a40; /* Background color */
+    }
 
+    .dropdown-item {
+        color: #fff; /* Text color */
+    }
+
+    .dropdown-item:hover {
+        background-color: #212529; /* Hover background color */
+    }
     </style>
 </head>
 <body>
@@ -156,14 +166,21 @@
         </ul>
     </div>
 </nav>
-
 <div id="sidebar">
     <hr/>
-    <!-- <small class="text-muted ">Navigation</small> -->
     <ul>
         <li><a href="/home/">Home</a></li>
-        <li><a href="/sales/">Sales</a></li>
-        
+        <li><a href="/employee/">Employees</a></li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sales</a>
+            <div class="dropdown-menu" aria-labelledby="saleDropdown">
+                <a class="dropdown-item" href="/sale/">Sales by Admin Item</a>
+                <a class="dropdown-item" href="/sale/dayclosing">Day Closing</a>
+                <a class="dropdown-item" href="/sale/day-closing-report">Day Closing Report</a>
+                <a class="dropdown-item" href="/sale/sales-by-admin-service">Sales by Admin Service</a>
+                
+            </div>
+        </li>
     </ul>
 </div>
 

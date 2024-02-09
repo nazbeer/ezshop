@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Sales Form
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h2>Sales by Admin Service</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+            <div class="col-md-6">
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" class="form-control" required>
+            </div>
+            </div>
+            <div class="col-md-6">
+            <div class="form-group">
+                <label for="employee">Employee:</label>
+                <select id="employee" name="employee" class="form-control" required>
+                    <option value="" selected disabled>Select Employee</option>
+                    {% for employee in employees %}
+                        <option value="{{ employee.id }}">{{ employee.first_name }} {{employee.second_name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+            <div><h5>Select Service</h5></div>
+            
+            {{ sale_item_formset.management_form }}
+
+            <div class="table-responsive">
+                <table class="table table-bordered" id="salesItems">
+                    <thead>
+                        <tr>
+                            <th>Particular</th>
+                            <th>Qty</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in services %}
+                        <tr>
+                            <td>
+                                <select name="form-{{ forloop.counter0 }}-service" class="form-control">
+                                    {% for service in services %}
+                                        <option value="{{ service.id }}">{{ service.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="form-{{ forloop.counter0 }}-quantity" class="form-control" value="{{ form.quantity.value }}" min="1">
+                            </td>
+                            <td>
+                                <input type="number" name="form-{{ forloop.counter0 }}-price" class="form-control" value="{{ form.price.value }}">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    
+                    </tbody>
+                </table>
+            </div>
+           
+
+            <div class="form-group">
+                <button type="button" onclick="addService()" class="btn btn-primary">Add Item</button>
+            </div>
+
+            <div class="form-group">
+                <label for="sub_total">Sub Total:</label>
+                <input type="text" id="sub_total" name="sub_total" readonly class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="discount">Discount:</label>
+                <input type="number" id="discount" name="discount" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="tip">Tip:</label>
+                <input type="number" id="tip" name="tip" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="total_amount">Total Amount:</label>
+                <input type="text" id="total_amount" name="total_amount" readonly class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="payment_method">Payment Method:</label>
+                <select id="payment_method" name="payment_method" class="form-control">
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">Submit</button>
+            </div>
+        </form>
+    </div>
+    </div>
+</div>
+<script>
+    function addService() {
+        var table = document.getElementById("salesItems").getElementsByTagName("tbody")[0];
+        var row = table.insertRow(-1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+
+        cell1.innerHTML = `
+            <select name="form-${table.rows.length - 1}-service" class="form-control">
+                {% for sale_item in sale_items %}
+                    <option value="{{ sale_item.service.id }}">{{ sale_item.service.name }}</option>
+                {% endfor %}
+            </select>
+        `;
+        cell2.innerHTML = `<input type="number" name="form-${table.rows.length - 1}-quantity" class="form-control" onchange="calculateSubTotal()">`;
+        cell3.innerHTML = `<input type="number" name="form-${table.rows.length - 1}-price" class="form-control" onchange="calculateSubTotal()">`;
+    }
+
+    function calculateSubTotal() {
+        var table = document.getElementById("salesItems").getElementsByTagName("tbody")[0];
+        var subTotal = 0;
+
+        for (var i = 0; i < table.rows.length; i++) {
+            var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
+            var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
+            var total = quantity * price;
+            subTotal += isNaN(total) ? 0 : total;
+        }
+
+        document.getElementById("sub_total").value = subTotal.toFixed(2);
+        calculateTotalAmount();
+    }
+
+    function calculateTotalAmount() {
+        var subTotal = parseFloat(document.getElementById("sub_total").value);
+        var discount = parseFloat(document.getElementById("discount").value);
+        var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
+        document.getElementById("total_amount").value = totalAmount.toFixed(2);
+    }
+
+    document.getElementById("discount").addEventListener("onclick", function(event) {
+        calculateTotalAmount();
+    });
+</script>
+
+
+{% endblock %}
