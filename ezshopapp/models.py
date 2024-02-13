@@ -1,30 +1,10 @@
 from django.db import models
+import pymysql
 from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.forms import inlineformset_factory
-
-# class CustomUser(AbstractUser):
-#     email = models.EmailField(unique=True)
-#     full_name = models.CharField(max_length=255)
-#     date_of_birth = models.DateField(null=True, blank=True)
-#     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-#     address = models.CharField(max_length=255, null=True, blank=True)
-#     phone_number = models.CharField(max_length=15, null=True, blank=True)
-
-#     # Add more fields as needed
-
-#     def __str__(self):
-#         return self.username
-
-# class CustomUserGroups(Group):
-#     user_set = models.ManyToManyField(CustomUser, related_name='customuser_groups', blank=True, verbose_name=_('users'))
-#     # Add any additional fields or methods for custom user groups
-
-# class CustomUserPermissions(Permission):
-#     user_set = models.ManyToManyField(CustomUser, related_name='customuser_permissions', blank=True, verbose_name=_('users'))
-#     # Add any additional fields or methods for custom user permissions
 
 class Module(models.Model):
     name = models.CharField(max_length=255)
@@ -212,22 +192,6 @@ class SaleItem(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-  
-# class SalesbyAdminItem(models.Model):
-#     date = models.DateField()
-#     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-#     payment_method = models.CharField(max_length=50)
-
-#     def __str__(self):
-#         return f"Sale by Admin Item - {self.date}"
-
-# class SalesbyAdminItemSaleItem(models.Model):
-#     sale = models.ForeignKey(SalesbyAdminItem, on_delete=models.CASCADE)
-#     item = models.ForeignKey(SaleItem, on_delete=models.CASCADE)
-#     quantity = models.IntegerField()
-
-#     def __str__(self):
-#         return f"Sale Item: {self.item.name} - Quantity: {self.quantity}"
 
 SaleItemFormSet = inlineformset_factory(Sale, SaleItem, fields=['product', 'quantity', 'price'])
 STATUS_CHOICES = (
@@ -261,13 +225,34 @@ class SaleByAdminService(models.Model):
     tip = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     
+    def __str__(self):
+        return str(self.date)
 
 class SalesByAdminItem(models.Model):
     date = models.DateField()
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    item = models.ForeignKey(SaleItem, on_delete=models.CASCADE, null=True)
+    item = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
     quantity = models.PositiveIntegerField(null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+
+    def __str__(self):
+        return str(self.date)
+
+
+class SalesByStaffItemService(models.Model):
+    date = models.DateField(_("Date"))
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name=_("Product"),  null=True)
+    pquantity = models.PositiveIntegerField(_("Product Quantity"),  null=True)
+    pprice = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Product Price"),  null=True)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, verbose_name=_("Service"),  null=True)
+    squantity = models.PositiveIntegerField(_("Service Quantity"),  null=True)
+    sprice = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Service Price"),  null=True)
+    sub_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Sub Total"), default=0.0)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Discount"), default=0.0)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name=_("Payment Method"))
+
+    def __str__(self):
+        return f"Sale on {self.date}"

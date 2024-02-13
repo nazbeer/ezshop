@@ -5,20 +5,10 @@ from .models import (
     EmployeeTransaction, DailySummary, Sale
 )
 
-# class CustomUserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = CustomUser
-#         fields = ['id', 'username', 'email', 'full_name', 'date_of_birth', 'profile_picture', 'address', 'phone_number']
-
-#     def create(self, validated_data):
-#         user = CustomUser.objects.create_user(**validated_data)
-#         return user
-    
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
         fields = '__all__'
-
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -93,7 +83,6 @@ class DailySummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = DailySummary
         fields = '__all__'
-
 
 class SaleSerializer(serializers.ModelSerializer):
     class Meta:

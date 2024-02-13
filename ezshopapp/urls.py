@@ -11,17 +11,19 @@ from .views import (
     ProductListView, ProductCreateView, ProductUpdateView, ProductDeleteView,
     EmployeeTransactionListView, EmployeeTransactionCreateView, EmployeeTransactionUpdateView, EmployeeTransactionDeleteView,
     DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, DayClosingView,
-    day_closing_report, approve_day_closing, create_sale, sale_by_admin_service
+    day_closing_report, approve_day_closing, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service
+
 )
 
 
 urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
-      path('', CustomLoginView.as_view(), name='login'),
+    path('', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('home/', HomeView.as_view(), name='home'),
    # path('register/', RegistrationView.as_view(), name='register'),
     # Shop URLs
+    #path('sale/create/', create_sale, name='create_sale'),
     path('shop/', ShopListView.as_view(), name='shop_list'),
     path('shop/create/', ShopCreateView.as_view(), name='create_shop'),
     path('shop/update/<int:pk>/', ShopUpdateView.as_view(), name='update_shop'),
@@ -33,7 +35,10 @@ urlpatterns = [
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
     path('sale/day-closing-report/<int:dayclosing_id>/approve/', approve_day_closing, name='approve_day_closing'),
     path('sale/', create_sale, name='sales_by_admin_item_form'),
+    path('sale/success/', success_view, name='success'),
+    path('sale/sales-by-staff-item-service/', sales_by_staff_item_service, name='sales_by_staff_item_service'),
     path('sale/sales-by-admin-service', sale_by_admin_service, name='sales_by_admin_service'),
+    path('sale/sales-report/', sales_report, name='sales_report'),
     # Role URLs
     path('role/', RoleListView.as_view(), name='role_list'),
     path('role/create/', RoleCreateView.as_view(), name='create_role'),

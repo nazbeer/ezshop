@@ -42,24 +42,24 @@
                             <th>Amount</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for form in services %}
+                    <tbody id="itemRows">
+                        
                         <tr>
                             <td>
-                                <select name="form-{{ forloop.counter0 }}-service" class="form-control">
+                                <select name="form-0-service" class="form-control"
+                                onchange="updatePrice(this)">
                                     {% for service in services %}
-                                        <option value="{{ service.id }}">{{ service.name }}</option>
+                                        <option value="{{ service.id }}-{{ service.amount}}">{{ service.name }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td>
-                                <input type="number" name="form-{{ forloop.counter0 }}-quantity" class="form-control" value="{{ form.quantity.value }}" min="1">
+                                <input  type="number" name="form-0-quantity" class="form-control" min="1" onchange="calculateSubTotal()">
                             </td>
                             <td>
-                                <input type="number" name="form-{{ forloop.counter0 }}-price" class="form-control" value="{{ form.price.value }}">
+                                <input type="number" name="form-0-price" class="form-control" readonly>
                             </td>
                         </tr>
-                    {% endfor %}
                     
                     </tbody>
                 </table>
@@ -81,7 +81,7 @@
             </div>
             <div class="form-group">
                 <label for="tip">Tip:</label>
-                <input type="number" id="tip" name="tip" class="form-control">
+                <input type="number" id="tip" name="tip" class="form-control" onchange="calculateTotalAmount()">
             </div>
 
             <div class="form-group">
@@ -100,28 +100,34 @@
             <div class="form-group">
                 <button type="submit" class="btn btn-success">Submit</button>
             </div>
+             <!-- Display form errors -->
+             {% if form.errors %}
+             <div class="alert alert-danger" role="alert">
+                 <strong>Error!</strong> Please correct the following errors:
+                 <ul>
+                     {% for field, errors in form.errors.items %}
+                         {% for error in errors %}
+                             <li>{{ field|title }}: {{ error }}</li>
+                         {% endfor %}
+                     {% endfor %}
+                 </ul>
+             </div>
+         {% endif %}
         </form>
     </div>
     </div>
 </div>
 <script>
-    function addService() {
-        var table = document.getElementById("salesItems").getElementsByTagName("tbody")[0];
-        var row = table.insertRow(-1);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        var cell3 = row.insertCell(2);
-
-        cell1.innerHTML = `
-            <select name="form-${table.rows.length - 1}-service" class="form-control">
-                {% for sale_item in sale_items %}
-                    <option value="{{ sale_item.service.id }}">{{ sale_item.service.name }}</option>
-                {% endfor %}
-            </select>
-        `;
-        cell2.innerHTML = `<input type="number" name="form-${table.rows.length - 1}-quantity" class="form-control" onchange="calculateSubTotal()">`;
-        cell3.innerHTML = `<input type="number" name="form-${table.rows.length - 1}-price" class="form-control" onchange="calculateSubTotal()">`;
+    var rowCounter = 1;
+    function updatePrice(select) {
+        var selectedOption = select.options[select.selectedIndex];
+        var priceInput = select.parentElement.nextElementSibling.nextElementSibling.querySelector('input');
+        var price = selectedOption.value.split('-')[1]; 
+        priceInput.value = price;
+        calculateSubTotal();
     }
+
+
 
     function calculateSubTotal() {
         var table = document.getElementById("salesItems").getElementsByTagName("tbody")[0];
@@ -138,16 +144,38 @@
         calculateTotalAmount();
     }
 
+    
     function calculateTotalAmount() {
         var subTotal = parseFloat(document.getElementById("sub_total").value);
         var discount = parseFloat(document.getElementById("discount").value);
-        var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
+        var tip = parseFloat(document.getElementById("tip").value);
+        var totalAmount = subTotal - (isNaN(discount) ? 0 : discount) + (isNaN(tip) ? 0 : tip);
         document.getElementById("total_amount").value = totalAmount.toFixed(2);
     }
 
-    document.getElementById("discount").addEventListener("onclick", function(event) {
+    document.getElementById("discount").addEventListener("onchange", function(event) {
         calculateTotalAmount();
     });
+
+    function addService() {
+        var table = document.getElementById("itemRows");
+        var row = table.insertRow(table.rows.length);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+
+        cell1.innerHTML = `
+            <select name="form-${rowCounter}-service" class="form-control">
+                {% for service in services %}
+                                        <option value="{{ service.id }}-{{ service.amount}}">{{ service.name }}</option>
+                                    {% endfor %}
+            </select>
+        `;
+        cell2.innerHTML = `<input type="number" name="form-${rowCounter}-quantity" class="form-control" min="1" onchange="calculateSubTotal()">`;
+        cell3.innerHTML = `<input type="number" name="form-${rowCounter}-price" class="form-control" readonly>`;
+        rowCounter++;
+    }
+   
 </script>
 
 

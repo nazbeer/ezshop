@@ -2,14 +2,15 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
+from django.forms import formset_factory
 from django.contrib.auth import authenticate, login
-from .models import Shop, ShopAdmin, Role, Employee, Sale, ExpenseType, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
+from .models import Shop, ShopAdmin, Role, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
 from .forms import ShopForm, RoleForm, EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
-from .forms import CustomLoginForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
+from .forms import CustomLoginForm, SalesByStaffItemServiceForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
 from rest_framework import generics
-
+from django.http import HttpResponse
 
 class CustomLoginView(FormView):
     template_name = 'login.html'
@@ -288,7 +289,8 @@ class DailySummaryDeleteView(DeleteView):
     template_name = 'delete_daily_summary.html'
     success_url = reverse_lazy('daily_summary_list')
 
-
+def success_view(request):
+    return render(request, 'success.html')
 
 def login_view(request):
     if request.method == 'POST':
@@ -310,33 +312,58 @@ def login_view(request):
 
 def create_sale(request):
     employees = Employee.objects.all()
-    sale_items = SaleItem.objects.all()
-    sale_item_formset = SalesByAdminItemForm()
-    
+    products = Product.objects.all()
     if request.method == 'POST':
         form = SalesByAdminItemForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('success.html') 
+            sale = form.save()
+            return HttpResponse(f'Sale created successfully with ID: {sale.id}')  # Debugging message
+        else:
+            #return HttpResponse('Form is not valid')  # Debugging message
+            return render(request, 'success.html') 
     else:
         form = SalesByAdminItemForm()
     
-    return render(request, 'sales_by_admin_item_form.html', {'form': form, 'employees': employees, 'sale_item_formset': sale_item_formset, 'sale_item': sale_items})
+    return render(request, 'sales_by_admin_item_form.html', {'form': form, 'employees': employees, 'products': products})
+# def sale_by_admin_service(request):
+#     employees = Employee.objects.all()
+#     services = Service.objects.all()
+#     sale_item_formset = SaleByAdminServiceForm()
+#     if request.method == 'POST':
+#         form = SaleByAdminServiceForm(request.POST)
+#         print(form)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('success.html') 
+#     else:
+#         form = SaleByAdminServiceForm()
+#     return render(request, 'sales_by_admin_service.html', {'form': form, 'sale_item_formset':sale_item_formset, 'employees': employees,  'services':services})
+
 
 def sale_by_admin_service(request):
     employees = Employee.objects.all()
     services = Service.objects.all()
-    sale_item_formset = SaleByAdminServiceForm()
+    
+    SaleByAdminServiceFormSet = formset_factory(SaleByAdminServiceForm, extra=1)
+
     if request.method == 'POST':
-        form = SaleByAdminServiceForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('success.html') 
+        formset = SaleByAdminServiceFormSet(request.POST)
+        if formset.is_valid():
+            for form in formset:
+                if form.cleaned_data:
+                    # Here, you need to associate each sale item with the sale
+                    sale_item = form.save(commit=False)
+                    # Assuming you have a field named 'sale' in SaleByAdminService model
+                    # You need to associate the sale item with the sale instance before saving
+                  #  sale_item.date = date
+                    sale_item.save()
+
+            # Redirect after successful form submission
+            return redirect('success.html')
     else:
-        form = SaleByAdminServiceForm()
-    return render(request, 'sales_by_admin_service.html', {'form': form, 'employees': employees, 'sale_item_formset': sale_item_formset, 'services':services})
+        formset = SaleByAdminServiceFormSet()
 
-
+    return render(request, 'sales_by_admin_service.html', {'formset': formset, 'employees': employees, 'services': services})
 class SaleListCreateView(generics.ListCreateAPIView):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
@@ -399,6 +426,31 @@ def approve_day_closing(request, dayclosing_id):
     dayclosing.save()
     return redirect('day_closing_report')
 
+def sales_by_staff_item_service(request):
+    products = Product.objects.all()
+    service = Service.objects.all()
+    if request.method == 'POST':
+        form = SalesByStaffItemServiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('success.html')  # Redirect to success page
+    else:
+        form = SalesByStaffItemServiceForm()
+    return render(request, 'sales_by_staff_item_service.html', {'form': form, 'products':products, 'services':service})
+
+def sales_report(request):
+    sales_services = SaleByAdminService.objects.all()
+    sales_items = SalesByAdminItem.objects.all()
+
+    print("Sales Services:", sales_services)
+    print("Sales Items:", sales_items)
+
+    context = {
+        'sales_services': sales_services,
+        'sales_items': sales_items,
+    }
+    
+    return render(request, 'sales_report.html', context)
 
 class HomeView(TemplateView):
     template_name = 'home.html'
@@ -474,8 +526,11 @@ class HomeView(TemplateView):
                     # {'label': 'Create Sales', 'url_name': 'create_sale'},
                      {'label': 'Sales by Admin Item', 'url_name':'sales_by_admin_item_form'},
                      {'label': 'Sales by Admin Service', 'url_name':'sales_by_admin_service'},
+                     {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
+                     
                     {'label': 'Sales by Staff', 'url_name':'submit_sale'},
                     {'label': 'Day Closing', 'url_name':'dayclosing'},
+                     {'label': 'Sales Report', 'url_name':'sales_report'},
                     {'label': 'Day Closing Report', 'url_name':'day_closing_report'},
                     
                   
