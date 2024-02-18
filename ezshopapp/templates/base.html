@@ -12,6 +12,10 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+ 
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css"/>
 
 
     <!-- Your head content goes here -->
@@ -26,7 +30,17 @@
         border-bottom: 0.1em solid #f5f5f5;
         box-shadow: 1px -2px 5px 4px #ccc;
     }
-
+    thead{
+        background-color: #343a40;
+    color: #d9d9d9;
+    }
+    thead>tr>th>a{
+        color:#fff;
+    }
+    thead>tr>th>a:hover{
+        color:#a1b5ff;
+        text-decoration: none;
+    }
     #sidebar {
         height: 100%;
         width: 200px;
@@ -35,6 +49,16 @@
         left: 0;
         background-color: #343a40;
         padding-top: 56px;
+    }
+    .form-control{
+        line-height: 1.25 !important;
+    }
+    textarea {
+        overflow: auto;
+        resize: vertical;
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
     }
     table{
         border:0px !important;
@@ -174,13 +198,32 @@
         <li><a href="/home/">Home</a></li>
         <li><a href="/employee/">Employees</a></li>
         <li class="dropdown">
-            <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sales</a>
+            <a href="#" class="dropdown-toggle" id="saleAdminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sales by Admin</a>
             <div class="dropdown-menu" aria-labelledby="saleDropdown">
                 <a class="dropdown-item" href="/sale/">Sales by Admin Item</a>
-                <a class="dropdown-item" href="/sale/dayclosing">Day Closing</a>
-                <a class="dropdown-item" href="/sale/day-closing-report">Day Closing Report</a>
+                
                 <a class="dropdown-item" href="/sale/sales-by-admin-service">Sales by Admin Service</a>
+               
+               
+                
+            </div>
+        </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" id="saleAdminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sales by Staff</a>
+            <div class="dropdown-menu" aria-labelledby="saleStaffDropdown">
+               
                 <a class="dropdown-item" href="/sale/sales-by-staff-item-service">Sales by Staff <br/> Products & Services</a>
+                <a class="dropdown-item" href="/sale/salesbystaff">Sales by Staff <br/> Services</a>
+               
+                
+            </div>
+        </li>
+        <li><a href="/sale/dayclosing/">Day Closing</a></li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" id="reportDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Reports</a>
+            <div class="dropdown-menu" aria-labelledby="reportDropdown">
+              
+                <a class="dropdown-item" href="/sale/day-closing-report">Day Closing Report</a>
                 <a class="dropdown-item" href="/sale/sales-report">Sales Report</a>
                 
             </div>

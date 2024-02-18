@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     ShopListView, ShopCreateView, ShopUpdateView, ShopDeleteView,
     RoleListView, RoleCreateView, RoleUpdateView, RoleDeleteView,
-    EmployeeListView, EmployeeCreateView, EmployeeUpdateView, EmployeeDeleteView,
+    EmployeeCreateView, EmployeeUpdateView, EmployeeDeleteView,
     ExpenseTypeListView, ExpenseTypeCreateView, ExpenseTypeUpdateView, ExpenseTypeDeleteView,
     ReceiptTransactionListView, ReceiptTransactionCreateView, ReceiptTransactionUpdateView, ReceiptTransactionDeleteView,
     PaymentTransactionListView, PaymentTransactionCreateView, PaymentTransactionUpdateView, PaymentTransactionDeleteView,
@@ -11,7 +11,7 @@ from .views import (
     ProductListView, ProductCreateView, ProductUpdateView, ProductDeleteView,
     EmployeeTransactionListView, EmployeeTransactionCreateView, EmployeeTransactionUpdateView, EmployeeTransactionDeleteView,
     DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, DayClosingView,
-    day_closing_report, approve_day_closing, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service
+    day_closing_report, approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created
 
 )
 
@@ -21,6 +21,8 @@ urlpatterns = [
     path('', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('home/', HomeView.as_view(), name='home'),
+    path('create-profile/', create_business_profile, name='create_business_profile'),
+    path('profile-created/', profile_created, name='profile_created'),
    # path('register/', RegistrationView.as_view(), name='register'),
     # Shop URLs
     #path('sale/create/', create_sale, name='create_sale'),
@@ -46,7 +48,7 @@ urlpatterns = [
     path('role/delete/<int:pk>/', RoleDeleteView.as_view(), name='delete_role'),
 
     # Employee URLs
-    path('employee/', EmployeeListView.as_view(), name='employee_list'),
+    path('employee/', employee_list, name='employee_list'),
     path('employee/create/', EmployeeCreateView.as_view(), name='create_employee'),
     path('employee/update/<int:pk>/', EmployeeUpdateView.as_view(), name='update_employee'),
     path('employee/delete/<int:pk>/', EmployeeDeleteView.as_view(), name='delete_employee'),

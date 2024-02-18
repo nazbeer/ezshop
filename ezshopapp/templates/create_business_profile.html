@@ -1,0 +1,104 @@
+<!-- create_business_profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+    Create Business Profile
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Create Business Profile</h1>
+        <form method="post" enctype="multipart/form-data" id="business-profile-form">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- Fields for the main business profile -->
+                    {{ business_profile_form.shop_name.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.shop_name.id_for_label }}">Shop Name:</label>
+                        {{ business_profile_form.shop_name }}
+                    </div>
+                    {{ business_profile_form.license_number.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.license_number.id_for_label }}">License Number:</label>
+                        {{ business_profile_form.license_number }}
+                    </div>
+                    {{ business_profile_form.license_expiration.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.license_expiration.id_for_label }}">License Expiration:</label>
+                        {{ business_profile_form.license_expiration }}
+                    </div>
+                    {{ business_profile_form.license_upload.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.license_upload.id_for_label }}">Upload License:</label>
+                        {{ business_profile_form.license_upload }}
+                    </div>
+                    {{ business_profile_form.shop_phone_number.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.shop_phone_number.id_for_label }}">Shop Phone Number:</label>
+                        {{ business_profile_form.shop_phone_number }}
+                    </div>
+                    {{ business_profile_form.vat_percentage.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.vat_percentage.id_for_label }}">VAT Percentage:</label>
+                        {{ business_profile_form.vat_percentage }}
+                    </div>
+                    {{ business_profile_form.vat_number.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.vat_number.id_for_label }}">VAT Number:</label>
+                        {{ business_profile_form.vat_number }}
+                    </div>
+                    {{ business_profile_form.vat_submission_date.errors }}
+                    
+                   
+                    
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.vat_submission_date.id_for_label }}">VAT Submission Date:</label>
+                        {{ business_profile_form.vat_submission_date }}
+                    </div>
+                    {{ business_profile_form.vat_certificate_upload.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.vat_certificate_upload.id_for_label }}">Upload VAT Certificate (PDF only):</label>
+                        {{ business_profile_form.vat_certificate_upload }}
+                    </div>
+                    {{ business_profile_form.address.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.address.id_for_label }}">Address:</label>
+                        <textarea id="{{ business_profile_form.address.id_for_label }}" name="address" class="form-control" rows="5"></textarea>
+                    </div>
+                    {{ business_profile_form.license_expiration_reminder_days.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.license_expiration_reminder_days.id_for_label }}">License Expiration Reminder Days:</label>
+                        {{ business_profile_form.license_expiration_reminder_days }}
+                    </div>
+                    {{ business_profile_form.vat_submission_date_reminder_days.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.vat_submission_date_reminder_days.id_for_label }}">VAT Submission Date Reminder Days:</label>
+                        {{ business_profile_form.vat_submission_date_reminder_days }}
+                    </div>
+                    {{ business_profile_form.employee_visa_expiration_reminder_days.errors }}
+                    <div class="form-group">
+                        <label for="{{ business_profile_form.employee_visa_expiration_reminder_days.id_for_label }}">Employee Visa Expiration Reminder Days:</label>
+                        {{ business_profile_form.employee_visa_expiration_reminder_days }}
+                    </div>
+                    <!-- Fields for admin user -->
+                    {{ admin_user_form.username.errors }}
+                    <div class="form-group">
+                        <label for="{{ admin_user_form.username.id_for_label }}">Username:</label>
+                        {{ admin_user_form.username }}
+                    </div>
+                    {{ admin_user_form.password.errors }}
+                    <div class="form-group">
+                        <label for="{{ admin_user_form.password.id_for_label }}">Password:</label>
+                        {{ admin_user_form.password }}
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

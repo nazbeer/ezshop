@@ -4,13 +4,19 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormVi
 from django.urls import reverse_lazy
 from django.forms import formset_factory
 from django.contrib.auth import authenticate, login
-from .models import Shop, ShopAdmin, Role, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
-from .forms import ShopForm, RoleForm, EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
+from .models import Shop, ShopAdmin, User, Role, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
+from .forms import ShopForm, RoleForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
-from .forms import CustomLoginForm, SalesByStaffItemServiceForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
+from .forms import CustomLoginForm, BusinessProfileForm, AdminUserForm, SalesByStaffItemServiceForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
 from rest_framework import generics
 from django.http import HttpResponse
+from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+
+# Assuming you have a form for admin users
+AdminUserForm = formset_factory(AdminUserForm, extra=1)
 
 class CustomLoginView(FormView):
     template_name = 'login.html'
@@ -92,10 +98,31 @@ class RoleDeleteView(DeleteView):
     template_name = 'delete_role.html'
     success_url = reverse_lazy('role_list')
 
-class EmployeeListView(ListView):
-    model = Employee
-    template_name = 'employee_list.html'  
-    context_object_name = 'employees' 
+def employee_list(request):
+    # Get query parameter for search
+    query = request.GET.get('q')
+    
+    # Filter employees based on search query
+    if query:
+        employees = Employee.objects.filter(
+            Q(employee_id__icontains=query) | 
+            Q(first_name__icontains=query) |
+            Q(second_name__icontains=query)
+        )
+    else:
+        employees = Employee.objects.all()
+    
+    # Pagination
+    paginator = Paginator(employees, 10)  # Show 10 employees per page
+    page = request.GET.get('page')
+    try:
+        employees = paginator.page(page)
+    except PageNotAnInteger:
+        employees = paginator.page(1)
+    except EmptyPage:
+        employees = paginator.page(paginator.num_pages)
+    
+    return render(request, 'employee_list.html', {'employees': employees})
 
 class EmployeeCreateView(CreateView):
     model = Employee
@@ -289,6 +316,28 @@ class DailySummaryDeleteView(DeleteView):
     template_name = 'delete_daily_summary.html'
     success_url = reverse_lazy('daily_summary_list')
 
+
+def create_business_profile(request):
+    if request.method == 'POST':
+        business_profile_form = BusinessProfileForm(request.POST, request.FILES, prefix='business_profile')
+        admin_user_form = AdminUserForm(request.POST, prefix='admin_user')
+        if business_profile_form.is_valid() and admin_user_form.is_valid():
+            # Save business profile data
+            business_profile = business_profile_form.save()
+            # Create new admin user and add to business profile
+            username = admin_user_form.cleaned_data['username']
+            password = admin_user_form.cleaned_data['password']
+            new_admin_user = User.objects.create_user(username=username, password=password)
+            business_profile.admins.add(new_admin_user)
+            return redirect('success_page')  # Redirect to success page after successful submission
+    else:
+        business_profile_form = BusinessProfileForm(prefix='business_profile')
+        admin_user_form = AdminUserForm(prefix='admin_user')
+    return render(request, 'create_business_profile.html', {'business_profile_form': business_profile_form, 'admin_user_form': admin_user_form})
+
+def profile_created(request):
+    return render(request, 'profile_created.html')
+
 def success_view(request):
     return render(request, 'success.html')
 
@@ -364,6 +413,7 @@ def sale_by_admin_service(request):
         formset = SaleByAdminServiceFormSet()
 
     return render(request, 'sales_by_admin_service.html', {'formset': formset, 'employees': employees, 'services': services})
+
 class SaleListCreateView(generics.ListCreateAPIView):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
@@ -457,11 +507,43 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         categories = [
+             {
+                'name': 'Sales by Admin',
+                'links': [
+                    # {'label': 'Create Sales', 'url_name': 'create_sale'},
+                     {'label': 'Sales by Admin Item', 'url_name':'sales_by_admin_item_form'},
+                     {'label': 'Sales by Admin Service', 'url_name':'sales_by_admin_service'},
+                    
+                    
+                  
+                ]
+            },
+             {
+                'name': 'Sales by Staff',
+                'links': [
+                    # {'label': 'Create Sales', 'url_name': 'create_sale'},
+                   {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
+                    {'label': 'Sales by Staff', 'url_name':'submit_sale'},
+                    
+                  
+                ]
+            },
+             {
+                'name': 'Closing & Reports',
+                'links': [
+                    {'label': 'Day Closing', 'url_name':'dayclosing'},
+                     {'label': 'Sales Report', 'url_name':'sales_report'},
+                    {'label': 'Day Closing Report', 'url_name':'day_closing_report'},
+                    
+                  
+                ]
+            },
             {
                 'name': 'Shop Management',
                 'links': [
                     {'label': 'Shop List', 'url_name': 'shop_list'},
                     {'label': 'Create Shop', 'url_name': 'create_shop'},
+                    {'label': 'Create Business', 'url_name': 'create_business_profile'},
                     # {'label': 'Update Shop', 'url_name': 'update_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
                     # {'label': 'Delete Shop', 'url_name': 'delete_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
             ]
@@ -520,22 +602,7 @@ class HomeView(TemplateView):
                     {'label': 'Daily Summaries', 'url_name': 'daily_summary_list'},
                 ]
             },
-            {
-                'name': 'Sales Management',
-                'links': [
-                    # {'label': 'Create Sales', 'url_name': 'create_sale'},
-                     {'label': 'Sales by Admin Item', 'url_name':'sales_by_admin_item_form'},
-                     {'label': 'Sales by Admin Service', 'url_name':'sales_by_admin_service'},
-                     {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
-                     
-                    {'label': 'Sales by Staff', 'url_name':'submit_sale'},
-                    {'label': 'Day Closing', 'url_name':'dayclosing'},
-                     {'label': 'Sales Report', 'url_name':'sales_report'},
-                    {'label': 'Day Closing Report', 'url_name':'day_closing_report'},
-                    
-                  
-                ]
-            },
+           
         ]
 
         return {'categories': categories}

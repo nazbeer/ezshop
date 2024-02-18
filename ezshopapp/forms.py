@@ -1,20 +1,37 @@
 from django import forms
 # from django.contrib.auth.forms import UserCreationForm
-from .models import Shop, Sale, Service, SalesByAdminItem, SaleByAdminService, SaleItem, Role, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
+from .models import Shop, Sale, Service,BusinessProfile, SalesByAdminItem, SaleByAdminService, SaleItem, Role, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
 from django.db import models
 from django.forms import inlineformset_factory
-
+from django.core.exceptions import ValidationError
 
 # class CustomUserCreationForm(UserCreationForm):
 #     class Meta:
 #         model = CustomUser
 #         fields = ('username', 'email', 'password1', 'password2', 'full_name', 'date_of_birth', 'profile_picture', 'address', 'phone_number')
     
+
+class AdminUserForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput)
+    
 class ShopForm(forms.ModelForm):
     class Meta:
         model = Shop
         fields = '__all__'
+class BusinessProfileForm(forms.ModelForm):
+    class Meta:
+        model = BusinessProfile
+        fields = '__all__'
+        exclude = ['admins']  # Exclude admins field as it will be handled separately
 
+    def clean_vat_certificate_upload(self):
+        data = self.cleaned_data['vat_certificate_upload']
+        if data:
+            if not data.name.endswith('.pdf'):
+                raise ValidationError('Only PDF files are allowed.')
+        return data
+    
 class RoleForm(forms.ModelForm):
     class Meta:
         model = Role

@@ -43,6 +43,25 @@ class ShopAdmin(models.Model):
     def __str__(self):
         return f"{self.shop.name} - {self.admin_user.username}"
 
+class BusinessProfile(models.Model):
+    shop_name = models.CharField(max_length=100)
+    license_number = models.CharField(max_length=50, unique=True)
+    license_expiration = models.DateField()
+    license_upload = models.ImageField(upload_to='license/')
+    shop_phone_number = models.CharField(max_length=15)
+    vat_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    vat_number = models.CharField(max_length=50, unique=True)
+    vat_submission_date = models.DateField()
+    vat_certificate_upload = models.ImageField(upload_to='vat_certificate/')
+    address = models.TextField()
+    admins = models.ManyToManyField(User, related_name='business_profiles')
+    license_expiration_reminder_days = models.PositiveIntegerField()
+    vat_submission_date_reminder_days = models.PositiveIntegerField()
+    employee_visa_expiration_reminder_days = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.shop_name
+    
 class Role(models.Model):
     name = models.CharField(max_length=255)
     modules = models.ManyToManyField(Module)

@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-import pymysql
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -83,15 +83,17 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'ezshop',
+#         'NAME': 'ezshopdb',
 #         'USER': 'root',
-#         'PASSWORD': 'password',
+#         'PASSWORD': 'new_password',
 #         'HOST': 'localhost',
 #         'PORT': '3306',
+#         'OPTIONS': {
+#             'charset': 'utf8mb4',
+#         },
 #     }
 # }
 
