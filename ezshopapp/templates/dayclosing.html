@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h2>Day Closing</h2>
-    <form method="post">
+    <form method="post" action="{% url 'dayclosing' %}">
         {% csrf_token %}
         <div class="row">
             <div class="col-md-6">
@@ -25,7 +25,6 @@
                 </div>
             </div>
             <div class="col-md-6">
-               
                 <div class="form-group">
                     <label for="total_collection">Total Collection:</label>
                     <input type="number" step="0.01" class="form-control" id="total_collection" name="total_collection" required>

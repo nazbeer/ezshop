@@ -1,6 +1,6 @@
 from django import forms
 # from django.contrib.auth.forms import UserCreationForm
-from .models import Shop, Sale, Service,BusinessProfile, SalesByAdminItem, SaleByAdminService, SaleItem, Role, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
+from .models import Shop, Sale, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, SaleItem, Role, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
 from django.db import models
 from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
@@ -15,6 +15,10 @@ class AdminUserForm(forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
     
+class AdminProfileForm(forms.ModelForm):
+    class Meta:
+        model = AdminProfile
+        fields = ['email', 'mobile']
 class ShopForm(forms.ModelForm):
     class Meta:
         model = Shop
@@ -49,6 +53,11 @@ class EmployeeForm(forms.ModelForm):
              'joining_date': forms.DateInput(attrs={'type': 'date'}),
             # Add more widgets for other date fields if needed
         }
+
+class DayClosingForm(forms.ModelForm):
+    class Meta:
+        model = DayClosing
+        fields = '__all__' 
 
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:

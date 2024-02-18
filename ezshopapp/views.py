@@ -2,13 +2,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
+from django.views import View
 from django.forms import formset_factory
 from django.contrib.auth import authenticate, login
 from .models import Shop, ShopAdmin, User, Role, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
-from .forms import ShopForm, RoleForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
+from .forms import ShopForm, RoleForm, AdminProfileForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
-from .forms import CustomLoginForm, BusinessProfileForm, AdminUserForm, SalesByStaffItemServiceForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
+from .forms import CustomLoginForm, DayClosingForm, BusinessProfileForm, AdminUserForm, SalesByStaffItemServiceForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
 from rest_framework import generics
 from django.http import HttpResponse
 from django.db.models import Q
@@ -324,24 +325,40 @@ class DailySummaryDeleteView(DeleteView):
     template_name = 'delete_daily_summary.html'
     success_url = reverse_lazy('daily_summary_list')
 
-
 def create_business_profile(request):
     if request.method == 'POST':
-        business_profile_form = BusinessProfileForm(request.POST, request.FILES, prefix='business_profile')
-        admin_user_form = AdminUserForm(request.POST, prefix='admin_user')
-        if business_profile_form.is_valid() and admin_user_form.is_valid():
+        business_profile_form = BusinessProfileForm(request.POST, request.FILES)
+        admin_profile_forms = [AdminProfileForm(request.POST, prefix=f'admin_profile_{i}') for i in range(5)]  # Assuming max 5 admins
+        
+        if business_profile_form.is_valid() and all([form.is_valid() for form in admin_profile_forms]):
             # Save business profile data
             business_profile = business_profile_form.save()
-            # Create new admin user and add to business profile
-            username = admin_user_form.cleaned_data['username']
-            password = admin_user_form.cleaned_data['password']
-            new_admin_user = User.objects.create_user(username=username, password=password)
-            business_profile.admins.add(new_admin_user)
+            
+            # Save admin profiles and connect with business profile
+            for form in admin_profile_forms:
+                if form.cleaned_data['email'] and form.cleaned_data['mobile']:
+                    admin_profile = form.save(commit=False)
+                    admin_profile.business_profile = business_profile
+                    admin_profile.save()
+                    
+                    # Connect selected employee to admin profile
+                    employee_id = form.cleaned_data.get('employee')
+                    if employee_id:
+                        employee = Employee.objects.get(pk=employee_id)
+                        admin_profile.employees.add(employee)
+            
             return redirect('success_page')  # Redirect to success page after successful submission
     else:
-        business_profile_form = BusinessProfileForm(prefix='business_profile')
-        admin_user_form = AdminUserForm(prefix='admin_user')
-    return render(request, 'create_business_profile.html', {'business_profile_form': business_profile_form, 'admin_user_form': admin_user_form})
+        business_profile_form = BusinessProfileForm()
+        admin_profile_forms = [AdminProfileForm(prefix=f'admin_profile_{i}') for i in range(5)]  # Assuming max 5 admins
+
+    employees = Employee.objects.all()  # Retrieve all employees to populate select field
+
+    return render(request, 'create_business_profile.html', {
+        'business_profile_form': business_profile_form,
+        'admin_profile_forms': admin_profile_forms,
+        'employees': employees,
+    })
 
 def profile_created(request):
     return render(request, 'profile_created.html')
@@ -382,20 +399,6 @@ def create_sale(request):
         form = SalesByAdminItemForm()
     
     return render(request, 'sales_by_admin_item_form.html', {'form': form, 'employees': employees, 'products': products})
-# def sale_by_admin_service(request):
-#     employees = Employee.objects.all()
-#     services = Service.objects.all()
-#     sale_item_formset = SaleByAdminServiceForm()
-#     if request.method == 'POST':
-#         form = SaleByAdminServiceForm(request.POST)
-#         print(form)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('success.html') 
-#     else:
-#         form = SaleByAdminServiceForm()
-#     return render(request, 'sales_by_admin_service.html', {'form': form, 'sale_item_formset':sale_item_formset, 'employees': employees,  'services':services})
-
 
 def sale_by_admin_service(request):
     employees = Employee.objects.all()
@@ -454,9 +457,9 @@ def DayClosingView(request):
         date = request.POST['date']
         total_services = request.POST['total_services']
         total_sales = request.POST['total_sales']
-        tip = request.POST['tip']
+        tip = request.POST.get('tip', None)
         total_collection = request.POST['total_collection']
-        advance = request.POST['advance']
+        advance = request.POST.get('advance', None)
         net_collection = request.POST['net_collection']
 
         day_closing = DayClosing(
@@ -468,15 +471,41 @@ def DayClosingView(request):
             advance=advance,
             net_collection=net_collection
         )
-        day_closing.save()
-
-        return render(request, 'success.html')
+        try:
+            day_closing.save()
+            return redirect('day_closing_report')
+        except Exception as e:
+            print("Error saving data:", e)
 
     return render(request, 'dayclosing.html')
-def day_closing_report(request):
-    day_closings = DayClosing.objects.all()
-    return render(request, 'day_closing_report.html', {'day_closings': day_closings})
 
+def edit_day_closing(request, pk):
+    day_closing = get_object_or_404(DayClosing, pk=pk)
+    if request.method == 'POST':
+        form = DayClosingForm(request.POST, instance=day_closing)
+        if form.is_valid():
+            form.save()
+            return redirect('day_closing_report')  # Redirect to day closing report page after editing
+    else:
+        form = DayClosingForm(instance=day_closing)
+    return render(request, 'dayclosing_edit.html', {'form': form})
+
+
+def day_closing_report(request):
+    day_closings_list = DayClosing.objects.all()
+    paginator = Paginator(day_closings_list, 10)  # Show 10 entries per page
+
+    page = request.GET.get('page')
+    try:
+        day_closings = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        day_closings = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        day_closings = paginator.page(paginator.num_pages)
+
+    return render(request, 'day_closing_report.html', {'day_closings': day_closings})
 
 def approve_day_closing(request, dayclosing_id):
     dayclosing = DayClosing.objects.get(pk=dayclosing_id)

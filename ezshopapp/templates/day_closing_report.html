@@ -1,9 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
     <h2>Day Closing Report</h2>
-    <table class="table">
+    <div class="pagination mb-3" style="float:right;">
+        <span class="step-links">
+            {% if day_closings.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ day_closings.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ day_closings.number }} of {{ day_closings.paginator.num_pages }}.
+            </span>
+
+            {% if day_closings.has_next %}
+                <a href="?page={{ day_closings.next_page_number }}">next</a>
+                <a href="?page={{ day_closings.paginator.num_pages }}">Last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+    <table class="table  table-responsive-sm table-striped" style="width: 100%;">
         <thead>
             <tr>
                 <th>Date</th>
@@ -15,10 +32,8 @@
                 <th>Net Collection</th>
                 <th>Status</th>
                 <th>Action</th>
-                <th>
-
-                </th>
-                <th></th>
+               
+                
             </tr>
         </thead>
         <tbody>
@@ -32,14 +47,34 @@
                 <td>{{ day_closing.advance }}</td>
                 <td>{{ day_closing.net_collection }}</td>
                 <td class="text-capitalize">{{ day_closing.status }}</td>
-                {% if day_closing.status == 'pending' %}
-                <td><a href="{% url 'approve_day_closing' day_closing.id %}" class="btn btn-success btn-sm">Approve</a></td>
+                <td><div class="d-flex justify-content-between align-items-center gap-3"> {% if day_closing.status == 'pending' %}
+                <a href="{% url 'approve_day_closing' day_closing.id %}" class="btn btn-success btn-sm">Approve</a>
                 {% else %}
-                <td>Approved</td>
+                <button class="btn btn-secondary btn-sm" disabled>Approved</button>
+
                 {% endif %}
+                <span class="pl-3" ><a href="{% url 'edit_day_closing' day_closing.id %}" class="btn btn-primary btn-sm">Edit</a></span>
+            </div></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    <div class="pagination mb-3" style="float:right;">
+        <span class="step-links">
+            {% if day_closings.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ day_closings.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ day_closings.number }} of {{ day_closings.paginator.num_pages }}.
+            </span>
+
+            {% if day_closings.has_next %}
+                <a href="?page={{ day_closings.next_page_number }}">next</a>
+                <a href="?page={{ day_closings.paginator.num_pages }}">Last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
 </div>
 {% endblock %}

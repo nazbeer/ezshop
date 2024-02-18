@@ -61,6 +61,13 @@ class BusinessProfile(models.Model):
 
     def __str__(self):
         return self.shop_name
+
+class AdminProfile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    business_profile = models.ForeignKey(BusinessProfile, on_delete=models.CASCADE)
+    email = models.EmailField()
+    mobile = models.CharField(max_length=15)
+    
     
 class Role(models.Model):
     name = models.CharField(max_length=255)
@@ -213,10 +220,13 @@ class SaleItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
 SaleItemFormSet = inlineformset_factory(Sale, SaleItem, fields=['product', 'quantity', 'price'])
+
+
 STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-    )
+    ('pending', 'Pending'),
+    ('approved', 'Approved'),
+)
+
 class DayClosing(models.Model):
     date = models.DateField()
     total_services = models.DecimalField(max_digits=8, decimal_places=2)
@@ -229,6 +239,7 @@ class DayClosing(models.Model):
 
     def __str__(self):
         return str(self.date)
+    
     
 PAYMENT_METHOD_CHOICES=(
     ("cash","Cash"),("card","Card")

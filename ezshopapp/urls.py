@@ -10,9 +10,9 @@ from .views import (
     ServiceListView, ServiceCreateView, ServiceUpdateView, ServiceDeleteView,
     ProductListView, ProductCreateView, ProductUpdateView, ProductDeleteView,
     EmployeeTransactionListView, EmployeeTransactionCreateView, EmployeeTransactionUpdateView, EmployeeTransactionDeleteView,
-    DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, DayClosingView,
-    day_closing_report, approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created,
-    employee_edit, employee_delete
+    DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, 
+    approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created,
+    employee_edit, employee_delete, DayClosingView, day_closing_report, edit_day_closing
 
 )
 
@@ -34,8 +34,10 @@ urlpatterns = [
     path('sales/', SaleListCreateView.as_view(), name='sale-list-create'),
     # path('sale/create/', create_sale, name='sales_by_admin_item_form'),
     path('sale/salesbystaff/', submit_sale, name='submit_sale'),
-    path('sale/dayclosing/',  DayClosingView, name='dayclosing'),
+
+    path('sale/dayclosing/', DayClosingView, name='dayclosing'),
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
+     path('sale/dayclosing/<int:pk>/edit/', edit_day_closing, name='edit_day_closing'),
     path('sale/day-closing-report/<int:dayclosing_id>/approve/', approve_day_closing, name='approve_day_closing'),
     path('sale/', create_sale, name='sales_by_admin_item_form'),
     path('sale/success/', success_view, name='success'),
