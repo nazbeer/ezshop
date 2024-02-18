@@ -130,16 +130,24 @@ class EmployeeCreateView(CreateView):
     template_name = 'create_employee.html'
     success_url = reverse_lazy('employee_list')
 
-class EmployeeUpdateView(UpdateView):
-    model = Employee
-    form_class = EmployeeForm
-    template_name = 'update_employee.html'
-    success_url = reverse_lazy('employee_list')
 
-class EmployeeDeleteView(DeleteView):
-    model = Employee
-    template_name = 'delete_employee.html'
-    success_url = reverse_lazy('employee_list')
+def employee_edit(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, instance=employee)
+        if form.is_valid():
+            form.save()
+            return redirect('employee_list')
+    else:
+        form = EmployeeForm(instance=employee)
+    return render(request, 'employee_edit.html', {'form': form})
+
+def employee_delete(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    if request.method == 'POST':
+        employee.delete()
+        return redirect('employee_list')
+    return render(request, 'employee_delete.html', {'employee': employee})
 
 
 class ExpenseTypeListView(ListView):

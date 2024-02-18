@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     ShopListView, ShopCreateView, ShopUpdateView, ShopDeleteView,
     RoleListView, RoleCreateView, RoleUpdateView, RoleDeleteView,
-    EmployeeCreateView, EmployeeUpdateView, EmployeeDeleteView,
+    EmployeeCreateView, 
     ExpenseTypeListView, ExpenseTypeCreateView, ExpenseTypeUpdateView, ExpenseTypeDeleteView,
     ReceiptTransactionListView, ReceiptTransactionCreateView, ReceiptTransactionUpdateView, ReceiptTransactionDeleteView,
     PaymentTransactionListView, PaymentTransactionCreateView, PaymentTransactionUpdateView, PaymentTransactionDeleteView,
@@ -11,7 +11,8 @@ from .views import (
     ProductListView, ProductCreateView, ProductUpdateView, ProductDeleteView,
     EmployeeTransactionListView, EmployeeTransactionCreateView, EmployeeTransactionUpdateView, EmployeeTransactionDeleteView,
     DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, DayClosingView,
-    day_closing_report, approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created
+    day_closing_report, approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created,
+    employee_edit, employee_delete
 
 )
 
@@ -50,8 +51,8 @@ urlpatterns = [
     # Employee URLs
     path('employee/', employee_list, name='employee_list'),
     path('employee/create/', EmployeeCreateView.as_view(), name='create_employee'),
-    path('employee/update/<int:pk>/', EmployeeUpdateView.as_view(), name='update_employee'),
-    path('employee/delete/<int:pk>/', EmployeeDeleteView.as_view(), name='delete_employee'),
+    path('employees/<int:pk>/edit/', employee_edit, name='employee_edit'),
+     path('employees/<int:pk>/delete/', employee_delete, name='employee_delete'),
 
     # ExpenseType URLs
     path('expense-type/', ExpenseTypeListView.as_view(), name='expense_type_list'),

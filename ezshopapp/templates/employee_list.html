@@ -51,6 +51,7 @@
         <th>Joining Date</th>
         <th>Job Role</th>
         <th>Username</th>
+        <th>Actions</th>
         <!-- Add more columns as needed -->
       </tr>
     </thead>
@@ -73,6 +74,10 @@
           <td>{{ employee.joining_date }}</td>
           <td>{{ employee.job_role }}</td>
           <td>{{ employee.username }}</td>
+          <td>
+            <a href="{% url 'employee_edit' employee.pk %}" class="btn btn-primary btn-sm">Edit</a>
+            <a href="{% url 'employee_delete' employee.pk %}" class="btn btn-danger btn-sm">Delete</a>
+          </td>
           <!-- Add more columns as needed -->
         </tr>
       {% endfor %}
