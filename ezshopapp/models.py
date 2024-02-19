@@ -28,12 +28,12 @@ class Shop(models.Model):
 class ShopAdmin(models.Model):
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='admins')
     license_expiration = models.DateField()
-    license_file = models.FileField(upload_to='license_files/')
+    license_file = models.FileField(upload_to='license/')
     phone_number = models.CharField(max_length=20)
     vat_percentage = models.FloatField()
     vat_number = models.CharField(max_length=50)
     vat_submission_date = models.DateField()
-    vat_certificate = models.FileField(upload_to='vat_certificates/')
+    vat_certificate = models.FileField(upload_to='vat_certificate/')
     address = models.TextField()
     admin_user = models.ForeignKey(User, on_delete=models.CASCADE)
     license_expiration_reminder_days = models.PositiveIntegerField()
@@ -44,17 +44,16 @@ class ShopAdmin(models.Model):
         return f"{self.shop.name} - {self.admin_user.username}"
 
 class BusinessProfile(models.Model):
-    shop_name = models.CharField(max_length=100)
-    license_number = models.CharField(max_length=50, unique=True)
-    license_expiration = models.DateField()
-    license_upload = models.ImageField(upload_to='license/')
-    shop_phone_number = models.CharField(max_length=15)
+    shop_name = models.CharField(max_length=255)
+    license_number = models.CharField(max_length=255)
+    license_expiration = models.DateField(null=True)  # Update this line
+    license_upload = models.FileField(upload_to='licenses')
+    shop_phone_number = models.CharField(max_length=25)
     vat_percentage = models.DecimalField(max_digits=5, decimal_places=2)
-    vat_number = models.CharField(max_length=50, unique=True)
+    vat_number = models.CharField(max_length=255)
     vat_submission_date = models.DateField()
-    vat_certificate_upload = models.ImageField(upload_to='vat_certificate/')
+    vat_certificate_upload = models.FileField(upload_to='vat_certificates')
     address = models.TextField()
-    admins = models.ManyToManyField(User, related_name='business_profiles')
     license_expiration_reminder_days = models.PositiveIntegerField()
     vat_submission_date_reminder_days = models.PositiveIntegerField()
     employee_visa_expiration_reminder_days = models.PositiveIntegerField()
@@ -63,19 +62,30 @@ class BusinessProfile(models.Model):
         return self.shop_name
 
 class AdminProfile(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    business_profile = models.ForeignKey(BusinessProfile, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
+    business_profile = models.ForeignKey('BusinessProfile', on_delete=models.CASCADE)
     email = models.EmailField()
-    mobile = models.CharField(max_length=15)
-    
-    
+    mobile = models.CharField(max_length=25, null=True)
+    password = models.CharField(max_length=128, default='ezshop@2024')  # Add password field
+
+    def save(self, *args, **kwargs):
+        # Set the username and password for the associated user if they are not set already
+        if not self.user.username:
+            self.user.username = self.email  # Use email as default username
+        if not self.user.password:
+            self.user.set_password(self.password)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.email 
+  
 class Role(models.Model):
     name = models.CharField(max_length=255)
     modules = models.ManyToManyField(Module)
 
     def __str__(self):
         return self.name
-
+    
 class Employee(models.Model):
     employee_id = models.CharField(max_length=10, unique=True)
     first_name = models.CharField(max_length=255)

@@ -6,6 +6,15 @@
     <h2>Create Employee</h2>
     <form method="post" enctype="multipart/form-data" class="form">
         {% csrf_token %}
+        <div class="form-group">
+            <label for="business_profile">Business Profile:</label>
+            <select name="business_profile" id="business_profile" class="form-control">
+                <option value="">Select Business Profile</option>
+                {% for business_profile in business_profiles %}
+                    <option value="{{ business_profile.id }}">{{ business_profile.shop_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">

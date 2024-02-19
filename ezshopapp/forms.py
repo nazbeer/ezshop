@@ -1,6 +1,6 @@
 from django import forms
 # from django.contrib.auth.forms import UserCreationForm
-from .models import Shop, Sale, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, SaleItem, Role, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
+from .models import Shop, Sale,Employee, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, Role, SaleItem, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
 from django.db import models
 from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
@@ -18,7 +18,21 @@ class AdminUserForm(forms.Form):
 class AdminProfileForm(forms.ModelForm):
     class Meta:
         model = AdminProfile
-        fields = ['email', 'mobile']
+        fields = ['email', 'mobile', 'password']
+
+    username = forms.CharField(max_length=150, required=False)  # Add username field
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #self.fields['employee'].queryset = EmployeeForm.objects.all()  # Assuming Employee model is defined
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if not username:
+            # Use email as username if not provided
+            username = self.cleaned_data['email']
+        return username
+    
 class ShopForm(forms.ModelForm):
     class Meta:
         model = Shop
@@ -29,12 +43,12 @@ class BusinessProfileForm(forms.ModelForm):
         fields = '__all__'
         exclude = ['admins']  # Exclude admins field as it will be handled separately
 
-    def clean_vat_certificate_upload(self):
-        data = self.cleaned_data['vat_certificate_upload']
-        if data:
-            if not data.name.endswith('.pdf'):
-                raise ValidationError('Only PDF files are allowed.')
-        return data
+    # def clean_vat_certificate_upload(self):
+    #     data = self.cleaned_data['vat_certificate_upload']
+    #     if data:
+    #         if not data.name.endswith('.pdf, .png, .jpg, .jpeg'):
+    #             raise ValidationError('Only PDF files are allowed.')
+    #     return data
     
 class RoleForm(forms.ModelForm):
     class Meta:

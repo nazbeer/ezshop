@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Create Expense Type
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h2>Create Expense Type</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Expense Type Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Expense Type</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

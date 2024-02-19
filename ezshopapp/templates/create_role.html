@@ -1,4 +1,3 @@
-<!-- create_role.html -->
 {% extends 'base.html' %}
 
 {% block title %}Create Role{% endblock %}
@@ -7,7 +6,20 @@
   <h2>Create Role</h2>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    <div class="form-group">
+      <label for="name">Role Name:</label>
+      <input type="text" id="name" name="name" class="form-control">
+    </div>
+    <div class="form-group">
+      <label for="module">Module List:</label>
+      <select id="module" name="module" class="form-control" multiple>
+        {% for pattern in url_patterns %}
+          <option value="{{ pattern.name }}">{{ pattern.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <!-- Add other fields as necessary -->
+
     <button type="submit" class="btn btn-success">Create</button>
   </form>
   <a href="{% url 'role_list' %}">Back to Role List</a>

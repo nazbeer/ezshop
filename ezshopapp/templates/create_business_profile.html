@@ -1,4 +1,3 @@
-<!-- create_business_profile.html -->
 {% extends 'base.html' %}
 
 {% block title %}
@@ -15,71 +14,83 @@
                 <div class="row">
                     <div class="col-md-6">
                         <!-- Fields for the main business profile -->
+                        <!-- Shop Name -->
                         {{ business_profile_form.shop_name.errors }}
                         <div class="form-group">
-                            <label for="{{ business_profile_form.shop_name.id_for_label }}">Shop Name:</label>
+                            <label for="{{ business_profile_form.shop_name.id_for_label }}">Business Name:</label>
                             {{ business_profile_form.shop_name }}
                         </div>
+                        <!-- License Number -->
                         {{ business_profile_form.license_number.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.license_number.id_for_label }}">License Number:</label>
                             {{ business_profile_form.license_number }}
                         </div>
+                        <!-- License Expiration -->
                         {{ business_profile_form.license_expiration.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.license_expiration.id_for_label }}">License Expiration:</label>
-                            {{ business_profile_form.license_expiration }}
+                            <input type="date" id="{{ business_profile_form.license_expiration.id_for_label }}" name="license_expiration" class="form-control">
                         </div>
+                        <!-- Upload License (PDF only) -->
                         {{ business_profile_form.license_upload.errors }}
                         <div class="form-group">
-                            <label for="{{ business_profile_form.license_upload.id_for_label }}">Upload License:</label>
-                            {{ business_profile_form.license_upload }}
+                            <label for="{{ business_profile_form.license_upload.id_for_label }}">Upload License (JPG only):</label>
+                            <input type="file" id="{{ business_profile_form.license_upload.id_for_label }}" name="license_upload" accept="image/jpg" class="form-control-file">
                         </div>
+                        <!-- Shop Phone Number -->
                         {{ business_profile_form.shop_phone_number.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.shop_phone_number.id_for_label }}">Shop Phone Number:</label>
                             {{ business_profile_form.shop_phone_number }}
                         </div>
+                        <!-- VAT Percentage -->
                         {{ business_profile_form.vat_percentage.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_percentage.id_for_label }}">VAT Percentage:</label>
                             {{ business_profile_form.vat_percentage }}
                         </div>
+                        <!-- VAT Number -->
                         {{ business_profile_form.vat_number.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_number.id_for_label }}">VAT Number:</label>
                             {{ business_profile_form.vat_number }}
                         </div>
-                       
                         <!-- Add other fields for the main business profile -->
                     </div>
                     <div class="col-md-6">
                         <!-- Additional fields for the main business profile -->
+                        <!-- VAT Submission Date -->
                         {{ business_profile_form.vat_submission_date.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_submission_date.id_for_label }}">VAT Submission Date:</label>
-                            {{ business_profile_form.vat_submission_date }}
+                            <input type="date" id="{{ business_profile_form.vat_submission_date.id_for_label }}" name="vat_submission_date" class="form-control">
                         </div>
+                        <!-- Upload VAT Certificate (PDF only) -->
                         {{ business_profile_form.vat_certificate_upload.errors }}
                         <div class="form-group">
-                            <label for="{{ business_profile_form.vat_certificate_upload.id_for_label }}">Upload VAT Certificate (PDF only):</label>
-                            {{ business_profile_form.vat_certificate_upload }}
+                            <label for="{{ business_profile_form.vat_certificate_upload.id_for_label }}">Upload VAT Certificate :</label>
+                            <input type="file" id="{{ business_profile_form.vat_certificate_upload.id_for_label }}" name="vat_certificate_upload" accept="image/jpg" class="form-control-file">
                         </div>
+                        <!-- Address -->
                         {{ business_profile_form.address.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.address.id_for_label }}">Address:</label>
                             <textarea id="{{ business_profile_form.address.id_for_label }}" name="address" class="form-control" rows="6"></textarea>
                         </div>
+                        <!-- License Expiration Reminder Days -->
                         {{ business_profile_form.license_expiration_reminder_days.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.license_expiration_reminder_days.id_for_label }}">License Expiration Reminder Days:</label>
                             {{ business_profile_form.license_expiration_reminder_days }}
                         </div>
+                        <!-- VAT Submission Date Reminder Days -->
                         {{ business_profile_form.vat_submission_date_reminder_days.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_submission_date_reminder_days.id_for_label }}">VAT Submission Date Reminder Days:</label>
                             {{ business_profile_form.vat_submission_date_reminder_days }}
                         </div>
+                        <!-- Employee Visa Expiration Reminder Days -->
                         {{ business_profile_form.employee_visa_expiration_reminder_days.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.employee_visa_expiration_reminder_days.id_for_label }}">Employee Visa Expiration Reminder Days:</label>
@@ -90,21 +101,37 @@
                 </div>
                 <!-- Additional admin profiles -->
                 {% for admin_profile_form in admin_profile_forms %}
-                {% if forloop.counter0 < num_admins %}
+                
                 <div class="row mt-3 " style="border-top:1px solid #ccc;">
                     <div class="col-md-6 mt-3" >
                         <!-- Fields for additional admin profile -->
+                        <!-- Admin Email -->
                         {{ admin_profile_form.email.errors }}
                         <div class="form-group">
                             <label for="{{ admin_profile_form.email.id_for_label }}">Admin Email:</label>
                             {{ admin_profile_form.email }}
                         </div>
+                        <!-- Admin Mobile -->
+                      
+                        <!-- Admin Mobile -->
                         {{ admin_profile_form.mobile.errors }}
                         <div class="form-group">
                             <label for="{{ admin_profile_form.mobile.id_for_label }}">Admin Mobile:</label>
-                            {{ admin_profile_form.mobile }}
+                            <input type="tel" id="{{ admin_profile_form.mobile.id_for_label }}" name="mobile" class="form-control" data-inputmask="'mask': '9999-999-9999'">
                         </div>
-                        <!-- Add a select field to choose employees -->
+
+                        <!-- Admin Password -->
+                        {{ admin_profile_form.password.errors }}
+                        <div class="form-group">
+                            <label for="{{ admin_profile_form.password.id_for_label }}">Admin Password:</label>
+                            <div class="input-group">
+                                <input type="password" id="{{ admin_profile_form.password.id_for_label }}" name="password" class="form-control pass" aria-describedby="password-toggle">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="password-toggle">Show</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Select Employee -->
                         <div class="form-group">
                             <label for="{{ admin_profile_form.employee.id_for_label }}">Select Employee:</label>
                             <select name="{{ admin_profile_form.employee.name }}" id="{{ admin_profile_form.employee.id_for_label }}" class="form-control">
@@ -116,11 +143,28 @@
                         </div>
                     </div>
                 </div>
-                {% endif %}
+                
                 {% endfor %}
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#password-toggle').click(function() {
+            var passwordField = $('.pass');
+            var passwordToggle = $(this);
+            if (passwordField.attr('type') === 'password') {
+                passwordField.attr('type', 'text');
+                passwordToggle.text('Hide');
+            } else {
+                passwordField.attr('type', 'password');
+                passwordToggle.text('Show');
+            }
+        });
+    });
+</script>
+
 {% endblock %}

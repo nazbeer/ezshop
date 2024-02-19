@@ -1,26 +1,44 @@
-<!-- role_list.html -->
 {% extends 'base.html' %}
 
 {% block title %}Role List{% endblock %}
 
 {% block content %}
   <h2>Role List</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <!-- Add more headers if needed -->
-      </tr>
-    </thead>
-    <tbody>
-      {% for role in object_list %}
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
         <tr>
-          <td>{{ role.id }}</td>
-          <td>{{ role.name }}</td>
-          <!-- Add more columns if needed -->
+          <th>ID</th>
+          <th>Name</th>
+          <th>Module(s)</th>
+          <th>Actions</th> <!-- New column for Edit and Delete actions -->
+          <!-- Add more headers if needed -->
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for role in object_list %}
+          <tr>
+            <td>{{ role.id }}</td>
+            <td>{{ role.name }}</td>
+            <td>
+              {% for module in role.modules.all %}
+                {{ module.name }}
+                {% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </td>
+            <td>
+              <!-- Edit link -->
+              <a href="{% url 'update_role' role.pk %}" class="btn btn-primary btn-sm">Edit</a>
+              <!-- Delete form -->
+              <form method="post" action="{% url 'delete_role' role.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this role?')">Delete</button>
+              </form>
+            </td>
+            <!-- Add more columns if needed -->
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}

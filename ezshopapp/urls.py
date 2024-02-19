@@ -3,7 +3,7 @@ from .views import (
     ShopListView, ShopCreateView, ShopUpdateView, ShopDeleteView,
     RoleListView, RoleCreateView, RoleUpdateView, RoleDeleteView,
     EmployeeCreateView, 
-    ExpenseTypeListView, ExpenseTypeCreateView, ExpenseTypeUpdateView, ExpenseTypeDeleteView,
+    ExpenseTypeListView, ExpenseTypeUpdateView, ExpenseTypeDeleteView,
     ReceiptTransactionListView, ReceiptTransactionCreateView, ReceiptTransactionUpdateView, ReceiptTransactionDeleteView,
     PaymentTransactionListView, PaymentTransactionCreateView, PaymentTransactionUpdateView, PaymentTransactionDeleteView,
     BankDepositListView, BankDepositCreateView, BankDepositUpdateView, BankDepositDeleteView,
@@ -12,7 +12,7 @@ from .views import (
     EmployeeTransactionListView, EmployeeTransactionCreateView, EmployeeTransactionUpdateView, EmployeeTransactionDeleteView,
     DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, 
     approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created,
-    employee_edit, employee_delete, DayClosingView, day_closing_report, edit_day_closing
+    employee_edit, employee_delete, DayClosingView, day_closing_report, edit_day_closing, create_expense_type
 
 )
 
@@ -58,9 +58,10 @@ urlpatterns = [
 
     # ExpenseType URLs
     path('expense-type/', ExpenseTypeListView.as_view(), name='expense_type_list'),
-    path('expense-type/create/', ExpenseTypeCreateView.as_view(), name='create_expense_type'),
-    path('expense-type/update/<int:pk>/', ExpenseTypeUpdateView.as_view(), name='update_expense_type'),
-    path('expense-type/delete/<int:pk>/', ExpenseTypeDeleteView.as_view(), name='delete_expense_type'),
+    path('expense-type/create/', create_expense_type, name='create_expense_type'),
+    path('expense-type/', ExpenseTypeListView.as_view(), name='expense_type_list'),
+    path('expense-type/<int:pk>/edit/', ExpenseTypeUpdateView.as_view(), name='edit_expense_type'),
+    path('expense-type/<int:pk>/delete/', ExpenseTypeDeleteView.as_view(), name='delete_expense_type'),
 
     # ReceiptTransaction URLs
     path('receipt-transaction/', ReceiptTransactionListView.as_view(), name='receipt_transaction_list'),

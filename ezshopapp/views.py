@@ -5,13 +5,14 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.forms import formset_factory
 from django.contrib.auth import authenticate, login
-from .models import Shop, ShopAdmin, User, Role, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
+from .models import Shop, ShopAdmin, User, Role, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
 from .forms import ShopForm, RoleForm, AdminProfileForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
 from .forms import CustomLoginForm, DayClosingForm, BusinessProfileForm, AdminUserForm, SalesByStaffItemServiceForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
 from rest_framework import generics
 from django.http import HttpResponse
+from django.urls import get_resolver
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -82,11 +83,14 @@ class RoleListView(ListView):
     model = Role
     template_name = 'role_list.html'
 
-class RoleCreateView(CreateView):
-    model = Role
-    form_class = RoleForm
+class RoleCreateView(TemplateView):
     template_name = 'create_role.html'
-    success_url = reverse_lazy('role_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        url_patterns = get_resolver().reverse_dict.keys()
+        context['url_patterns'] = url_patterns
+        return context
 
 class RoleUpdateView(UpdateView):
     model = Role
@@ -98,6 +102,16 @@ class RoleDeleteView(DeleteView):
     model = Role
     template_name = 'delete_role.html'
     success_url = reverse_lazy('role_list')
+
+def create_expense_type(request):
+    if request.method == 'POST':
+        form = ExpenseTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('expense_type_list')
+    else:
+        form = ExpenseTypeForm()
+    return render(request, 'create_expense_type.html', {'form': form})
 
 def employee_list(request):
     # Get query parameter for search
@@ -131,7 +145,18 @@ class EmployeeCreateView(CreateView):
     template_name = 'create_employee.html'
     success_url = reverse_lazy('employee_list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['business_profiles'] = BusinessProfile.objects.all()  # Retrieve all business profiles
+        return context
 
+    def form_valid(self, form):
+        business_profile_id = self.request.POST.get('business_profile')
+        if business_profile_id:
+            business_profile = BusinessProfile.objects.get(pk=business_profile_id)
+            form.instance.business_profile = business_profile
+        return super().form_valid(form)
+    
 def employee_edit(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
@@ -154,12 +179,6 @@ def employee_delete(request, pk):
 class ExpenseTypeListView(ListView):
     model = ExpenseType
     template_name = 'expense_type_list.html'
-
-class ExpenseTypeCreateView(CreateView):
-    model = ExpenseType
-    form_class = ExpenseTypeForm
-    template_name = 'create_expense_type.html'
-    success_url = reverse_lazy('expense_type_list')
 
 class ExpenseTypeUpdateView(UpdateView):
     model = ExpenseType
@@ -328,16 +347,23 @@ class DailySummaryDeleteView(DeleteView):
 def create_business_profile(request):
     if request.method == 'POST':
         business_profile_form = BusinessProfileForm(request.POST, request.FILES)
-        admin_profile_forms = [AdminProfileForm(request.POST, prefix=f'admin_profile_{i}') for i in range(5)]  # Assuming max 5 admins
+        admin_profile_forms = [AdminProfileForm(request.POST, prefix=f'admin_profile') for i in range(1)]  # Assuming max 2 admins
         
         if business_profile_form.is_valid() and all([form.is_valid() for form in admin_profile_forms]):
             # Save business profile data
-            business_profile = business_profile_form.save()
+            business_profile = business_profile_form.save(commit=False)
+            business_profile.save()
+
+            # Create a new User instance
+            username = request.POST.get('username')
+            email = request.POST.get('email')
+            user = User.objects.create_user(username=username, email=email)
             
             # Save admin profiles and connect with business profile
             for form in admin_profile_forms:
                 if form.cleaned_data['email'] and form.cleaned_data['mobile']:
                     admin_profile = form.save(commit=False)
+                    admin_profile.user = user
                     admin_profile.business_profile = business_profile
                     admin_profile.save()
                     
@@ -350,7 +376,7 @@ def create_business_profile(request):
             return redirect('success_page')  # Redirect to success page after successful submission
     else:
         business_profile_form = BusinessProfileForm()
-        admin_profile_forms = [AdminProfileForm(prefix=f'admin_profile_{i}') for i in range(5)]  # Assuming max 5 admins
+        admin_profile_forms = [AdminProfileForm(prefix=f'admin_profile') for i in range(1)]  # Assuming max 1 admins
 
     employees = Employee.objects.all()  # Retrieve all employees to populate select field
 

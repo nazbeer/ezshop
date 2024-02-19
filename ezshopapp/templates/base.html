@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
- 
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css"/>
 
@@ -90,13 +90,17 @@
     .navbar-brand {
         margin-left: 4%;
     }
-
+    @media screen and (min-width:769px) {
+        .d-n{
+            display: none !important;
+        }
+    }
     @media (max-width: 768px) {
         #sidebar {
             margin-left: -200px;
             transition: margin-left 0.3s;
         }
-
+       
         #content {
             margin-left: 0;
         }
@@ -180,12 +184,45 @@
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand text-center" href="/">EZShop</a>
+    <a class="navbar-brand text-center" href="/home/">EZShop</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav ml-auto pl-3">
+            <li class="d-n"><a href="/home/">Home</a></li>
+            <li class="d-n"><a href="/employee/">Employees</a></li>
+            <li class="dropdown d-n">
+                <a href="#" class="dropdown-toggle" id="saleAdminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sales by Admin</a>
+                <div class="dropdown-menu" aria-labelledby="saleDropdown">
+                    <a class="dropdown-item" href="/sale/">Sales by Admin Item</a>
+                    
+                    <a class="dropdown-item" href="/sale/sales-by-admin-service">Sales by Admin Service</a>
+                   
+                   
+                    
+                </div>
+            </li>
+            <li class="dropdown d-n">
+                <a href="#" class="dropdown-toggle" id="saleAdminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sales by Staff</a>
+                <div class="dropdown-menu" aria-labelledby="saleStaffDropdown">
+                   
+                    <a class="dropdown-item" href="/sale/sales-by-staff-item-service">Sales by Staff <br/> Products & Services</a>
+                    <a class="dropdown-item" href="/sale/salesbystaff">Sales by Staff <br/> Services</a>
+                   
+                    
+                </div>
+            </li>
+            <li class="d-n"><a href="/sale/dayclosing/">Day Closing</a></li>
+            <li class="dropdown d-n">
+                <a href="#" class="dropdown-toggle" id="reportDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Reports</a>
+                <div class="dropdown-menu" aria-labelledby="reportDropdown">
+                  
+                    <a class="dropdown-item" href="/sale/day-closing-report">Day Closing Report</a>
+                    <a class="dropdown-item" href="/sale/sales-report">Sales Report</a>
+                    
+                </div>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>
