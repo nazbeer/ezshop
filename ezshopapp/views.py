@@ -386,6 +386,11 @@ def create_business_profile(request):
         'employees': employees,
     })
 
+def business_profile_list(request):
+    profiles = BusinessProfile.objects.all()
+    return render(request, 'business_profile_list.html', {'profiles': profiles})
+
+
 def profile_created(request):
     return render(request, 'profile_created.html')
 
@@ -450,6 +455,14 @@ def sale_by_admin_service(request):
         formset = SaleByAdminServiceFormSet()
 
     return render(request, 'sales_by_admin_service.html', {'formset': formset, 'employees': employees, 'services': services})
+
+
+def sale_by_admin_service(request):
+    # Fetch sales data from the database
+    sales_services = SaleByAdminService.objects.all()
+    sales_items = SalesByAdminItem.objects.all()
+
+    return render(request, 'sales_by_admin_service.html', {'sales_services': sales_services, 'sales_items': sales_items})
 
 class SaleListCreateView(generics.ListCreateAPIView):
     queryset = Sale.objects.all()
@@ -607,6 +620,7 @@ class HomeView(TemplateView):
                     {'label': 'Shop List', 'url_name': 'shop_list'},
                     {'label': 'Create Shop', 'url_name': 'create_shop'},
                     {'label': 'Create Business', 'url_name': 'create_business_profile'},
+                    {'label': 'All Business Profiles', 'url_name': 'business_profile_list'},
                     # {'label': 'Update Shop', 'url_name': 'update_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
                     # {'label': 'Delete Shop', 'url_name': 'delete_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
             ]

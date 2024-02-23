@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from .views import (
     ShopListView, ShopCreateView, ShopUpdateView, ShopDeleteView,
     RoleListView, RoleCreateView, RoleUpdateView, RoleDeleteView,
@@ -12,8 +14,8 @@ from .views import (
     EmployeeTransactionListView, EmployeeTransactionCreateView, EmployeeTransactionUpdateView, EmployeeTransactionDeleteView,
     DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, 
     approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created,
-    employee_edit, employee_delete, DayClosingView, day_closing_report, edit_day_closing, create_expense_type
-
+    employee_edit, employee_delete, DayClosingView, day_closing_report, edit_day_closing, create_expense_type,
+    business_profile_list,
 )
 
 
@@ -24,6 +26,7 @@ urlpatterns = [
     path('home/', HomeView.as_view(), name='home'),
     path('create-profile/', create_business_profile, name='create_business_profile'),
     path('profile-created/', profile_created, name='profile_created'),
+    path('business/', business_profile_list, name='business_profile_list'),
    # path('register/', RegistrationView.as_view(), name='register'),
     # Shop URLs
     #path('sale/create/', create_sale, name='create_sale'),
@@ -105,3 +108,5 @@ urlpatterns = [
     path('daily-summary/update/<int:pk>/', DailySummaryUpdateView.as_view(), name='update_daily_summary'),
     path('daily-summary/delete/<int:pk>/', DailySummaryDeleteView.as_view(), name='delete_daily_summary'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

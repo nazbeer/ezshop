@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2>Business Profiles</h2>
+  <table class="table table-responsive-sm table-striped">
+    <thead>
+      <tr>
+        <th>Shop Name</th>
+        <th>License Number</th>
+        <th>License Expiration</th>
+        <th>License Upload</th>
+        <th>Shop Phone Number</th>
+        <th>VAT Percentage</th>
+        <th>VAT Number</th>
+        <th>VAT Submission Date</th>
+        <th>VAT Certificate Upload</th>
+        <th>Address</th>
+        <th>License Expiration Reminder Days</th>
+        <th>VAT Submission Date Reminder Days</th>
+        <th>Employee Visa Expiration Reminder Days</th>
+        <!-- Add other fields here -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for profile in profiles %}
+      <tr>
+        <td>{{ profile.shop_name }}</td>
+        <td>{{ profile.license_number }}</td>
+        <td>{{ profile.license_expiration }}</td>
+        <td><img src="{{ MEDIA_URL }}{{ profile.license_upload }}" alt="License Upload"></td>
+        <td>{{ profile.shop_phone_number }}</td>
+        <td>{{ profile.vat_percentage }}</td>
+        <td>{{ profile.vat_number }}</td>
+        <td>{{ profile.vat_submission_date }}</td>
+        <td><img src="{{ MEDIA_URL }}{{ profile.vat_certificate_upload }}" alt="VAT Certificate Upload"></td>        
+        <td>{{ profile.address }}</td>
+        <td>{{ profile.license_expiration_reminder_days }}</td>
+        <td>{{ profile.vat_submission_date_reminder_days }}</td>
+        <td>{{ profile.employee_visa_expiration_reminder_days }}</td>
+        <!-- Add other fields here -->
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

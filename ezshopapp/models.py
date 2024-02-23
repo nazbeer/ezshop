@@ -28,7 +28,7 @@ class Shop(models.Model):
 class ShopAdmin(models.Model):
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='admins')
     license_expiration = models.DateField()
-    license_file = models.FileField(upload_to='license/')
+    license_file = models.FileField(upload_to='licenses/')
     phone_number = models.CharField(max_length=20)
     vat_percentage = models.FloatField()
     vat_number = models.CharField(max_length=50)

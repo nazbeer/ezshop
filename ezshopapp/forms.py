@@ -180,13 +180,15 @@ SaleItemFormSet = inlineformset_factory(Sale, SaleItem, form=SaleItemForm, extra
 class SaleByAdminServiceForm(forms.ModelForm):
     class Meta:
         model = SaleByAdminService
-        fields = ['date', 'employee', 'service', 'quantity', 'price', 'discount', 'tip', 'payment_method']
+        fields = '__all__'
+        #fields = ['date', 'employee', 'service', 'quantity', 'price', 'discount', 'tip', 'payment_method']
 
 
 class SalesByAdminItemForm(forms.ModelForm):
     class Meta:
         model = SalesByAdminItem
-        fields = ['date', 'employee', 'item', 'quantity', 'price', 'discount', 'payment_method']
+        fields = '__all__'
+        #fields = ['date', 'employee', 'item', 'quantity', 'price', 'discount', 'payment_method']
 
 
 class SalesByStaffItemServiceForm(forms.ModelForm):
