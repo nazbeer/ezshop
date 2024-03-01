@@ -1,6 +1,6 @@
 from django import forms
 # from django.contrib.auth.forms import UserCreationForm
-from .models import Shop, Sale,Employee, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, Role, SaleItem, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
+from .models import Shop, Sale,Employee, UserProfile, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, Role, SaleItem, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
 from django.db import models
 from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
@@ -37,6 +37,15 @@ class ShopForm(forms.ModelForm):
     class Meta:
         model = Shop
         fields = '__all__'
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['email', 'username', 'password']
+
+UserProfileFormSet = forms.inlineformset_factory(Shop, UserProfile, form=UserProfileForm, extra=1)
+
 class BusinessProfileForm(forms.ModelForm):
     class Meta:
         model = BusinessProfile

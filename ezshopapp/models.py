@@ -25,6 +25,15 @@ class Shop(models.Model):
     def __str__(self):
         return self.name
 
+class UserProfile(models.Model):
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='user_profiles')
+    email = models.EmailField()
+    username = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.username
+    
 class ShopAdmin(models.Model):
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='admins')
     license_expiration = models.DateField()
@@ -44,9 +53,9 @@ class ShopAdmin(models.Model):
         return f"{self.shop.name} - {self.admin_user.username}"
 
 class BusinessProfile(models.Model):
-    shop_name = models.CharField(max_length=255)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=True)
     license_number = models.CharField(max_length=255)
-    license_expiration = models.DateField(null=True)  # Update this line
+    license_expiration = models.DateField(null=True)
     license_upload = models.FileField(upload_to='licenses')
     shop_phone_number = models.CharField(max_length=25)
     vat_percentage = models.DecimalField(max_digits=5, decimal_places=2)
@@ -59,7 +68,7 @@ class BusinessProfile(models.Model):
     employee_visa_expiration_reminder_days = models.PositiveIntegerField()
 
     def __str__(self):
-        return self.shop_name
+        return self.shop.name
 
 class AdminProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
@@ -190,6 +199,7 @@ class DayClosing(models.Model):
 class EmployeeTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ('service', 'Service Transaction'),
+        ('product', 'Product Transaction'),
         ('service_and_product', 'Service & Product Transaction'),
     ]
 

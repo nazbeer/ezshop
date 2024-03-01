@@ -652,6 +652,25 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         categories = [
              {
+                'name': 'Shop Management',
+                'links': [
+                    {'label': 'Shop List', 'url_name': 'shop_list'},
+                    {'label': 'Create Shop', 'url_name': 'create_shop'},
+                    {'label': 'Create Business', 'url_name': 'create_business_profile'},
+                    {'label': 'All Business Profiles', 'url_name': 'business_profile_list'},
+                    # {'label': 'Update Shop', 'url_name': 'update_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
+                    # {'label': 'Delete Shop', 'url_name': 'delete_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
+            ]
+            },
+            {
+                'name': 'Service and Product Management',
+                'links': [
+                    {'label': 'Service List', 'url_name': 'service_list'},
+                    {'label': 'Product List', 'url_name': 'product_list'},
+                    {'label': 'Create Product', 'url_name': 'create_product'},
+                ]
+            },
+             {
                 'name': 'Sales by Admin',
                 'links': [
                     # {'label': 'Create Sales', 'url_name': 'create_sale'},
@@ -682,17 +701,7 @@ class HomeView(TemplateView):
                   
                 ]
             },
-            {
-                'name': 'Shop Management',
-                'links': [
-                    {'label': 'Shop List', 'url_name': 'shop_list'},
-                    {'label': 'Create Shop', 'url_name': 'create_shop'},
-                    {'label': 'Create Business', 'url_name': 'create_business_profile'},
-                    {'label': 'All Business Profiles', 'url_name': 'business_profile_list'},
-                    # {'label': 'Update Shop', 'url_name': 'update_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
-                    # {'label': 'Delete Shop', 'url_name': 'delete_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
-            ]
-            },
+           
             {
                 'name': 'Role Management',
                 'links': [
@@ -728,14 +737,7 @@ class HomeView(TemplateView):
                     {'label': 'Bank Deposits', 'url_name': 'bank_deposit_list'},
                 ]
             },
-            {
-                'name': 'Service and Product Management',
-                'links': [
-                    {'label': 'Service List', 'url_name': 'service_list'},
-                    {'label': 'Product List', 'url_name': 'product_list'},
-                    {'label': 'Create Product', 'url_name': 'create_product'},
-                ]
-            },
+            
             {
                 'name': 'Employee Transaction Management',
                 'links': [
