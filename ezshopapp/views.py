@@ -293,11 +293,15 @@ class ProductListView(ListView):
     model = Product
     template_name = 'product_list.html'
 
-class ProductCreateView(CreateView):
-    model = Product
-    form_class = ProductForm
-    template_name = 'create_product.html'
-    success_url = reverse_lazy('product_list')
+def create_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('product_list')  # Assuming you have a URL named 'product_list' for listing products
+    else:
+        form = ProductForm()
+    return render(request, 'create_product.html', {'form': form})
 
 class ProductUpdateView(UpdateView):
     model = Product
@@ -315,9 +319,8 @@ def employee_transaction_create(request):
     if request.method == 'POST':
         form = EmployeeTransactionForm(request.POST)
         if form.is_valid():
-            employee_transaction = form.save()
-            # Additional processing or redirection can be added here
-            return redirect('success')  # Change 'success_url' to your desired URL
+            form.save()
+            return redirect('success')  # Redirect to success URL after successfully creating the transaction
     else:
         form = EmployeeTransactionForm()
     return render(request, 'create_employee_transaction.html', {'form': form})
@@ -365,6 +368,18 @@ class DailySummaryDeleteView(DeleteView):
     template_name = 'delete_daily_summary.html'
     success_url = reverse_lazy('daily_summary_list')
 
+def get_shop_details(request, name):
+    try:
+        shop = Shop.objects.get(name=name)
+        # Return shop details as JSON response
+        return JsonResponse({
+            'shop_name': shop.name,
+            'license_number': shop.license_number,
+            # Add other shop details here
+        })
+    except Shop.DoesNotExist:
+        return JsonResponse({'error': 'Shop not found'}, status=404)
+    
 def create_business_profile(request):
     if request.method == 'POST':
         business_profile_form = BusinessProfileForm(request.POST, request.FILES)
@@ -401,10 +416,14 @@ def create_business_profile(request):
 
     employees = Employee.objects.all()  # Retrieve all employees to populate select field
 
+    # Fetch shop details
+    shop_details = Shop.objects.all()  # Adjust this query as needed based on your requirement
+
     return render(request, 'create_business_profile.html', {
         'business_profile_form': business_profile_form,
         'admin_profile_forms': admin_profile_forms,
         'employees': employees,
+        'shop_details': shop_details,  # Pass shop details to the template
     })
 
 def business_profile_list(request):
@@ -714,6 +733,7 @@ class HomeView(TemplateView):
                 'links': [
                     {'label': 'Service List', 'url_name': 'service_list'},
                     {'label': 'Product List', 'url_name': 'product_list'},
+                    {'label': 'Create Product', 'url_name': 'create_product'},
                 ]
             },
             {

@@ -10,12 +10,12 @@ from .views import (
     PaymentTransactionListView, PaymentTransactionCreateView, PaymentTransactionUpdateView, PaymentTransactionDeleteView,
     BankDepositListView, BankDepositCreateView, BankDepositUpdateView, BankDepositDeleteView,
     ServiceListView, ServiceCreateView, ServiceUpdateView, ServiceDeleteView,
-    ProductListView, ProductCreateView, ProductUpdateView, ProductDeleteView,
+    ProductListView,  ProductUpdateView, ProductDeleteView,
     EmployeeTransactionListView, EmployeeTransactionCreateView, EmployeeTransactionUpdateView, EmployeeTransactionDeleteView,
     DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, 
     approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created,
     employee_edit, employee_delete, DayClosingView, day_closing_report, edit_day_closing, create_expense_type,
-    business_profile_list, employee_transaction_create, get_employee_data
+    business_profile_list, employee_transaction_create, get_employee_data, get_shop_details, create_product
 )
 
 
@@ -30,6 +30,7 @@ urlpatterns = [
    # path('register/', RegistrationView.as_view(), name='register'),
     # Shop URLs
     #path('sale/create/', create_sale, name='create_sale'),
+    path('get_shop_details/<str:name>/', get_shop_details, name='get_shop_details'),
     path('shop/', ShopListView.as_view(), name='shop_list'),
     path('shop/create/', ShopCreateView.as_view(), name='create_shop'),
     path('shop/update/<int:pk>/', ShopUpdateView.as_view(), name='update_shop'),
@@ -92,7 +93,7 @@ urlpatterns = [
 
     # Product URLs
     path('product/', ProductListView.as_view(), name='product_list'),
-    path('product/create/', ProductCreateView.as_view(), name='create_product'),
+    path('product/create/', create_product, name='create_product'),
     path('product/update/<int:pk>/', ProductUpdateView.as_view(), name='update_product'),
     path('product/delete/<int:pk>/', ProductDeleteView.as_view(), name='delete_product'),
 

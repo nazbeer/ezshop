@@ -17,14 +17,19 @@
                         <!-- Shop Name -->
                         {{ business_profile_form.shop_name.errors }}
                         <div class="form-group">
-                            <label for="{{ business_profile_form.shop_name.id_for_label }}">Business Name:</label>
-                            {{ business_profile_form.shop_name }}
+                            <label for="shop_name">Select Shop:</label>
+                            <select name="shop_name" id="shop_name" class="form-control">
+                                <option value="">Select Shop</option>
+                                {% for shop in shop_details %}
+                                <option value="{{ shop.name}}">{{ shop.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <!-- License Number -->
                         {{ business_profile_form.license_number.errors }}
                         <div class="form-group">
-                            <label for="{{ business_profile_form.license_number.id_for_label }}">License Number:</label>
-                            {{ business_profile_form.license_number }}
+                            <label for="license_number">License Number:</label>
+                            <input type="text" id="license_number" name="license_number" class="form-control" readonly>
                         </div>
                         <!-- License Expiration -->
                         {{ business_profile_form.license_expiration.errors }}
@@ -151,6 +156,7 @@
     </div>
 </div>
 
+
 <script>
     $(document).ready(function() {
         $('#password-toggle').click(function() {
@@ -165,6 +171,28 @@
             }
         });
     });
+    $(document).ready(function() {
+        $(document).on('change', '#shop_name', function() {
+            var shopId = $(this).val();  // Get the selected shop ID
+            $.ajax({
+                url: '/create-profile/get_shop_details/' + shopId + '/',  // URL to fetch shop details
+                type: 'GET',
+                success: function(response) {
+                    // Handle successful response
+                    console.log(response);  // Log the response to the console
+                    // Update the UI with the fetched shop details
+                    $('#license_number').val(response.license_number);
+                    // Update other fields as needed
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    console.error(error);  // Log any errors to the console
+                }
+            });
+        });
+    
+});
+
 </script>
 
 {% endblock %}
