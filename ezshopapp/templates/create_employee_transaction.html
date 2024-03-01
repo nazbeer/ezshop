@@ -1,0 +1,15 @@
+<!-- employee_transaction_form.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+    Employee Transaction Form
+{% endblock %}
+
+{% block content %}
+    <h1>Create Employee Transaction </h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success btn-sm">Submit</button>
+    </form>
+{% endblock %}

@@ -3,43 +3,62 @@
 {% block content %}
 <div class="container">
     <h2>Day Closing</h2>
-    <form method="post" action="{% url 'dayclosing' %}">
+    <form method="post" id="dayClosingForm">
         {% csrf_token %}
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="date">Date:</label>
-                    <input type="date" class="form-control" id="date" name="date" required>
-                </div>
-                <div class="form-group">
-                    <label for="total_services">Total Services:</label>
-                    <input type="number" step="0.01" class="form-control" id="total_services" name="total_services" required>
-                </div>
-                <div class="form-group">
-                    <label for="total_sales">Total Sales:</label>
-                    <input type="number" step="0.01" class="form-control" id="total_sales" name="total_sales" required>
-                </div>
-                <div class="form-group">
-                    <label for="tip">Tip:</label>
-                    <input type="number" step="0.01" class="form-control" id="tip" name="tip">
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="total_collection">Total Collection:</label>
-                    <input type="number" step="0.01" class="form-control" id="total_collection" name="total_collection" required>
-                </div>
-                <div class="form-group">
-                    <label for="advance">Advance:</label>
-                    <input type="number" step="0.01" class="form-control" id="advance" name="advance">
-                </div>
-                <div class="form-group">
-                    <label for="net_collection">Net Collection:</label>
-                    <input type="number" step="0.01" class="form-control" id="net_collection" name="net_collection" required>
-                </div>
-            </div>
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" class="form-control" id="date" name="date" required>
+        </div>
+        <div class="form-group">
+            <label for="employee">Employee:</label>
+            <select id="employee" class="form-control" required>
+                <option value="" selected disabled>Select Employee</option>
+                {% for employee in employees %}
+                    <option value="{{ employee.id }}">{{ employee.first_name }} {{ employee.second_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="total_services">Total Services:</label>
+            <input type="number" step="0.01" class="form-control" id="total_services" name="total_services" required>
+        </div>
+        <div class="form-group">
+            <label for="total_sales">Total Sales:</label>
+            <input type="number" step="0.01" class="form-control" id="total_sales" name="total_sales" required>
+        </div>
+        <div class="form-group">
+            <label for="total_collection">Total Collection:</label>
+            <input type="number" step="0.01" class="form-control" id="total_collection" name="total_collection" required>
+        </div>
+        <div class="form-group">
+            <label for="advance">Advance:</label>
+            <input type="number" step="0.01" class="form-control" id="advance" name="advance">
+        </div>
+        <div class="form-group">
+            <label for="net_collection">Net Collection:</label>
+            <input type="number" step="0.01" class="form-control" id="net_collection" name="net_collection" required>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
+
+<script>
+    // Function to fetch total services and sales when employee is selected
+    document.getElementById('employee').addEventListener('change', function() {
+        var employeeId = this.value;
+        fetchEmployeeData(employeeId);
+    });
+
+    function fetchEmployeeData(employeeId) {
+        // Make an AJAX request to fetch employee data
+        fetch(`/get_employee_data/${employeeId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update total services and total sales fields with fetched data
+                document.getElementById('total_services').value = data.total_services;
+                document.getElementById('total_sales').value = data.total_sales;
+            })
+            .catch(error => console.error('Error fetching employee data:', error));
+    }
+</script>
 {% endblock %}

@@ -63,15 +63,30 @@ class EmployeeForm(forms.ModelForm):
         widgets = {
             'passport_expiration_date': forms.DateInput(attrs={'type': 'date'}),
             'id_expiration_date': forms.DateInput(attrs={'type': 'date'}),
-             'password': forms.PasswordInput(),
-             'joining_date': forms.DateInput(attrs={'type': 'date'}),
-            # Add more widgets for other date fields if needed
+            'password': forms.PasswordInput(),
+            'joining_date': forms.DateInput(attrs={'type': 'date'}),
         }
-
 class DayClosingForm(forms.ModelForm):
     class Meta:
         model = DayClosing
-        fields = '__all__' 
+        fields = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super(DayClosingForm, self).__init__(*args, **kwargs)
+        self.fields['employee'].queryset = Employee.objects.all()
+
+    def clean_employee(self):
+        employee = self.cleaned_data.get('employee')
+        if employee:
+            employee_transactions = EmployeeTransaction.objects.filter(employee=employee)
+            total_services = sum(transaction.total_services for transaction in employee_transactions)
+            total_sales = sum(transaction.total_sales for transaction in employee_transactions)
+            self.cleaned_data['total_services'] = total_services
+            self.cleaned_data['total_sales'] = total_sales
+        return employee
 
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
@@ -177,12 +192,21 @@ class SaleItemForm(forms.ModelForm):
 SaleItemFormSet = inlineformset_factory(Sale, SaleItem, form=SaleItemForm, extra=1, can_delete=True)
 
 
+
 class SaleByAdminServiceForm(forms.ModelForm):
     class Meta:
         model = SaleByAdminService
-        fields = '__all__'
-        #fields = ['date', 'employee', 'service', 'quantity', 'price', 'discount', 'tip', 'payment_method']
-
+        fields = ['date', 'employee', 'service', 'quantity', 'price', 'discount', 'tip', 'payment_method']
+        widgets = {
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'employee': forms.Select(attrs={'class': 'form-control', 'required': True}),
+            'service': forms.Select(attrs={'class': 'form-control', 'required': True}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'value': '1'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'readonly': True}),
+            'discount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'tip': forms.NumberInput(attrs={'class': 'form-control'}),
+            'payment_method': forms.Select(attrs={'class': 'form-control'}),
+        }
 
 class SalesByAdminItemForm(forms.ModelForm):
     class Meta:

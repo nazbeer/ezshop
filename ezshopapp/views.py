@@ -15,7 +15,7 @@ from django.http import HttpResponse
 from django.urls import get_resolver
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from django.http import JsonResponse
 
 # Assuming you have a form for admin users
 AdminUserForm = formset_factory(AdminUserForm, extra=1)
@@ -133,8 +133,10 @@ def employee_list(request):
     try:
         employees = paginator.page(page)
     except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
         employees = paginator.page(1)
     except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
         employees = paginator.page(paginator.num_pages)
     
     return render(request, 'employee_list.html', {'employees': employees})
@@ -156,7 +158,15 @@ class EmployeeCreateView(CreateView):
             business_profile = BusinessProfile.objects.get(pk=business_profile_id)
             form.instance.business_profile = business_profile
         return super().form_valid(form)
-    
+
+def get_employee_data(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    data = {
+        'total_services': employee.total_services,
+        'total_sales': employee.total_sales,
+    }
+    return JsonResponse(data)
+
 def employee_edit(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
@@ -301,6 +311,17 @@ class ProductDeleteView(DeleteView):
     success_url = reverse_lazy('product_list')
 
 
+def employee_transaction_create(request):
+    if request.method == 'POST':
+        form = EmployeeTransactionForm(request.POST)
+        if form.is_valid():
+            employee_transaction = form.save()
+            # Additional processing or redirection can be added here
+            return redirect('success')  # Change 'success_url' to your desired URL
+    else:
+        form = EmployeeTransactionForm()
+    return render(request, 'create_employee_transaction.html', {'form': form})
+
 class EmployeeTransactionListView(ListView):
     model = EmployeeTransaction
     template_name = 'employee_transaction_list.html'
@@ -373,7 +394,7 @@ def create_business_profile(request):
                         employee = Employee.objects.get(pk=employee_id)
                         admin_profile.employees.add(employee)
             
-            return redirect('success_page')  # Redirect to success page after successful submission
+            return redirect('success')  # Redirect to success page after successful submission
     else:
         business_profile_form = BusinessProfileForm()
         admin_profile_forms = [AdminProfileForm(prefix=f'admin_profile') for i in range(1)]  # Assuming max 1 admins
@@ -434,7 +455,7 @@ def create_sale(request):
 def sale_by_admin_service(request):
     employees = Employee.objects.all()
     services = Service.objects.all()
-    
+
     SaleByAdminServiceFormSet = formset_factory(SaleByAdminServiceForm, extra=1)
 
     if request.method == 'POST':
@@ -442,20 +463,13 @@ def sale_by_admin_service(request):
         if formset.is_valid():
             for form in formset:
                 if form.cleaned_data:
-                    # Here, you need to associate each sale item with the sale
-                    sale_item = form.save(commit=False)
-                    # Assuming you have a field named 'sale' in SaleByAdminService model
-                    # You need to associate the sale item with the sale instance before saving
-                  #  sale_item.date = date
-                    sale_item.save()
-
-            # Redirect after successful form submission
+                    sale = form.save(commit=False)
+                    sale.save()
             return redirect('success.html')
     else:
         formset = SaleByAdminServiceFormSet()
 
     return render(request, 'sales_by_admin_service.html', {'formset': formset, 'employees': employees, 'services': services})
-
 
 def sale_by_admin_service(request):
     # Fetch sales data from the database
@@ -493,30 +507,65 @@ def submit_sale(request):
 
 def DayClosingView(request):
     if request.method == 'POST':
-        date = request.POST['date']
-        total_services = request.POST['total_services']
-        total_sales = request.POST['total_sales']
-        tip = request.POST.get('tip', None)
-        total_collection = request.POST['total_collection']
-        advance = request.POST.get('advance', None)
-        net_collection = request.POST['net_collection']
+        form = DayClosingForm(request.POST)
+        if form.is_valid():
+            # Extract data from the form
+            date = form.cleaned_data['date']
+            total_services = form.cleaned_data['total_services']
+            total_sales = form.cleaned_data['total_sales']
+            total_collection = form.cleaned_data['total_collection']
+            advance = form.cleaned_data['advance']
+            net_collection = form.cleaned_data['net_collection']
+            # The employee instance is directly fetched by the clean_employee method
+            employee = form.cleaned_data['employee']
+            
+            # Fetch employee transactions based on selected employee
+            employee_transactions = EmployeeTransaction.objects.filter(employee=employee)
 
-        day_closing = DayClosing(
-            date=date,
-            total_services=total_services,
-            total_sales=total_sales,
-            tip=tip,
-            total_collection=total_collection,
-            advance=advance,
-            net_collection=net_collection
-        )
-        try:
-            day_closing.save()
+            # Create the DayClosing object
+            day_closing = DayClosing.objects.create(
+                date=date,
+                total_services=total_services,
+                total_sales=total_sales,
+                total_collection=total_collection,
+                advance=advance,
+                net_collection=net_collection
+            )
+            # Assign the employee transactions to the day closing object
+            day_closing.employee_transactions.set(employee_transactions)
+
             return redirect('day_closing_report')
-        except Exception as e:
-            print("Error saving data:", e)
+    else:
+        form = DayClosingForm()
 
-    return render(request, 'dayclosing.html')
+    return render(request, 'dayclosing.html', {'form': form})
+
+# def DayClosingView(request):
+#     if request.method == 'POST':
+#         date = request.POST['date']
+#         total_services = request.POST['total_services']
+#         total_sales = request.POST['total_sales']
+#         tip = request.POST.get('tip', None)
+#         total_collection = request.POST['total_collection']
+#         advance = request.POST.get('advance', None)
+#         net_collection = request.POST['net_collection']
+
+#         day_closing = DayClosing(
+#             date=date,
+#             total_services=total_services,
+#             total_sales=total_sales,
+#             tip=tip,
+#             total_collection=total_collection,
+#             advance=advance,
+#             net_collection=net_collection
+#         )
+#         try:
+#             day_closing.save()
+#             return redirect('day_closing_report')
+#         except Exception as e:
+#             print("Error saving data:", e)
+
+#     return render(request, 'dayclosing.html')
 
 def edit_day_closing(request, pk):
     day_closing = get_object_or_404(DayClosing, pk=pk)
@@ -671,6 +720,7 @@ class HomeView(TemplateView):
                 'name': 'Employee Transaction Management',
                 'links': [
                     {'label': 'Employee Transactions', 'url_name': 'employee_transaction_list'},
+                     {'label': 'Create Transactions', 'url_name': 'create_employee_transaction'},
                 ]
             },
             {

@@ -15,7 +15,7 @@ from .views import (
     DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, 
     approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created,
     employee_edit, employee_delete, DayClosingView, day_closing_report, edit_day_closing, create_expense_type,
-    business_profile_list,
+    business_profile_list, employee_transaction_create, get_employee_data
 )
 
 
@@ -37,7 +37,7 @@ urlpatterns = [
     path('sales/', SaleListCreateView.as_view(), name='sale-list-create'),
     # path('sale/create/', create_sale, name='sales_by_admin_item_form'),
     path('sale/salesbystaff/', submit_sale, name='submit_sale'),
-
+    path('get_employee_data/<int:employee_id>/', get_employee_data, name='get_employee_data'),
     path('sale/dayclosing/', DayClosingView, name='dayclosing'),
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
      path('sale/dayclosing/<int:pk>/edit/', edit_day_closing, name='edit_day_closing'),
@@ -98,7 +98,7 @@ urlpatterns = [
 
     # EmployeeTransaction URLs
     path('employee-transaction/', EmployeeTransactionListView.as_view(), name='employee_transaction_list'),
-    path('employee-transaction/create/', EmployeeTransactionCreateView.as_view(), name='create_employee_transaction'),
+    path('employee-transaction/create/', employee_transaction_create, name='create_employee_transaction'),
     path('employee-transaction/update/<int:pk>/', EmployeeTransactionUpdateView.as_view(), name='update_employee_transaction'),
     path('employee-transaction/delete/<int:pk>/', EmployeeTransactionDeleteView.as_view(), name='delete_employee_transaction'),
 

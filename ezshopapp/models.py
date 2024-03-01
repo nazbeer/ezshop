@@ -86,28 +86,6 @@ class Role(models.Model):
     def __str__(self):
         return self.name
     
-class Employee(models.Model):
-    employee_id = models.CharField(max_length=10, unique=True)
-    first_name = models.CharField(max_length=255)
-    second_name = models.CharField(max_length=255)
-    nationality = models.CharField(max_length=255)
-    mobile_no = models.CharField(max_length=20)
-    passport_no = models.CharField(max_length=20)
-    passport_expiration_date = models.DateField()
-    emirates_id = models.CharField(max_length=20)
-    id_expiration_date = models.DateField()
-    basic_pay = models.DecimalField(max_digits=10, decimal_places=2)
-    house_allowance = models.DecimalField(max_digits=10, decimal_places=2)
-    transportation_allowance = models.DecimalField(max_digits=10, decimal_places=2)
-    commission_percentage = models.DecimalField(max_digits=5, decimal_places=2)
-    joining_date = models.DateField()
-    job_role = models.CharField(max_length=255)
-    username = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
-
-    def __str__(self):
-        return f"{self.employee_id} - {self.first_name} {self.second_name}"
-
 class ExpenseType(models.Model):
     name = models.CharField(max_length=255)
 
@@ -167,6 +145,47 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+class Employee(models.Model):
+    employee_id = models.CharField(max_length=10, unique=True)
+    first_name = models.CharField(max_length=255)
+    second_name = models.CharField(max_length=255)
+    nationality = models.CharField(max_length=255)
+    mobile_no = models.CharField(max_length=20)
+    passport_no = models.CharField(max_length=20)
+    passport_expiration_date = models.DateField()
+    emirates_id = models.CharField(max_length=20)
+    id_expiration_date = models.DateField()
+    basic_pay = models.DecimalField(max_digits=10, decimal_places=2)
+    house_allowance = models.DecimalField(max_digits=10, decimal_places=2)
+    transportation_allowance = models.DecimalField(max_digits=10, decimal_places=2)
+    commission_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    joining_date = models.DateField()
+    job_role = models.CharField(max_length=255)
+    username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.employee_id} - {self.first_name} {self.second_name}"
+
+
+class DayClosing(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    date = models.DateField()
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True)  # ForeignKey relationship with Employee model
+    total_services = models.DecimalField(max_digits=8, decimal_places=2)
+    total_sales = models.DecimalField(max_digits=8, decimal_places=2)
+    total_collection = models.DecimalField(max_digits=8, decimal_places=2)
+    advance = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    net_collection = models.DecimalField(max_digits=8, decimal_places=2)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+    def __str__(self):
+        return str(self.date)
 
 class EmployeeTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
@@ -180,6 +199,11 @@ class EmployeeTransaction(models.Model):
     tip_received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_option = models.CharField(max_length=10, choices=[('cash', 'Cash'), ('card', 'Card')])
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True)
+    day_closing = models.ForeignKey(DayClosing, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return f"Employee Transaction - {self.id}"
 
 class DailySummary(models.Model):
     date = models.DateField()
@@ -237,36 +261,23 @@ STATUS_CHOICES = (
     ('approved', 'Approved'),
 )
 
-class DayClosing(models.Model):
-    date = models.DateField()
-    total_services = models.DecimalField(max_digits=8, decimal_places=2)
-    total_sales = models.DecimalField(max_digits=8, decimal_places=2)
-    tip = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-    total_collection = models.DecimalField(max_digits=8, decimal_places=2)
-    advance = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-    net_collection = models.DecimalField(max_digits=8, decimal_places=2)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-
-    def __str__(self):
-        return str(self.date)
-    
     
 PAYMENT_METHOD_CHOICES=(
     ("cash","Cash"),("card","Card")
 )
 
 class SaleByAdminService(models.Model):
-    date = models.DateField()
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    date = models.DateField(null=True)
+    employee = models.ForeignKey(User, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
-    
-    def __str__(self):
-        return str(self.date)
+    quantity = models.IntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    payment_method = models.CharField(max_length=100)
+
+    def total_amount(self):
+        return (self.price * self.quantity) - self.discount + self.tip
 
 class SalesByAdminItem(models.Model):
     date = models.DateField()
