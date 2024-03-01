@@ -3,9 +3,11 @@ from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
 from django.views import View
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth import authenticate, login
-from .models import Shop, ShopAdmin, User, Role, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
+from .models import Shop, ShopAdmin, User, Role, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, Module, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
 from .forms import ShopForm, RoleForm, AdminProfileForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
@@ -16,6 +18,7 @@ from django.urls import get_resolver
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
+from django.urls.resolvers import RoutePattern
 
 # Assuming you have a form for admin users
 AdminUserForm = formset_factory(AdminUserForm, extra=1)
@@ -83,20 +86,47 @@ class RoleListView(ListView):
     model = Role
     template_name = 'role_list.html'
 
+
 class RoleCreateView(TemplateView):
     template_name = 'create_role.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        url_patterns = get_resolver().reverse_dict.keys()
+        url_patterns = [pattern for pattern, _ in get_resolver().reverse_dict.items()]
         context['url_patterns'] = url_patterns
         return context
 
-class RoleUpdateView(UpdateView):
-    model = Role
-    form_class = RoleForm
+    def post(self, request, *args, **kwargs):
+        # Extract data from the form
+        role_name = request.POST.get('name')
+        module_names = request.POST.getlist('modules')
+        
+        # Create a new Role object
+        new_role = Role.objects.create(name=role_name)
+        
+        # Add modules to the role
+        for module_name in module_names:
+            module = get_object_or_404(Module, name=module_name)
+            new_role.modules.add(module)
+        
+        # Save the role object
+        new_role.save()
+        
+        # Redirect the user to a different page
+        return HttpResponseRedirect(reverse('role_list'))
+    
+class RoleUpdateView(TemplateView):
     template_name = 'update_role.html'
-    success_url = reverse_lazy('role_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        role_id = kwargs.get('pk')
+        role = get_object_or_404(Role, pk=role_id)
+        modules = role.modules.all()  # Retrieve all modules associated with the role
+        context['role'] = role
+        context['modules'] = modules
+        # Add other context data if needed
+        return context
 
 class RoleDeleteView(DeleteView):
     model = Role

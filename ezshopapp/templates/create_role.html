@@ -12,15 +12,16 @@
     </div>
     <div class="form-group">
       <label for="module">Module List:</label>
-      <select id="module" name="module" class="form-control" multiple>
+      <select id="module" name="module" class="form-control text-capitalize " style="height:400px" multiple>
         {% for pattern in url_patterns %}
-          <option value="{{ pattern.name }}">{{ pattern.name }}</option>
+            <option value="{{ pattern }}">{{ pattern }}</option>
         {% endfor %}
-      </select>
+    </select>
     </div>
     <!-- Add other fields as necessary -->
 
     <button type="submit" class="btn btn-success">Create</button>
   </form>
-  <a href="{% url 'role_list' %}">Back to Role List</a>
+  <br/>
+  <a href="{% url 'role_list' %}" class="btn btn-warning btn-sm">Back to Role List</a>
 {% endblock %}
