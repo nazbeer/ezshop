@@ -21,7 +21,7 @@
                             <select name="shop" id="shop" class="form-control" onchange="updateLicenseNumber(this)">
                                 <option value="">Select Shop</option>
                                 {% for shop in shop_details %}
-                                    <option value="{{ shop.id }}-{{ shop.license_number }}">{{ shop.name }}</option>
+                                    <option value="{{ shop.id }}" label="{{ shop.name }}-{{ shop.license_number }}">{{ shop.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -114,7 +114,7 @@
     function updateLicenseNumber(select) {
         var selectedOption = select.options[select.selectedIndex];
         var licenseNumberInput = document.getElementById('license_number');
-        var licenseNumber = selectedOption.value.split('-')[1];
+        var licenseNumber = selectedOption.label.split('-')[1];
         licenseNumberInput.value = licenseNumber;
     }
 </script>

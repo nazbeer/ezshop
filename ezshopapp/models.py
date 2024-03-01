@@ -54,7 +54,7 @@ class ShopAdmin(models.Model):
         return f"{self.shop.name} - {self.admin_user.username}"
 
 class BusinessProfile(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=False)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=False, related_name='shop')
     license_number = models.CharField(max_length=255)
     license_expiration = models.DateField(null=True)
     license_upload = models.FileField(upload_to='licenses')
@@ -229,13 +229,13 @@ class DailySummary(models.Model):
         # Calculate total_received_amount by summing employee transaction amounts
         total_received_amount = EmployeeTransaction.objects.filter(
             transaction_type='service_and_product'
-        ).aggregate(models.Sum('total_amount'))['total_amount__sum'] or 0
+        ).aggregate(models.Sum('total_amount'))['total_amount__sum']
 
         # Calculate total_expense_amount by summing payment transaction amounts
-        total_expense_amount = PaymentTransaction.objects.aggregate(models.Sum('amount'))['amount__sum'] or 0
+        total_expense_amount = PaymentTransaction.objects.aggregate(models.Sum('amount'))['amount__sum'] 
 
         # Calculate total_bank_deposit by summing bank deposit amounts
-        total_bank_deposit = BankDeposit.objects.aggregate(models.Sum('amount'))['amount__sum'] or 0
+        total_bank_deposit = BankDeposit.objects.aggregate(models.Sum('amount'))['amount__sum'] 
 
         # Calculate balance
         balance = total_received_amount - total_expense_amount + total_bank_deposit

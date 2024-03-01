@@ -25,7 +25,7 @@
     <tbody>
       {% for profile in profiles %}
       <tr>
-        <td>{{ profile.shop_name }}</td>
+        <td>{{ profile.shop }}</td>
         <td>{{ profile.license_number }}</td>
         <td>{{ profile.license_expiration }}</td>
         <td><img src="{{ MEDIA_URL }}{{ profile.license_upload }}" alt="License Upload"></td>

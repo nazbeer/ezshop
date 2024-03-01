@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth import authenticate, login
+from django.db.models import Sum
 from .models import Shop, ShopAdmin, User, Role, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, Module, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
 from .forms import ShopForm, RoleForm, AdminProfileForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
@@ -114,7 +115,25 @@ class RoleCreateView(TemplateView):
         
         # Redirect the user to a different page
         return HttpResponseRedirect(reverse('role_list'))
-    
+
+
+def analytics_view(request):
+    # Fetch total number of employees
+    total_employees = Employee.objects.count()
+
+    # Fetch total revenue
+    total_revenue = DailySummary.objects.aggregate(total_revenue=Sum('amount'))['total_revenue']
+
+    # Fetch day closing total per day (replace 'dayclosing_values' with actual logic to fetch this data)
+    #dayclosing_values = get_dayclosing_totals()
+
+    # Render the template with the data
+    return render(request, 'home.html', {
+        'total_employees': total_employees,
+        'total_revenue': total_revenue,
+      #  'dayclosing_values': dayclosing_values,
+    })
+
 class RoleUpdateView(TemplateView):
     template_name = 'update_role.html'
 
