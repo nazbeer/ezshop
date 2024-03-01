@@ -15,7 +15,7 @@ from .views import (
     DailySummaryListView, DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, CustomLoginView, HomeView, CustomLogoutView, SaleListCreateView, submit_sale, 
     approve_day_closing, employee_list, create_sale, sale_by_admin_service, sales_report, success_view, sales_by_staff_item_service, create_business_profile, profile_created,
     employee_edit, employee_delete, DayClosingView, day_closing_report, edit_day_closing, create_expense_type,
-    business_profile_list, employee_transaction_create, get_employee_data, get_shop_details, create_product
+    business_profile_list, employee_transaction_create, fetch_shop_details,  get_employee_data, get_shop_details, create_product
 )
 
 
@@ -24,7 +24,8 @@ urlpatterns = [
     path('', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('home/', HomeView.as_view(), name='home'),
-    path('create-profile/', create_business_profile, name='create_business_profile'),
+    path('create-business-profile/', create_business_profile, name='create_business_profile'),
+    path('fetch_shop_details/', fetch_shop_details, name='fetch_shop_details'),
     path('profile-created/', profile_created, name='profile_created'),
     path('business/', business_profile_list, name='business_profile_list'),
    # path('register/', RegistrationView.as_view(), name='register'),

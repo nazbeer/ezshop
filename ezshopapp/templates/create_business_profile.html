@@ -15,13 +15,13 @@
                     <div class="col-md-6">
                         <!-- Fields for the main business profile -->
                         <!-- Shop Name -->
-                        {{ business_profile_form.shop_name.errors }}
+                        {{ business_profile_form.shop.errors }}
                         <div class="form-group">
-                            <label for="shop_name">Select Shop:</label>
-                            <select name="shop_name" id="shop_name" class="form-control">
+                            <label for="shop">Select Shop:</label>
+                            <select name="shop" id="shop" class="form-control" onchange="updateLicenseNumber(this)">
                                 <option value="">Select Shop</option>
                                 {% for shop in shop_details %}
-                                <option value="{{ shop.name}}">{{ shop.name }}</option>
+                                    <option value="{{ shop.id }}-{{ shop.license_number }}">{{ shop.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -104,95 +104,18 @@
                         <!-- Add other additional fields for the main business profile here -->
                     </div>
                 </div>
-                <!-- Additional admin profiles -->
-                {% for admin_profile_form in admin_profile_forms %}
-                
-                <div class="row mt-3 " style="border-top:1px solid #ccc;">
-                    <div class="col-md-6 mt-3" >
-                        <!-- Fields for additional admin profile -->
-                        <!-- Admin Email -->
-                        {{ admin_profile_form.email.errors }}
-                        <div class="form-group">
-                            <label for="{{ admin_profile_form.email.id_for_label }}">Admin Email:</label>
-                            {{ admin_profile_form.email }}
-                        </div>
-                        <!-- Admin Mobile -->
-                      
-                        <!-- Admin Mobile -->
-                        {{ admin_profile_form.mobile.errors }}
-                        <div class="form-group">
-                            <label for="{{ admin_profile_form.mobile.id_for_label }}">Admin Mobile:</label>
-                            <input type="tel" id="{{ admin_profile_form.mobile.id_for_label }}" name="mobile" class="form-control" data-inputmask="'mask': '9999-999-9999'">
-                        </div>
-
-                        <!-- Admin Password -->
-                        {{ admin_profile_form.password.errors }}
-                        <div class="form-group">
-                            <label for="{{ admin_profile_form.password.id_for_label }}">Admin Password:</label>
-                            <div class="input-group">
-                                <input type="password" id="{{ admin_profile_form.password.id_for_label }}" name="password" class="form-control pass" aria-describedby="password-toggle">
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" id="password-toggle">Show</button>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Select Employee -->
-                        <div class="form-group">
-                            <label for="{{ admin_profile_form.employee.id_for_label }}">Select Employee:</label>
-                            <select name="{{ admin_profile_form.employee.name }}" id="{{ admin_profile_form.employee.id_for_label }}" class="form-control">
-                                <option value="">Select Employee</option>
-                                {% for employee in employees %}
-                                <option value="{{ employee.id }}">{{ employee.first_name }} {{ employee.second_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                {% endfor %}
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>
         </div>
     </div>
 </div>
 
-
 <script>
-    $(document).ready(function() {
-        $('#password-toggle').click(function() {
-            var passwordField = $('.pass');
-            var passwordToggle = $(this);
-            if (passwordField.attr('type') === 'password') {
-                passwordField.attr('type', 'text');
-                passwordToggle.text('Hide');
-            } else {
-                passwordField.attr('type', 'password');
-                passwordToggle.text('Show');
-            }
-        });
-    });
-    $(document).ready(function() {
-        $(document).on('change', '#shop_name', function() {
-            var shopId = $(this).val();  // Get the selected shop ID
-            $.ajax({
-                url: '/create-profile/get_shop_details/' + shopId + '/',  // URL to fetch shop details
-                type: 'GET',
-                success: function(response) {
-                    // Handle successful response
-                    console.log(response);  // Log the response to the console
-                    // Update the UI with the fetched shop details
-                    $('#license_number').val(response.license_number);
-                    // Update other fields as needed
-                },
-                error: function(xhr, status, error) {
-                    // Handle error
-                    console.error(error);  // Log any errors to the console
-                }
-            });
-        });
-    
-});
-
+    function updateLicenseNumber(select) {
+        var selectedOption = select.options[select.selectedIndex];
+        var licenseNumberInput = document.getElementById('license_number');
+        var licenseNumber = selectedOption.value.split('-')[1];
+        licenseNumberInput.value = licenseNumber;
+    }
 </script>
-
 {% endblock %}

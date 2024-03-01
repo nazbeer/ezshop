@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.forms import inlineformset_factory
 
+
 class Module(models.Model):
     name = models.CharField(max_length=255)
 
@@ -53,7 +54,7 @@ class ShopAdmin(models.Model):
         return f"{self.shop.name} - {self.admin_user.username}"
 
 class BusinessProfile(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=False)
     license_number = models.CharField(max_length=255)
     license_expiration = models.DateField(null=True)
     license_upload = models.FileField(upload_to='licenses')
@@ -69,6 +70,7 @@ class BusinessProfile(models.Model):
 
     def __str__(self):
         return self.shop.name
+    
 
 class AdminProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')

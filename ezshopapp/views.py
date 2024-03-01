@@ -379,53 +379,42 @@ def get_shop_details(request, name):
         })
     except Shop.DoesNotExist:
         return JsonResponse({'error': 'Shop not found'}, status=404)
-    
 def create_business_profile(request):
     if request.method == 'POST':
         business_profile_form = BusinessProfileForm(request.POST, request.FILES)
-        admin_profile_forms = [AdminProfileForm(request.POST, prefix=f'admin_profile') for i in range(1)]  # Assuming max 2 admins
-        
-        if business_profile_form.is_valid() and all([form.is_valid() for form in admin_profile_forms]):
-            # Save business profile data
-            business_profile = business_profile_form.save(commit=False)
-            business_profile.save()
-
-            # Create a new User instance
-            username = request.POST.get('username')
-            email = request.POST.get('email')
-            user = User.objects.create_user(username=username, email=email)
-            
-            # Save admin profiles and connect with business profile
-            for form in admin_profile_forms:
-                if form.cleaned_data['email'] and form.cleaned_data['mobile']:
-                    admin_profile = form.save(commit=False)
-                    admin_profile.user = user
-                    admin_profile.business_profile = business_profile
-                    admin_profile.save()
-                    
-                    # Connect selected employee to admin profile
-                    employee_id = form.cleaned_data.get('employee')
-                    if employee_id:
-                        employee = Employee.objects.get(pk=employee_id)
-                        admin_profile.employees.add(employee)
-            
+        if business_profile_form.is_valid():
+            business_profile = business_profile_form.save()
             return redirect('success')  # Redirect to success page after successful submission
     else:
         business_profile_form = BusinessProfileForm()
-        admin_profile_forms = [AdminProfileForm(prefix=f'admin_profile') for i in range(1)]  # Assuming max 1 admins
-
-    employees = Employee.objects.all()  # Retrieve all employees to populate select field
 
     # Fetch shop details
     shop_details = Shop.objects.all()  # Adjust this query as needed based on your requirement
 
     return render(request, 'create_business_profile.html', {
         'business_profile_form': business_profile_form,
-        'admin_profile_forms': admin_profile_forms,
-        'employees': employees,
         'shop_details': shop_details,  # Pass shop details to the template
     })
 
+
+def fetch_shop_details(request):
+    shop_id = request.GET.get('shop_id')
+    if shop_id:
+        try:
+            shop = Shop.objects.get(pk=shop_id)
+            print(shop)
+            # Prepare data to send back to the client
+            data = {
+                'license_number': '2455',
+                #'license_expiration': shop.license_expiration,
+                # Include other fields as needed
+            }
+            #print(data)
+            return JsonResponse(data)
+        except Shop.DoesNotExist:
+            return JsonResponse({'error': 'Shop not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 def business_profile_list(request):
     profiles = BusinessProfile.objects.all()
     return render(request, 'business_profile_list.html', {'profiles': profiles})
