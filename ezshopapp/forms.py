@@ -114,7 +114,7 @@ class BankForm(forms.ModelForm):
 class ReceiptTransactionForm(forms.ModelForm):
     class Meta:
         model = ReceiptTransaction
-        fields = '__all__'
+        fields = ['date', 'receipt_type', 'received_amount', 'narration']
 
 class PaymentTransactionForm(forms.ModelForm):
     class Meta:

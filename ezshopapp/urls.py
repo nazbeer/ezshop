@@ -7,17 +7,17 @@ from .views import (
     ShopUpdateView, ShopDeleteView, SaleListCreateView, submit_sale, get_employee_data,
     DayClosingView, day_closing_report, edit_day_closing, approve_day_closing, create_sale,
     success_view, sales_by_staff_item_service, sale_by_admin_service, sales_report,
-    RoleListView, RoleCreateView, RoleDeleteView, employee_list,
+    RoleListView, RoleCreateView, RoleDeleteView, employee_list, create_receipt_type,
     EmployeeCreateView, employee_edit, employee_delete, ExpenseTypeListView,
     create_expense_type, ExpenseTypeUpdateView, ExpenseTypeDeleteView,
-    ReceiptTransactionListView, ReceiptTransactionCreateView, ReceiptTransactionUpdateView,
+    ReceiptTransactionListView, ReceiptTransactionUpdateView,
     ReceiptTransactionDeleteView, PaymentTransactionListView, PaymentTransactionCreateView,
     PaymentTransactionUpdateView, PaymentTransactionDeleteView, BankDepositListView,
     BankDepositCreateView, BankDepositUpdateView, BankDepositDeleteView, ServiceListView,
     ServiceCreateView, ServiceUpdateView, ServiceDeleteView, ProductListView, create_product,
     ProductUpdateView, ProductDeleteView, EmployeeTransactionListView, employee_transaction_create,
     EmployeeTransactionUpdateView, EmployeeTransactionDeleteView, DailySummaryListView,
-    DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, RoleUpdateView
+    DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, RoleUpdateView, create_receipt_transaction
 )
 
 urlpatterns = [
@@ -57,8 +57,9 @@ urlpatterns = [
     path('expense-type/create/', create_expense_type, name='create_expense_type'),
     path('expense-type/<int:pk>/edit/', ExpenseTypeUpdateView.as_view(), name='edit_expense_type'),
     path('expense-type/<int:pk>/delete/', ExpenseTypeDeleteView.as_view(), name='delete_expense_type'),
+    path('receipt-type/create/', create_receipt_type, name='create_receipt_type'),
     path('receipt-transaction/', ReceiptTransactionListView.as_view(), name='receipt_transaction_list'),
-    path('receipt-transaction/create/', ReceiptTransactionCreateView.as_view(), name='create_receipt_transaction'),
+    path('receipt-transaction/create/', create_receipt_transaction, name='create_receipt_transaction'),
     path('receipt-transaction/update/<int:pk>/', ReceiptTransactionUpdateView.as_view(), name='update_receipt_transaction'),
     path('receipt-transaction/delete/<int:pk>/', ReceiptTransactionDeleteView.as_view(), name='delete_receipt_transaction'),
     path('payment-transaction/', PaymentTransactionListView.as_view(), name='payment_transaction_list'),

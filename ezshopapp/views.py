@@ -6,6 +6,7 @@ from django.views import View
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.forms import formset_factory
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.db.models import Sum
 from .models import Shop, ShopAdmin, User, Role, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, Module, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
@@ -64,7 +65,7 @@ class ShopListView(ListView):
     def get_queryset(self):
         # Retrieve the queryset and order it by name in ascending order
         return Shop.objects.all().order_by('-name')
-    
+
 class ShopCreateView(CreateView):
     model = Shop
     form_class = ShopForm
@@ -151,7 +152,7 @@ class RoleDeleteView(DeleteView):
     model = Role
     template_name = 'delete_role.html'
     success_url = reverse_lazy('role_list')
-
+@login_required(login_url='login')
 def create_expense_type(request):
     if request.method == 'POST':
         form = ExpenseTypeForm(request.POST)
@@ -161,7 +162,7 @@ def create_expense_type(request):
     else:
         form = ExpenseTypeForm()
     return render(request, 'create_expense_type.html', {'form': form})
-
+@login_required(login_url='login')
 def employee_list(request):
     # Get query parameter for search
     query = request.GET.get('q')
@@ -216,6 +217,7 @@ def get_employee_data(request, employee_id):
     }
     return JsonResponse(data)
 
+@login_required(login_url='login')
 def employee_edit(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
@@ -683,6 +685,26 @@ def sales_report(request):
     }
     
     return render(request, 'sales_report.html', context)
+
+def create_receipt_transaction(request):
+    if request.method == 'POST':
+        form = ReceiptTransactionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('receipt_transaction_list')  # Redirect to the receipt transaction list page
+    else:
+        form = ReceiptTransactionForm()
+    return render(request, 'create_receipt_transaction.html', {'form': form})
+
+def create_receipt_type(request):
+    if request.method == "POST":
+        form = ReceiptTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('create_receipt_transaction')  # Redirect to a view showing the list of receipt types
+    else:
+        form = ReceiptTypeForm()
+    return render(request, 'create_receipt_type.html', {'form': form})
 
 class HomeView(TemplateView):
     template_name = 'home.html'
