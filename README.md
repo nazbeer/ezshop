@@ -39,7 +39,8 @@ Follow these steps to set up and run the EzShop Django project:
 git clone <repository-url>
 ```
 2. Navigate to the project directory:
-```cd ezshop
+```
+cd ezshop
 ```
 3. Create a virtual environment and activate it:
 ```python -m venv env
