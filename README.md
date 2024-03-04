@@ -78,4 +78,4 @@ README.md: Documentation file providing an overview of the project.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [MIT LICENSE](https://choosealicense.com/licenses/mit/) file for details.
