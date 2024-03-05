@@ -1,6 +1,6 @@
 from django import forms
 # from django.contrib.auth.forms import UserCreationForm
-from .models import Shop, Sale,Employee, UserProfile, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, Role, SaleItem, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
+from .models import Shop, Sale,Employee, UserProfile, DayClosingAdmin, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, Role, SaleItem, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
 from django.db import models
 from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
@@ -63,17 +63,31 @@ class RoleForm(forms.ModelForm):
         model = Role
         fields = '__all__'
 
+class DayClosingFormAdmin(forms.ModelForm):
+    class Meta:
+        model = DayClosingAdmin
+        #fields = ['total_collection', 'advance', 'net_collection', 'employee']
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = ['name', 'duration', 'vat', 'amount', 'max_discount_allowed', 'status']
+
 
 class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = '__all__'
+        exclude = ['password']  # Exclude the 'password' field from the form
         widgets = {
             'passport_expiration_date': forms.DateInput(attrs={'type': 'date'}),
             'id_expiration_date': forms.DateInput(attrs={'type': 'date'}),
-            'password': forms.PasswordInput(),
             'joining_date': forms.DateInput(attrs={'type': 'date'}),
         }
+        
 class DayClosingForm(forms.ModelForm):
     class Meta:
         model = DayClosing

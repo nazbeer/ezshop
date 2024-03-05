@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Shop, ShopAdmin, Sale, Employee, UserProfile, AdminProfile, Service, BusinessProfile, DayClosing, SalesByAdminItem, SaleByAdminService, Role, SaleItem, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Product, EmployeeTransaction, DailySummary, SalesByAdminItem, SalesByStaffItemService
+from .models import Shop, ShopAdmin, Sale, DayClosingAdmin, Employee, UserProfile, AdminProfile, Service, BusinessProfile, DayClosing, SalesByAdminItem, SaleByAdminService, Role, SaleItem, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Product, EmployeeTransaction, DailySummary, SalesByAdminItem, SalesByStaffItemService
 
 admin.site.site_header = "Ezshop Admin"
 admin.site.site_title = "Ezshop Admin Portal"
@@ -9,11 +9,14 @@ admin.site.register(Shop)
 admin.site.register(ShopAdmin)
 admin.site.register(Sale)
 admin.site.register(Employee)
+
 admin.site.register(UserProfile)
 admin.site.register(AdminProfile)
 admin.site.register(Service)
 admin.site.register(BusinessProfile)
 admin.site.register(DayClosing)
+admin.site.register(DayClosingAdmin)
+
 
 admin.site.register(SaleByAdminService)
 admin.site.register(Role)

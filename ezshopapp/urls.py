@@ -17,7 +17,7 @@ from .views import (
     ServiceCreateView, ServiceUpdateView, ServiceDeleteView, ProductListView, create_product,
     ProductUpdateView, ProductDeleteView, EmployeeTransactionListView, employee_transaction_create,
     EmployeeTransactionUpdateView, EmployeeTransactionDeleteView, DailySummaryListView,
-    DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, RoleUpdateView, create_receipt_transaction
+    DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, RoleUpdateView, create_receipt_transaction, day_closing_admin
 )
 
 urlpatterns = [
@@ -36,6 +36,7 @@ urlpatterns = [
    # path('sales/', SaleListCreateView.as_view(), name='sale-list-create'),
     path('sale/salesbystaff/', submit_sale, name='submit_sale'),
     path('get_employee_data/<int:employee_id>/', get_employee_data, name='get_employee_data'),
+    path('dayclosing/admin/', day_closing_admin, name='dayclosing_admin'),
     path('sale/dayclosing/', DayClosingView, name='dayclosing'),
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
     path('sale/dayclosing/<int:pk>/edit/', edit_day_closing, name='edit_day_closing'),

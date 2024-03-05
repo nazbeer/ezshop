@@ -36,6 +36,7 @@
     <thead>
       <tr>
         <th><a href="?sort=employee_id">Employee ID</a></th>
+        <th>Business Profile</th>
         <th><a href="?sort=first_name">First Name</a></th>
         <th><a href="?sort=second_name">Last Name</a></th>
         <th>Nationality</th>
@@ -50,7 +51,7 @@
         <th>Commission Percentage</th>
         <th>Joining Date</th>
         <th>Job Role</th>
-        <th>Username</th>
+        
         <th>Actions</th>
         <!-- Add more columns as needed -->
       </tr>
@@ -59,6 +60,7 @@
       {% for employee in employees %}
         <tr>
           <td>{{ employee.employee_id }}</td>
+          <td>{{ employee.business_profile.shop }}</td>
           <td>{{ employee.first_name }}</td>
           <td>{{ employee.second_name }}</td>
           <td>{{ employee.nationality }}</td>
@@ -72,8 +74,7 @@
           <td>{{ employee.transportation_allowance }}</td>
           <td>{{ employee.commission_percentage }}</td>
           <td>{{ employee.joining_date }}</td>
-          <td>{{ employee.job_role }}</td>
-          <td>{{ employee.username }}</td>
+          <td>{{ employee.job_role.name }}</td>
            <td>
             <a href="{% url 'employee_edit' employee.pk %}" class="btn btn-primary btn-sm">Edit</a>
             <a href="{% url 'employee_delete' employee.pk %}" class="btn btn-danger btn-sm">Delete</a>

@@ -11,7 +11,7 @@
             <select name="business_profile" id="business_profile" class="form-control">
                 <option value="">Select Business Profile</option>
                 {% for business_profile in business_profiles %}
-                    <option value="{{ business_profile.id }}">{{ business_profile.shop_name }}</option>
+                    <option value="{{ business_profile.id }}">{{ business_profile.shop }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -89,14 +89,14 @@
                 </div>
             </div>
         </div>
-        <div class="form-group">
+        <!-- <div class="form-group">
             <label for="username">Username:</label>
             {{ form.username }}
         </div>
         <div class="form-group">
             <label for="password">Password:</label>
             {{ form.password }}
-        </div>
+        </div> -->
         <button type="submit" class="btn btn-primary">Create Employee</button>
     </form>
 </div>

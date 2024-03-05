@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Day Closing Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Day Closing Admin</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_date" class="form-label">Date</label>
+                    <input type="date" name="date" id="id_date" class="form-control" value="{{ dayclosing_admin.date|date:'Y-m-d' }}" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="id_total_services" class="form-label">Total Services</label>
+                    <input type="number" name="total_services" id="id_total_services" class="form-control" value="{{ dayclosing_admin.calculate_totals.total_services }}" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="id_total_sales" class="form-label">Total Sales</label>
+                    <input type="text" name="total_sales" id="id_total_sales" class="form-control" value="{{ dayclosing_admin.calculate_totals.total_sales }}" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="id_total_collection" class="form-label">Total Collection</label>
+                    <input type="text" name="total_collection" id="id_total_collection" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="id_advance" class="form-label">Advance</label>
+                    <input type="text" name="advance" id="id_advance" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="id_net_collection" class="form-label">Net Collection</label>
+                    <input type="text" name="net_collection" id="id_net_collection" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -8,12 +8,13 @@ from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
-from django.db.models import Sum
-from .models import Shop, ShopAdmin, User, Role, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, Module, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
+from django.db.models import Count, Sum
+from django.utils import timezone
+from .models import Shop, ShopAdmin, User, Role, DayClosingAdmin, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, Module, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
 from .forms import ShopForm, RoleForm, AdminProfileForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
-from .forms import CustomLoginForm, DayClosingForm, BusinessProfileForm, AdminUserForm, SalesByStaffItemServiceForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
+from .forms import CustomLoginForm, DayClosingForm, DayClosingFormAdmin, BusinessProfileForm, AdminUserForm, SalesByStaffItemServiceForm, SaleForm, SalesByAdminItemForm, SaleByAdminServiceForm
 from rest_framework import generics
 from django.http import HttpResponse
 from django.urls import get_resolver
@@ -120,7 +121,7 @@ class RoleCreateView(TemplateView):
 
 def analytics_view(request):
     # Fetch total number of employees
-    total_employees = Employee.objects.count()
+    total_employees = Employee.objects.all().count()
 
     # Fetch total revenue
     total_revenue = DailySummary.objects.aggregate(total_revenue=Sum('amount'))['total_revenue']
@@ -162,33 +163,27 @@ def create_expense_type(request):
     else:
         form = ExpenseTypeForm()
     return render(request, 'create_expense_type.html', {'form': form})
-@login_required(login_url='login')
+
 def employee_list(request):
-    # Get query parameter for search
     query = request.GET.get('q')
-    
-    # Filter employees based on search query
     if query:
         employees = Employee.objects.filter(
-            Q(employee_id__icontains=query) | 
+            Q(employee_id__icontains=query) |
             Q(first_name__icontains=query) |
             Q(second_name__icontains=query)
         )
     else:
         employees = Employee.objects.all()
-    
-    # Pagination
-    paginator = Paginator(employees, 10)  # Show 10 employees per page
+
+    paginator = Paginator(employees, 10)
     page = request.GET.get('page')
     try:
         employees = paginator.page(page)
     except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
         employees = paginator.page(1)
     except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
         employees = paginator.page(paginator.num_pages)
-    
+
     return render(request, 'employee_list.html', {'employees': employees})
 
 class EmployeeCreateView(CreateView):
@@ -197,18 +192,24 @@ class EmployeeCreateView(CreateView):
     template_name = 'create_employee.html'
     success_url = reverse_lazy('employee_list')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['business_profiles'] = BusinessProfile.objects.all()  # Retrieve all business profiles
-        return context
-
     def form_valid(self, form):
-        business_profile_id = self.request.POST.get('business_profile')
+        # Check if business_profile field exists in form data
+        business_profile_id = form.cleaned_data.get('business_profile')
+        print("Business Profile ID:", business_profile_id)  # Debugging statement
+        
         if business_profile_id:
+            # Retrieve the BusinessProfile object
             business_profile = BusinessProfile.objects.get(pk=business_profile_id)
+            print("Business Profile:", business_profile)  # Debugging statement
+            
+            # Assign the business profile to the employee instance
             form.instance.business_profile = business_profile
+        else:
+            print("Business Profile ID not found")  # Debugging statement
+        
+        # Save the form
         return super().form_valid(form)
-
+    
 def get_employee_data(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
     data = {
@@ -217,7 +218,7 @@ def get_employee_data(request, employee_id):
     }
     return JsonResponse(data)
 
-@login_required(login_url='login')
+
 def employee_edit(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
@@ -322,11 +323,18 @@ class ServiceListView(ListView):
     model = Service
     template_name = 'service_list.html'
 
+
 class ServiceCreateView(CreateView):
     model = Service
     form_class = ServiceForm
     template_name = 'create_service.html'
-    success_url = reverse_lazy('service_list')
+
+    def form_valid(self, form):
+        # You can perform additional operations here if needed before saving the form
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('service_list') 
 
 class ServiceUpdateView(UpdateView):
     model = Service
@@ -561,12 +569,13 @@ def submit_sale(request):
             sale.save()
             
             # Redirect to a success page
-            return render(request, 'success.html')
+            return render(request, 'success')
     return render(request, 'submit_sale.html', {'form': form, 'services': services})
 
 def DayClosingView(request):
     if request.method == 'POST':
         form = DayClosingForm(request.POST)
+        #employees = Employee.objects.all()
         if form.is_valid():
             # Extract data from the form
             date = form.cleaned_data['date']
@@ -592,12 +601,40 @@ def DayClosingView(request):
             )
             # Assign the employee transactions to the day closing object
             day_closing.employee_transactions.set(employee_transactions)
-
+            day_closing.save()
             return redirect('day_closing_report')
     else:
         form = DayClosingForm()
 
     return render(request, 'dayclosing.html', {'form': form})
+
+
+
+def day_closing_admin(request):
+    if request.method == 'POST':
+        form = DayClosingFormAdmin(request.POST)
+        if form.is_valid():
+            # Extract data from the form
+            date = timezone.now().date()  # Set date to current date
+            total_collection = form.cleaned_data['total_collection']
+            advance = form.cleaned_data['advance']
+            net_collection = form.cleaned_data['net_collection']
+            
+            # Create the DayClosingAdmin object
+            day_closing_admin = DayClosingAdmin(
+                date=date,
+                total_collection=total_collection,
+                advance=advance,
+                net_collection=net_collection,
+                **DayClosingAdmin.calculate_totals()
+            )
+            day_closing_admin.save()
+            return redirect('day_closing_report')
+    else:
+        form = DayClosingFormAdmin(initial={'date': timezone.now().date()})  # Set initial date to current date
+
+    return render(request, 'dayclosing_admin.html', {'form': form})
+
 
 # def DayClosingView(request):
 #     if request.method == 'POST':
@@ -708,8 +745,10 @@ def create_receipt_type(request):
 
 class HomeView(TemplateView):
     template_name = 'home.html'
-
+    
     def get_context_data(self, **kwargs):
+        total_employees = Employee.objects.all().count()
+        total_business = BusinessProfile.objects.all().count()
         categories = [
              {
                 'name': 'Shop Management',
@@ -718,8 +757,6 @@ class HomeView(TemplateView):
                     {'label': 'Create Shop', 'url_name': 'create_shop'},
                     {'label': 'Create Business', 'url_name': 'create_business_profile'},
                     {'label': 'All Business Profiles', 'url_name': 'business_profile_list'},
-                    # {'label': 'Update Shop', 'url_name': 'update_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
-                    # {'label': 'Delete Shop', 'url_name': 'delete_shop', 'kwargs': {'pk': 1}},  # Replace 1 with the actual Shop PK
             ]
             },
             {
@@ -728,46 +765,37 @@ class HomeView(TemplateView):
                     {'label': 'Service List', 'url_name': 'service_list'},
                     {'label': 'Product List', 'url_name': 'product_list'},
                     {'label': 'Create Product', 'url_name': 'create_product'},
+                    {'label': 'Create Service', 'url_name': 'create_service'},
                 ]
             },
-             {
+            {
                 'name': 'Sales by Admin',
                 'links': [
-                    # {'label': 'Create Sales', 'url_name': 'create_sale'},
                      {'label': 'Sales by Admin Item', 'url_name':'sales_by_admin_item_form'},
                      {'label': 'Sales by Admin Service', 'url_name':'sales_by_admin_service'},
-                    
-                    
-                  
                 ]
             },
-             {
+            {
                 'name': 'Sales by Staff',
                 'links': [
-                    # {'label': 'Create Sales', 'url_name': 'create_sale'},
                    {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
                     {'label': 'Sales by Staff', 'url_name':'submit_sale'},
-                    
-                  
                 ]
             },
-             {
+            {
                 'name': 'Closing & Reports',
                 'links': [
                     {'label': 'Day Closing', 'url_name':'dayclosing'},
-                     {'label': 'Sales Report', 'url_name':'sales_report'},
+                    {'label': 'Day Closing by Admin', 'url_name':'dayclosing_admin'},
+                    {'label': 'Sales Report', 'url_name':'sales_report'},
                     {'label': 'Day Closing Report', 'url_name':'day_closing_report'},
-                    
-                  
                 ]
             },
-           
             {
                 'name': 'Role Management',
                 'links': [
                     {'label': 'Role List', 'url_name': 'role_list'},
                     {'label': 'Create Role', 'url_name': 'create_role'},
-                  
                 ]
             },
             {
@@ -797,12 +825,11 @@ class HomeView(TemplateView):
                     {'label': 'Bank Deposits', 'url_name': 'bank_deposit_list'},
                 ]
             },
-            
             {
                 'name': 'Employee Transaction Management',
                 'links': [
                     {'label': 'Employee Transactions', 'url_name': 'employee_transaction_list'},
-                     {'label': 'Create Transactions', 'url_name': 'create_employee_transaction'},
+                    {'label': 'Create Transactions', 'url_name': 'create_employee_transaction'},
                 ]
             },
             {
@@ -811,7 +838,6 @@ class HomeView(TemplateView):
                     {'label': 'Daily Summaries', 'url_name': 'daily_summary_list'},
                 ]
             },
-           
         ]
 
-        return {'categories': categories}
+        return {'categories': categories, 'total_employees': total_employees, 'total_business': total_business}

@@ -25,18 +25,7 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <!-- License Number -->
-                        {{ business_profile_form.license_number.errors }}
-                        <div class="form-group">
-                            <label for="license_number">License Number:</label>
-                            <input type="text" id="license_number" name="license_number" class="form-control" readonly>
-                        </div>
-                        <!-- License Expiration -->
-                        {{ business_profile_form.license_expiration.errors }}
-                        <div class="form-group">
-                            <label for="{{ business_profile_form.license_expiration.id_for_label }}">License Expiration:</label>
-                            <input type="date" id="{{ business_profile_form.license_expiration.id_for_label }}" name="license_expiration" class="form-control">
-                        </div>
+                       
                         <!-- Upload License (PDF only) -->
                         {{ business_profile_form.license_upload.errors }}
                         <div class="form-group">
@@ -61,10 +50,22 @@
                             <label for="{{ business_profile_form.vat_number.id_for_label }}">VAT Number:</label>
                             {{ business_profile_form.vat_number }}
                         </div>
-                        <!-- Add other fields for the main business profile -->
+                        
                     </div>
                     <div class="col-md-6">
-                        <!-- Additional fields for the main business profile -->
+                         <!-- License Number -->
+                         {{ business_profile_form.license_number.errors }}
+                         <div class="form-group">
+                             <label for="license_number">License Number:</label>
+                             <input type="text" id="license_number" name="license_number" class="form-control" readonly>
+                         </div>
+
+                        <!-- License Expiration -->
+                        {{ business_profile_form.license_expiration.errors }}
+                        <div class="form-group">
+                            <label for="{{ business_profile_form.license_expiration.id_for_label }}">License Expiration:</label>
+                            <input type="date" id="{{ business_profile_form.license_expiration.id_for_label }}" name="license_expiration" class="form-control">
+                        </div>
                         <!-- VAT Submission Date -->
                         {{ business_profile_form.vat_submission_date.errors }}
                         <div class="form-group">
