@@ -749,6 +749,7 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         total_employees = Employee.objects.all().count()
         total_business = BusinessProfile.objects.all().count()
+        num_products = Product.objects.all().count()
         categories = [
              {
                 'name': 'Shop Management',
@@ -840,4 +841,4 @@ class HomeView(TemplateView):
             },
         ]
 
-        return {'categories': categories, 'total_employees': total_employees, 'total_business': total_business}
+        return {'categories': categories, 'total_employees': total_employees, 'total_business': total_business, 'num_products':num_products}
