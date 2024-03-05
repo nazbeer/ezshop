@@ -1,4 +1,3 @@
-<!-- shop_list.html -->
 {% extends 'base.html' %}
 
 {% block content %}
@@ -10,12 +9,12 @@
           <th>Shop Name</th>
           <th>License Number</th>
           <th>Number of Users</th>
-          <th>License Expiration</th>
-          <th>Phone Number</th>
-          <th>VAT Percentage</th>
-          <th>VAT Number</th>
-          <th>VAT Submission Date</th>
-          <th>Address</th>
+          <th>VAT Reminder</th>
+          <th>Employee Transaction Window</th>
+          <th>License Expiration Reminder</th>
+          <th>Employee Visa Expiration Reminder</th>
+          <th>Employee Passport Expiration Reminder</th>
+          <th>Created On</th>
         </tr>
       </thead>
       <tbody>
@@ -24,14 +23,12 @@
             <td>{{ shop.name }}</td>
             <td>{{ shop.license_number }}</td>
             <td>{{ shop.num_users }}</td>
-            {% with admin=shop.admins.first %}
-              <td>{{ admin.license_expiration }}</td>
-              <td>{{ admin.phone_number }}</td>
-              <td>{{ admin.vat_percentage }}</td>
-              <td>{{ admin.vat_number }}</td>
-              <td>{{ admin.vat_submission_date }}</td>
-              <td>{{ admin.address }}</td>
-            {% endwith %}
+            <td>{{ shop.vat_remainder }}</td>
+            <td>{{ shop.employee_transaction_window }}</td>
+            <td>{{ shop.license_expiration_reminder }}</td>
+            <td>{{ shop.employee_visa_expiration_reminder }}</td>
+            <td>{{ shop.employee_passport_expiration_reminder }}</td>
+            <td>{{ shop.created_on }}</td>
           </tr>
         {% endfor %}
       </tbody>
