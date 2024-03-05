@@ -27,8 +27,8 @@ class Module(models.Model):
 class Shop(models.Model):
     name = models.CharField(max_length=255)
     license_number = models.CharField(max_length=50, unique=True)
-    num_users = models.PositiveIntegerField()
-    vat_remainder = models.BooleanField(default=False)
+    num_users = models.PositiveIntegerField(verbose_name='Number of Users')
+    vat_remainder = models.BooleanField(default=False, verbose_name='VAT Reminder')
     employee_transaction_window = models.BooleanField(default=False)
     license_expiration_reminder = models.BooleanField(default=False, verbose_name='License Expiration Reminder')
     employee_visa_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Visa Expiration Reminder')
@@ -75,7 +75,9 @@ class BusinessProfile(models.Model):
     shop_phone_number = models.CharField(max_length=25)
     vat_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     vat_number = models.CharField(max_length=255)
-    vat_submission_date = models.DateField()
+    vat_submission_date_1 = models.DateField(null=True)
+    vat_submission_date_2 = models.DateField(null=True)
+    vat_submission_date_3 = models.DateField(null=True)
     vat_certificate_upload = models.FileField(upload_to='vat_certificates')
     address = models.TextField()
     license_expiration_reminder_days = models.PositiveIntegerField(verbose_name='License Expiration Reminder (days)')
@@ -85,6 +87,7 @@ class BusinessProfile(models.Model):
 
     def __str__(self):
         return self.shop.name
+
     
 
 class AdminProfile(models.Model):
@@ -248,7 +251,7 @@ class EmployeeTransaction(models.Model):
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES)
     service_transactions = models.ManyToManyField(Service, related_name='service_transactions', blank=True)
     product_transactions = models.ManyToManyField(Product, related_name='product_transactions', blank=True)
-    tip_received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    #tip_received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_option = models.CharField(max_length=10, choices=[('cash', 'Cash'), ('card', 'Card')])
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True)
@@ -296,7 +299,7 @@ class Sale(models.Model):
     services = models.ManyToManyField(Service, through='SaleItem')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    #tip = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     net_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -317,7 +320,7 @@ class SaleByAdminService(models.Model):
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    tip = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    #tip = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=100)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 

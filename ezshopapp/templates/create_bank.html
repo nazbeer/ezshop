@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <h2>Create Bank</h2>
+  <form method="post" enctype="multipart/form-data" class="form">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="name">Bank Name:</label>
+      <input type="text" id="name" name="name" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="account_number">Account Number:</label>
+      <input type="text" id="account_number" name="account_number" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="opening_balance">Opening Balance:</label>
+      <input type="number" id="opening_balance" name="opening_balance" class="form-control" step="0.01" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Create Bank Deposit</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,47 +1,112 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid">
-  <h2>Business Profiles</h2>
-  <table class="table table-responsive-sm table-striped">
-    <thead>
-      <tr>
-        <th>Shop Name</th>
-        <th>License Number</th>
-        <th>License Expiration</th>
-        <th>License Upload</th>
-        <th>Shop Phone Number</th>
-        <th>VAT Percentage</th>
-        <th>VAT Number</th>
-        <th>VAT Submission Date</th>
-        <th>VAT Certificate Upload</th>
-        <th>Address</th>
-        <th>License Expiration Reminder Days</th>
-        <th>VAT Submission Date Reminder Days</th>
-        <th>Employee Visa Expiration Reminder Days</th>
-        <!-- Add other fields here -->
-      </tr>
-    </thead>
-    <tbody>
-      {% for profile in profiles %}
-      <tr>
-        <td>{{ profile.shop }}</td>
-        <td>{{ profile.license_number }}</td>
-        <td>{{ profile.license_expiration }}</td>
-        <td><img src="{{ MEDIA_URL }}{{ profile.license_upload }}" alt="License Upload"></td>
-        <td>{{ profile.shop_phone_number }}</td>
-        <td>{{ profile.vat_percentage }}</td>
-        <td>{{ profile.vat_number }}</td>
-        <td>{{ profile.vat_submission_date }}</td>
-        <td><img src="{{ MEDIA_URL }}{{ profile.vat_certificate_upload }}" alt="VAT Certificate Upload"></td>        
-        <td>{{ profile.address }}</td>
-        <td>{{ profile.license_expiration_reminder_days }}</td>
-        <td>{{ profile.vat_submission_date_reminder_days }}</td>
-        <td>{{ profile.employee_visa_expiration_reminder_days }}</td>
-        <!-- Add other fields here -->
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="container">
+  <h2 class="mb-3 mt-3">Business Profiles</h2>
+  <div class="row">
+    {% for profile in profiles %}
+    <div class="col-md-6 mb-4 mt-4">
+      <div class="card">
+        <div class="card-header"><h5 class="card-title text-center mb-0">{{ profile.shop }}</h5></div>
+        <div class="card-body">
+          
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>License Number:</strong></p>
+            <p class="card-text">{{ profile.license_number }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>License Expiration:</strong></p>
+            <p class="card-text">{{ profile.license_expiration }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>Shop Phone Number:</strong></p>
+            <p class="card-text">{{ profile.shop_phone_number }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>VAT Percentage:</strong></p>
+            <p class="card-text">{{ profile.vat_percentage }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>VAT Number:</strong></p>
+            <p class="card-text">{{ profile.vat_number }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>VAT Submission Date 1:</strong></p>
+            <p class="card-text">{{ profile.vat_submission_date_1 }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>VAT Submission Date 2:</strong></p>
+            <p class="card-text">{{ profile.vat_submission_date_2 }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>VAT Submission Date 3:</strong></p>
+            <p class="card-text">{{ profile.vat_submission_date_3 }}</p>
+          </div>
+        
+        
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>Address:</strong></p>
+            <p class="card-text">{{ profile.address }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>License Expiration Reminder Days:</strong></p>
+            <p class="card-text">{{ profile.license_expiration_reminder_days }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>VAT Submission Date Reminder Days:</strong></p>
+            <p class="card-text">{{ profile.vat_submission_date_reminder_days }}</p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="card-text"><strong>Employee Visa Expiration Reminder Days:</strong></p>
+            <p class="card-text">{{ profile.employee_visa_expiration_reminder_days }}</p>
+          </div> 
+        </div>
+        
+        <div class="card-footer d-flex justify-content-between align-items-center">
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#licenseModal{{ profile.id }}">
+            View License
+          </button>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#vatCertificateModal{{ profile.id }}">
+            View VAT Certificate
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- License Modal -->
+    <div class="modal fade" id="licenseModal{{ profile.id }}" tabindex="-1" role="dialog" aria-labelledby="licenseModal{{ profile.id }}Label" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="licenseModal{{ profile.id }}Label">License</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <img src="{{ MEDIA_URL }}{{ profile.license_upload.url }}" class="img-fluid" alt="License">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VAT Certificate Modal -->
+    <div class="modal fade" id="vatCertificateModal{{ profile.id }}" tabindex="-1" role="dialog" aria-labelledby="vatCertificateModal{{ profile.id }}Label" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="vatCertificateModal{{ profile.id }}Label">VAT Certificate</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <img src="{{ MEDIA_URL }}{{ profile.vat_certificate_upload.url }}" class="img-fluid" alt="VAT Certificate">
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}

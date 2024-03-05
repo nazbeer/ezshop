@@ -36,6 +36,7 @@
                         <tr>
                             <td>
                                 <select name="form-0-service" class="form-control" onchange="updatePrice1(this)">
+                                    <option>--Select--</option>
                                     {% for service in services %}
                                         <option value="{{ service.id }}-{{ service.amount }}">{{ service.name }}</option>
                                     {% endfor %}

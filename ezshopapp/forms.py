@@ -81,13 +81,8 @@ class ServiceForm(forms.ModelForm):
 class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
-        exclude = ['password']  # Exclude the 'password' field from the form
-        widgets = {
-            'passport_expiration_date': forms.DateInput(attrs={'type': 'date'}),
-            'id_expiration_date': forms.DateInput(attrs={'type': 'date'}),
-            'joining_date': forms.DateInput(attrs={'type': 'date'}),
-        }
-        
+        fields = '__all__'
+
 class DayClosingForm(forms.ModelForm):
     class Meta:
         model = DayClosing
@@ -167,7 +162,7 @@ class CustomLoginForm(forms.Form):
 class SalesForm(forms.ModelForm):
     class Meta:
         model = Sale
-        fields = ['amount', 'discount', 'tip']
+        fields = ['amount', 'discount']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -190,7 +185,7 @@ class SalesForm(forms.ModelForm):
 class SaleForm(forms.ModelForm):
     class Meta:
         model = Sale
-        fields = ['date', 'employee', 'amount', 'discount', 'tip', 'net_amount']
+        fields = ['date', 'employee', 'amount', 'discount', 'net_amount']
 
 class SaleItemForm(forms.ModelForm):
     class Meta:
@@ -218,7 +213,7 @@ SaleItemFormSet = inlineformset_factory(Sale, SaleItem, form=SaleItemForm, extra
 class SaleByAdminServiceForm(forms.ModelForm):
     class Meta:
         model = SaleByAdminService
-        fields = ['date', 'employee', 'service', 'quantity', 'price', 'discount', 'tip', 'payment_method']
+        fields = ['date', 'employee', 'service', 'quantity', 'price', 'discount',  'payment_method']
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'employee': forms.Select(attrs={'class': 'form-control', 'required': True}),
@@ -226,7 +221,7 @@ class SaleByAdminServiceForm(forms.ModelForm):
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'value': '1'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'readonly': True}),
             'discount': forms.NumberInput(attrs={'class': 'form-control'}),
-            'tip': forms.NumberInput(attrs={'class': 'form-control'}),
+            
             'payment_method': forms.Select(attrs={'class': 'form-control'}),
         }
 

@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.db.models import Count, Sum
 from django.utils import timezone
+from django.contrib import messages
 from .models import Shop, ShopAdmin, User, Role, DayClosingAdmin, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, Module, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
 from .forms import ShopForm, RoleForm, AdminProfileForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
@@ -186,30 +187,55 @@ def employee_list(request):
 
     return render(request, 'employee_list.html', {'employees': employees})
 
-class EmployeeCreateView(CreateView):
-    model = Employee
-    form_class = EmployeeForm
-    template_name = 'create_employee.html'
-    success_url = reverse_lazy('employee_list')
 
-    def form_valid(self, form):
-        # Check if business_profile field exists in form data
-        business_profile_id = form.cleaned_data.get('business_profile')
-        print("Business Profile ID:", business_profile_id)  # Debugging statement
-        
-        if business_profile_id:
-            # Retrieve the BusinessProfile object
-            business_profile = BusinessProfile.objects.get(pk=business_profile_id)
-            print("Business Profile:", business_profile)  # Debugging statement
-            
-            # Assign the business profile to the employee instance
-            form.instance.business_profile = business_profile
-        else:
-            print("Business Profile ID not found")  # Debugging statement
-        
-        # Save the form
-        return super().form_valid(form)
+# class EmployeeCreateView(CreateView):
+#     model = Employee
+#     form_class = EmployeeForm
+#     template_name = 'create_employee.html'
+#     success_url = reverse_lazy('employee_list')
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['business_profiles'] = BusinessProfile.objects.all()  # Retrieve all business profiles
+#         return context
+
+#     def form_valid(self, form):
+#         business_profile_id = form.cleaned_data.get('business_profile')
+#         if business_profile_id:
+#             business_profile = BusinessProfile.objects.get(pk=business_profile_id)
+#             form.instance.business_profile = business_profile
+#             form.save()
+#         return super().form_valid(form)
+
+
+def create_employee(request):
+    error_occurred = False  # Flag to indicate whether an error occurred during saving
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST)
+        if form.is_valid():
+            try:
+                business_profile_id = form.cleaned_data.get('business_profile')
+                if business_profile_id:
+                    business_profile = BusinessProfile.objects.get(pk=business_profile_id)
+                    form.instance.business_profile = business_profile
+                    form.save()
+                    return redirect('employee_list')  # Redirect to the employee list page upon successful form submission
+            except Exception as e:
+                print("An error occurred while saving the form:", e)
+                error_occurred = True  # Set the flag to True if an error occurred during saving
+                # Optionally, you can log the error or perform other error handling here
+                messages.error(request, "An error occurred while saving the form.")
+    else:
+        form = EmployeeForm()
     
+    business_profiles = BusinessProfile.objects.all()
+    context = {
+        'form': form,
+        'business_profiles': business_profiles,
+        'error_occurred': error_occurred,  # Pass the flag in the context
+    }
+    return render(request, 'create_employee.html', context)
+
 def get_employee_data(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
     data = {
@@ -301,11 +327,39 @@ class BankDepositListView(ListView):
     model = BankDeposit
     template_name = 'bank_deposit_list.html'
 
-class BankDepositCreateView(CreateView):
-    model = BankDeposit
-    form_class = BankDepositForm
-    template_name = 'create_bank_deposit.html'
-    success_url = reverse_lazy('bank_deposit_list')
+def create_bank_deposit(request):
+    if request.method == 'POST':
+        form = BankDepositForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('bank_deposit_list')  # Redirect to the bank deposit list page upon successful form submission
+    else:
+        form = BankDepositForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'create_bank_deposit.html', context)
+
+
+class BankListView(ListView):
+    model = Bank
+    template_name = 'bank_list.html'
+    
+
+def create_bank(request):
+    if request.method == 'POST':
+        form = BankForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('bank_list')  # Redirect to the bank list page upon successful form submission
+    else:
+        form = BankForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'create_bank_deposit.html', context)
 
 class BankDepositUpdateView(UpdateView):
     model = BankDeposit
@@ -561,7 +615,7 @@ def submit_sale(request):
             quantity = form.cleaned_data['quantity']
             amount = form.cleaned_data['amount']
             discount = form.cleaned_data['discount']
-            tip = form.cleaned_data['tip']
+            #tip = form.cleaned_data['tip']
             payment_method = form.cleaned_data['payment_method']
             
     
