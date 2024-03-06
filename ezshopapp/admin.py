@@ -15,8 +15,8 @@ admin.site.site_title = "Ezshop Admin Portal"
 admin.site.index_title = "Welcome to Ezshop Mite Solution App"
 
 class ShopAdminModel(admin.ModelAdmin):
-    list_display = ('name', 'username','email', 'license_number', 'num_users', 'created_on')  # Adjust list_display according to your model fields
-    search_fields = ['name', 'license_number', 'location']  # Adjust search_fields according to your model fields
+    list_display = ('name', 'username','email', 'password', 'license_number', 'num_users', 'created_on')  # Adjust list_display according to your model fields
+    search_fields = ['name','username', 'email', 'license_number']  # Adjust search_fields according to your model fields
     list_filter = ['created_on']  # Adjust list_filter according to your model fields
 
 # Register the Shop model with the custom admin class

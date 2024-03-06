@@ -66,7 +66,7 @@ for choice in Modules.get_sidebar_choices():
 
 
 class Shop(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name='Shop Name')
     license_number = models.CharField(max_length=50, unique=True)
     num_users = models.PositiveIntegerField(verbose_name='Number of Users')
     vat_remainder = models.BooleanField(default=False, verbose_name='VAT Reminder')
