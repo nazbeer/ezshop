@@ -14,7 +14,10 @@
           <th>License Expiration Reminder</th>
           <th>Employee Visa Expiration Reminder</th>
           <th>Employee Passport Expiration Reminder</th>
-          <th>Created On</th>
+          <th>User Email</th>
+          <th>User Username</th>
+          
+          <th>Shop Created On</th>
         </tr>
       </thead>
       <tbody>
@@ -28,6 +31,13 @@
             <td>{{ shop.license_expiration_reminder }}</td>
             <td>{{ shop.employee_visa_expiration_reminder }}</td>
             <td>{{ shop.employee_passport_expiration_reminder }}</td>
+            
+                <td>{{ shop.email }}</td>
+                <td>{{ shop.username }}</td>
+                
+            
+           
+             
             <td>{{ shop.created_on }}</td>
           </tr>
         {% endfor %}

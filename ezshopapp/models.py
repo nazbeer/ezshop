@@ -74,6 +74,9 @@ class Shop(models.Model):
     license_expiration_reminder = models.BooleanField(default=False, verbose_name='License Expiration Reminder')
     employee_visa_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Visa Expiration Reminder')
     employee_passport_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Passport Expiration Reminder')
+    email = models.EmailField(default='')  # Add email field with a default value
+    username = models.CharField(max_length=100, default='root')  # Add username field to the Shop model
+    password = models.CharField(max_length=100, default='password')  # Add password field to the Shop model
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -107,7 +110,6 @@ class ShopAdmin(models.Model):
 
     def __str__(self):
         return f"{self.shop.name} - {self.admin_user.username}"
-
 class BusinessProfile(models.Model):
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=False, related_name='shop')
     license_number = models.CharField(max_length=255)

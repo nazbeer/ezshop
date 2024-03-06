@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 # from django.contrib.auth.forms import UserCreationForm
 from .models import Shop, Sale,Employee, UserProfile, DayClosingAdmin, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, Role, SaleItem, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
 from django.db import models
@@ -33,18 +34,28 @@ class AdminProfileForm(forms.ModelForm):
             username = self.cleaned_data['email']
         return username
     
+
 class ShopForm(forms.ModelForm):
+    username = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+
     class Meta:
         model = Shop
-        fields = '__all__'
+        fields = ['name', 'license_number', 'num_users', 'vat_remainder', 'employee_transaction_window', 'license_expiration_reminder', 'employee_visa_expiration_reminder', 'employee_passport_expiration_reminder', 'username', 'email', 'password']
 
+    def save(self, commit=True):
+        shop = super().save(commit=False)
+        username = self.cleaned_data.get('username')
+        email = self.cleaned_data.get('email')
+        password = self.cleaned_data.get('password')
 
-class UserProfileForm(forms.ModelForm):
-    class Meta:
-        model = UserProfile
-        fields = ['email', 'username', 'password']
+        if commit:
+            user = User.objects.create_user(username=username, email=email, password=password)
+            # You can adjust this part to associate the created user with the shop as needed
+            # For example: UserProfile.objects.create(shop=shop, user=user)
 
-UserProfileFormSet = forms.inlineformset_factory(Shop, UserProfile, form=UserProfileForm, extra=1)
+        return shop
 
 class BusinessProfileForm(forms.ModelForm):
     class Meta:

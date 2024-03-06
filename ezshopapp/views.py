@@ -3,6 +3,7 @@ from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
 from django.views import View
+from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.forms import formset_factory
@@ -11,8 +12,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login
 from django.db.models import Count, Sum
 from django.utils import timezone
+from django.db import transaction
 from django.contrib import messages
-from .models import Shop, ShopAdmin, User, Role, DayClosingAdmin, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, Module, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing
+from .models import Shop, ShopAdmin, User, Role, DayClosingAdmin, BusinessProfile, Employee, Sale, ExpenseType, SaleByAdminService, SalesByAdminItem, ReceiptType, Bank, SaleItem, Module, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, DayClosing, UserProfile
 from .forms import ShopForm, RoleForm, AdminProfileForm,  EmployeeForm, ExpenseTypeForm, ReceiptTypeForm, BankForm, ReceiptTransactionForm, PaymentTransactionForm, BankDepositForm, ServiceForm, ProductForm, EmployeeTransactionForm, DailySummaryForm
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
@@ -78,12 +80,40 @@ class ShopListView(ListView):
         # Retrieve the queryset and order it by name in ascending order
         return Shop.objects.all().order_by('-name')
 
+
+
 class ShopCreateView(CreateView):
     model = Shop
     form_class = ShopForm
     template_name = 'create_shop.html'
     success_url = reverse_lazy('shop_list')
 
+    def form_valid(self, form):
+        # Save the Shop instance
+        shop_instance = form.save(commit=False)
+        
+        # Extract username, email, and password from the form data
+        username = form.cleaned_data['username']
+        email = form.cleaned_data['email']
+        password = form.cleaned_data['password']
+
+        try:
+            # Create the new user with staff and active status
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.is_staff = True  # Grant staff access
+            user.is_active = True  # Activate the user account
+            user.save()
+
+            # Associate the created user with the shop
+            shop_instance.user = user
+            shop_instance.save()
+
+            return super().form_valid(form)
+        except IntegrityError:
+            # Continue saving the form even if IntegrityError occurs for username
+            return super().form_valid(form)
+        
+        
 class ShopUpdateView(UpdateView):
     model = Shop
     form_class = ShopForm
@@ -863,8 +893,8 @@ class HomeView(TemplateView):
              {
                 'name': 'Shop Management',
                 'links': [
-                    {'label': 'Shop List', 'url_name': 'shop_list'},
-                    {'label': 'Create Shop', 'url_name': 'create_shop'},
+                   # {'label': 'Shop List', 'url_name': 'shop_list'},
+                   # {'label': 'Create Shop', 'url_name': 'create_shop'},
                     {'label': 'Create Business', 'url_name': 'create_business_profile'},
                     {'label': 'All Business Profiles', 'url_name': 'business_profile_list'},
             ]

@@ -1,14 +1,14 @@
- <ul id="font-c">
+ <ul id="font-c" style="max-height: 400px; overflow-y: scroll;">
         <li><a href="/home/"><i class="fas fa-home"></i> Home</a></li>
         
         {% if user.is_superuser %}
-        <li class="dropdown">
+        <!-- <li class="dropdown">
             <a href="#" class="dropdown-toggle" id="shopDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-store"></i> Shop</a>
             <div class="dropdown-menu" aria-labelledby="shopDropdown">
                 <a class="dropdown-item" href="/shop/"><i class="fas fa-list"></i> Shop List</a>
                 <a class="dropdown-item" href="/shop/create/"><i class="fas fa-plus"></i> Create Shop</a>
             </div>
-        </li>
+        </li> -->
         {% endif %}
         
         {% if user.is_superuser or user.is_admin %}
