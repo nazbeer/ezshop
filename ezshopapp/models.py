@@ -16,12 +16,53 @@ PAYMENT_METHOD_CHOICES = (
     ("card", "Card")
 )
 
-class Module(models.Model):
+class Modules(models.Model):
     name = models.CharField(max_length=255)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
+    
+    @classmethod
+    def get_sidebar_choices(cls):
+        # Define the sidebar URL labels and corresponding module names
+        sidebar_choices = [
+            ('shop', 'Shop'),
+            ('business', 'Business Profile'),
+            ('employee', 'Employee'),
+            ('sale', 'Sale & Day Closing'),
+            ('role', 'Role'),
+            ('expense-type', 'Expense Type'),
+            ('receipt-transaction', 'Receipt Transaction'),
+            ('payment-transaction', 'Payment Transaction'),
+            ('service', 'Service'),
+            ('product', 'Product'),
+            ('employee-transaction', 'Employee Transaction'),
+            ('daily-summary', 'Daily Summary'),
+            ('bank', 'Bank Deposit'),
+        ]
+        return sidebar_choices
+
+class Module(models.Model):
+    name = models.CharField(max_length=50)
+    created_on = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class Role(models.Model):
+    name = models.CharField(max_length=255)
+    modules = models.ManyToManyField(Module, null=True)
+    is_employee = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+# Populating Module instances based on sidebar choices
+for choice in Modules.get_sidebar_choices():
+    module_name = choice[1]
+    Module.objects.get_or_create(name=module_name)
 
 
 class Shop(models.Model):
@@ -109,13 +150,7 @@ class AdminProfile(models.Model):
     def __str__(self):
         return self.email 
   
-class Role(models.Model):
-    name = models.CharField(max_length=255)
-    modules = models.ManyToManyField(Module)
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
 
-    def __str__(self):
-        return self.name
     
 class ExpenseType(models.Model):
     name = models.CharField(max_length=255)

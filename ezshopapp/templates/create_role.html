@@ -3,7 +3,11 @@
 {% block title %}Create Role{% endblock %}
 
 {% block content %}
-  <h2>Create Role</h2>
+<div class="card">
+  <div class="card-header"><h2 class="mb-0">Create Role</h2></div>
+  <div class="card-body">
+    
+  
   <form method="post">
     {% csrf_token %}
     <div class="form-group">
@@ -11,17 +15,27 @@
       <input type="text" id="name" name="name" class="form-control">
     </div>
     <div class="form-group">
-      <label for="module">Module List:</label>
-      <select id="module" name="module" class="form-control text-capitalize " style="height:400px" multiple>
-        {% for pattern in url_patterns %}
-            <option value="{{ pattern }}">{{ pattern }}</option>
+      <label for="modules">Module List:</label>
+      <select id="modules" name="modules" class="form-control text-capitalize " style="height:200px" multiple>
+        {% for module in modules %}
+            <option value="{{ module.name }}">{{ module.name }}</option>
         {% endfor %}
-    </select>
+      </select>
+    </div>
+    <div class="form-check ml-0 pl-0 d-flex justify-content-between align-items-center mb-3">
+      <input type="checkbox" class="form-check-input" id="is_employee" name="is_employee">
+      <label class="form-check-label" for="is_employee">Is Employee?</label>
     </div>
     <!-- Add other fields as necessary -->
 
     <button type="submit" class="btn btn-success">Create</button>
   </form>
-  <br/>
+
+</div>
+<div class="card-footer">
+
   <a href="{% url 'role_list' %}" class="btn btn-warning btn-sm">Back to Role List</a>
+</div>
+</div>
+ 
 {% endblock %}

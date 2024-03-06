@@ -7,7 +7,7 @@ from .views import (
     ShopUpdateView, ShopDeleteView, SaleListCreateView, submit_sale, get_employee_data,
     DayClosingView, day_closing_report, edit_day_closing, approve_day_closing, create_sale,
     success_view, sales_by_staff_item_service, sale_by_admin_service, sales_report,
-    RoleListView, RoleCreateView, RoleDeleteView, employee_list, create_receipt_type,
+    RoleListView, create_role, RoleDeleteView, employee_list, create_receipt_type,
     create_employee, employee_edit, employee_delete, ExpenseTypeListView,
     create_expense_type, ExpenseTypeUpdateView, ExpenseTypeDeleteView,
     ReceiptTransactionListView, ReceiptTransactionUpdateView,
@@ -16,13 +16,14 @@ from .views import (
     create_bank_deposit,create_bank, BankListView,  BankDepositUpdateView, BankDepositDeleteView, ServiceListView,
     ServiceCreateView, ServiceUpdateView, ServiceDeleteView, ProductListView, create_product,
     ProductUpdateView, ProductDeleteView, EmployeeTransactionListView, employee_transaction_create,
-    EmployeeTransactionUpdateView, EmployeeTransactionDeleteView, DailySummaryListView,
+    EmployeeTransactionUpdateView, EmployeeTransactionDeleteView, DailySummaryListView, sidebar,
     DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, RoleUpdateView, create_receipt_transaction, day_closing_admin
 )
 
 urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
+    path('', sidebar, name='sidebar'),
     path('home/', HomeView.as_view(), name='home'),
     path('create-business-profile/', create_business_profile, name='create_business_profile'),
     path('fetch_shop_details/', fetch_shop_details, name='fetch_shop_details'),
@@ -47,7 +48,7 @@ urlpatterns = [
     path('sale/sales-by-admin-service', sale_by_admin_service, name='sales_by_admin_service'),
     path('sale/sales-report/', sales_report, name='sales_report'),
     path('role/', RoleListView.as_view(), name='role_list'),
-    path('role/create/', RoleCreateView.as_view(), name='create_role'),
+    path('role/create/', create_role, name='create_role'),
     path('role/update/<int:pk>/', RoleUpdateView.as_view(), name='update_role'),
     path('role/delete/<int:pk>/', RoleDeleteView.as_view(), name='delete_role'),
     path('employee/', employee_list, name='employee_list'),

@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login
 from django.db.models import Count, Sum
 from django.utils import timezone
@@ -26,6 +27,15 @@ from django.urls.resolvers import RoutePattern
 
 # Assuming you have a form for admin users
 AdminUserForm = formset_factory(AdminUserForm, extra=1)
+@login_required
+def sidebar(request):
+    # Determine the user's role
+    is_superuser = request.user.is_superuser
+    is_admin = request.user.groups.filter(name='Admin').exists()
+    is_employee = not is_superuser and not is_admin
+
+    # Render the sidebar template with context based on the user's role
+    return render(request, 'sidebar.html', {'user': request.user, 'is_superuser': is_superuser, 'is_admin': is_admin, 'is_employee': is_employee})
 
 class CustomLoginView(FormView):
     template_name = 'login.html'
@@ -91,35 +101,59 @@ class RoleListView(ListView):
     template_name = 'role_list.html'
 
 
-class RoleCreateView(TemplateView):
-    template_name = 'create_role.html'
+# class RoleCreateView(TemplateView):
+#     template_name = 'create_role.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        url_patterns = [pattern for pattern, _ in get_resolver().reverse_dict.items()]
-        context['url_patterns'] = url_patterns
-        return context
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         # Fetch all module names from the Module model
+#         modules = Module.objects.all()
+#         context['modules'] = modules
+#         return context
 
-    def post(self, request, *args, **kwargs):
+#     def post(self, request, *args, **kwargs):
+#         # Extract data from the form
+#         role_name = request.POST.get('name')
+#         module_names = request.POST.getlist('modules')
+        
+#         # Create a new Role object
+#         new_role = Role.objects.create(name=role_name)
+        
+#         # Add modules to the role
+#         for module_name in module_names:
+#             module = get_object_or_404(Module, name=module_name)
+#             new_role.modules.add(module)
+        
+#         # Save the role object
+#         new_role.save()
+        
+#         # Redirect the user to a different page
+#         return HttpResponseRedirect(reverse('role_list'))
+
+def create_role(request):
+    if request.method == 'POST':
         # Extract data from the form
         role_name = request.POST.get('name')
         module_names = request.POST.getlist('modules')
+        is_employee = request.POST.get('is_employee') == 'on'
         
         # Create a new Role object
-        new_role = Role.objects.create(name=role_name)
+        new_role = Role.objects.create(name=role_name, is_employee=is_employee)
         
         # Add modules to the role
         for module_name in module_names:
-            module = get_object_or_404(Module, name=module_name)
+            module = Module.objects.get(name=module_name)
             new_role.modules.add(module)
         
         # Save the role object
         new_role.save()
         
-        # Redirect the user to a different page
-        return HttpResponseRedirect(reverse('role_list'))
-
-
+        # Redirect to role list page
+        return redirect('role_list')
+    else:
+        modules = Module.objects.all()
+        return render(request, 'create_role.html', {'modules': modules})
+    
 def analytics_view(request):
     # Fetch total number of employees
     total_employees = Employee.objects.all().count()
@@ -137,6 +171,7 @@ def analytics_view(request):
       #  'dayclosing_values': dayclosing_values,
     })
 
+
 class RoleUpdateView(TemplateView):
     template_name = 'update_role.html'
 
@@ -147,9 +182,29 @@ class RoleUpdateView(TemplateView):
         modules = role.modules.all()  # Retrieve all modules associated with the role
         context['role'] = role
         context['modules'] = modules
-        # Add other context data if needed
         return context
 
+    def post(self, request, *args, **kwargs):
+        role_id = kwargs.get('pk')
+        role = get_object_or_404(Role, pk=role_id)
+
+        # Update role data based on POST data
+        role_name = request.POST.get('name')
+        role.name = role_name
+
+        # Handle the is_employee checkbox
+        is_employee = request.POST.get('is_employee')
+        if is_employee:
+            role.is_employee = True
+        else:
+            role.is_employee = False
+
+        # Save the updated role
+        role.save()
+
+        # Redirect to the role list page after updating
+        return HttpResponseRedirect(reverse('role_list'))
+    
 class RoleDeleteView(DeleteView):
     model = Role
     template_name = 'delete_role.html'
