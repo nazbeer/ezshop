@@ -1,7 +1,9 @@
 <!-- create_employee.html -->
+
 {% extends 'base.html' %}
 
 {% block content %}
+
 <div class="container">
     <h2>Create Employee</h2>
     {% if error_occurred %}
@@ -9,32 +11,57 @@
         An error occurred while saving the form. Please try again.
     </div>
     {% endif %}
+    
+    <!-- Display form errors if any -->
+    {% if form.errors %}
+    <div class="alert alert-danger" role="alert">
+        {% for field, error in form.errors.items %}
+            <strong>{{ field|title }}:</strong> {{ error|join:", " }}<br>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
     <form method="post" enctype="multipart/form-data" class="form">
         {% csrf_token %}
+        <div class="row">
+        <div class="col-md-6">
+            
         <div class="form-group">
             <label for="business_profile">Business Profile:</label>
-            <select name="business_profile" id="business_profile" class="form-control">
-                <option value="">Select Business Profile</option>
-                {% for business_profile in business_profiles %}
-                    <option value="{{ business_profile.shop }}">{{ business_profile.shop }}</option>
-                {% endfor %}
-            </select>
+            
+            {% for business_profile in business_profiles %}
+            <input type="text" id="business_profile" name="business_profile" value="{{ business_profile.shop }}" class="form-control" readonly>
+            {% endfor %}
         </div>
         
+        </div>
+        <div class="col-md-6">
+
+            <div class="form-group">
+                <label for="employee_id">Employee ID:</label>
+                {{ form.employee_id }}
+            </div>
+        </div>
+    </div>
         <div class="row">
             <div class="col-md-6">
-                
                 <div class="form-group">
-                    <label for="employee_id">Employee ID:</label>
-                    {{ form.employee_id }}
+                    <label for="job_role">Mobile Number:</label>
+                    {{ form.mobile_no }}
                 </div>
+
                 <div class="form-group">
                     <label for="first_name">First Name:</label>
                     {{ form.first_name }}
                 </div>
+                
                 <div class="form-group">
                     <label for="nationality">Nationality:</label>
-                    {{ form.nationality }}
+                    <select id="nationality" name="nationality" class="form-control">
+                        {% for nationality in nationalities %}
+                            <option value="{{ nationality }}">{{ nationality }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 
                
@@ -54,11 +81,11 @@
                 </div>
                 <div class="form-group">
                     <label for="passport_expiration_date">Passport Expiration Date:</label>
-                    {{ form.passport_expiration_date }}
+                    <input type="date" id="passport_expiration_date" name="passport_expiration_date" class="form-control">
                 </div>
                 <div class="form-group">
                     <label for="id_expiration_date">ID Expiration Date:</label>
-                    {{ form.id_expiration_date }}
+                    <input type="date" id="id_expiration_date" name="id_expiration_date" class="form-control">
                 </div>
             </div>
         </div>
@@ -88,7 +115,7 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="joining_date">Joining Date:</label>
-                    {{ form.joining_date }}
+                    <input type="date" id="joining_date" name="joining_date" class="form-control">
                 </div>
             </div>
             <div class="col-md-6">
@@ -97,6 +124,7 @@
                     {{ form.job_role }}
                 </div>
             </div>
+            
         </div>
         <!-- <div class="form-group">
             <label for="username">Username:</label>

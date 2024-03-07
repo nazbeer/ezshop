@@ -17,43 +17,17 @@ PAYMENT_METHOD_CHOICES = (
 )
 
 
-class Shop(models.Model):
-    name = models.CharField(max_length=255, verbose_name='Shop Name')
-    license_number = models.CharField(max_length=50, unique=True)
-    num_users = models.PositiveIntegerField(verbose_name='Number of Users')
-    vat_remainder = models.BooleanField(default=False, verbose_name='VAT Reminder')
-    employee_transaction_window = models.BooleanField(default=False)
-    license_expiration_reminder = models.BooleanField(default=False, verbose_name='License Expiration Reminder')
-    employee_visa_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Visa Expiration Reminder')
-    employee_passport_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Passport Expiration Reminder')
+
+# class UserProfile(models.Model):
+#     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='user_profiles')
+#     email = models.EmailField(null=True)  # Nullable email field
+#     username = models.CharField(max_length=100)
+#     password = models.CharField(max_length=100)
+#     created_on = models.DateTimeField(auto_now_add=True, null=True)
+
+#     def __str__(self):
+#         return self.username
     
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-class UserProfile(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='user_profiles')
-    email = models.EmailField(null=True)  # Nullable email field
-    username = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__(self):
-        return self.username
-
-class ShopAdmin(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='admin_users')
-    email = models.EmailField(max_length=100, default='example@example.com')
-
-    # username = models.CharField(max_length=100, default='', null=True)  
-    # password = models.CharField(max_length=100, default='Mite@2024', null=True)  
-    admin_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__(self):
-        return f"{self.shop.name}"
-
 class Modules(models.Model):
     name = models.CharField(max_length=255)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
@@ -102,8 +76,32 @@ for choice in Modules.get_sidebar_choices():
     Module.objects.get_or_create(name=module_name)
     
 
+class Shop(models.Model):
+    name = models.CharField(max_length=255, verbose_name='Shop Name')
+    license_number = models.CharField(max_length=50, unique=True)
+    num_users = models.PositiveIntegerField(verbose_name='Number of Users')
+    vat_remainder = models.BooleanField(default=False, verbose_name='VAT Reminder')
+    employee_transaction_window = models.BooleanField(default=False)
+    license_expiration_reminder = models.BooleanField(default=False, verbose_name='License Expiration Reminder')
+    employee_visa_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Visa Expiration Reminder')
+    employee_passport_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Passport Expiration Reminder')
+    admin_email = models.EmailField(max_length=100, default='')
+    created_on = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class ShopAdmin(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, verbose_name="Mite Admin User")
+    shop = models.OneToOneField(Shop, on_delete=models.CASCADE)
+    admin_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='shop_admin', unique=True)
+
+    def __str__(self):
+        return self.user.username
+    
 class BusinessProfile(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=False, related_name='shop')
+    name = models.CharField(max_length=64, blank=False, default=None, null=True)
     license_number = models.CharField(max_length=255)
     license_expiration = models.DateField(null=True)
     license_upload = models.FileField(upload_to='licenses')
@@ -121,7 +119,8 @@ class BusinessProfile(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
-        return self.shop.name
+        return self.name
+
 
 class AdminProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
@@ -211,10 +210,11 @@ class Product(models.Model):
 
 class Employee(models.Model):
     employee_id = models.CharField(max_length=10, unique=True)
+    business_profile = models.CharField(max_length=255, null=True)
     first_name = models.CharField(max_length=255)
     second_name = models.CharField(max_length=255)
     nationality = models.CharField(max_length=255)
-    mobile_no = models.CharField(max_length=20)
+    mobile_no = models.CharField(max_length=20, blank=True, null=True)
     passport_no = models.CharField(max_length=20)
     passport_expiration_date = models.DateField()
     emirates_id = models.CharField(max_length=20)
@@ -225,7 +225,7 @@ class Employee(models.Model):
     commission_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     joining_date = models.DateField()
     job_role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
-    business_profile = models.ForeignKey(BusinessProfile, on_delete=models.SET_NULL, null=True)
+    
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):

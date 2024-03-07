@@ -13,6 +13,9 @@ urlpatterns = [
     path('fetch_shop_details/', fetch_shop_details, name='fetch_shop_details'),
     path('profile-created/', profile_created, name='profile_created'),
     path('business/', business_profile_list, name='business_profile_list'),
+    path('business_profiles/<int:pk>/edit/', edit_business_profile, name='edit_business_profile'),
+    path('business_profiles/<int:pk>/delete/', delete_business_profile, name='delete_business_profile'),
+   
     path('get_shop_details/<str:name>/', get_shop_details, name='get_shop_details'),
     path('shop/', ShopListView.as_view(), name='shop_list'),
     path('shop/create/', ShopCreateView.as_view(), name='create_shop'),

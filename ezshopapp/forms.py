@@ -12,6 +12,17 @@ from django.core.exceptions import ValidationError
 #         fields = ('username', 'email', 'password1', 'password2', 'full_name', 'date_of_birth', 'profile_picture', 'address', 'phone_number')
     
 
+class CustomShopAdminForm(forms.ModelForm):
+    class Meta:
+        model = ShopAdmin
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        existing_shops = ShopAdmin.objects.values_list('shop_id', flat=True)
+        self.fields['name'].queryset = Shop.objects.exclude(id__in=existing_shops)
+
+
 class AdminUserForm(forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
@@ -35,41 +46,35 @@ class AdminProfileForm(forms.ModelForm):
         return username
     
 
-class ShopForm(forms.ModelForm):
-    username = forms.CharField(max_length=100)
-    email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput)
+class ShopAdminForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
 
+class ShopForm(forms.ModelForm):
     class Meta:
         model = Shop
-        fields = ['name', 'license_number', 'num_users', 'vat_remainder', 'employee_transaction_window', 'license_expiration_reminder', 'employee_visa_expiration_reminder', 'employee_passport_expiration_reminder', 'username', 'email', 'password']
-
-    def save(self, commit=True):
-        shop = super().save(commit=False)
-        username = self.cleaned_data.get('username')
-        email = self.cleaned_data.get('email')
-        password = self.cleaned_data.get('password')
-
-        if commit:
-            user = User.objects.create_superuser(username=username, email=email, password=password)
-            # You can adjust this part to associate the created user with the shop as needed
-            # For example: UserProfile.objects.create(shop=shop, user=user)
-        shop.save()
-        Shop.objects.create(shop=shop, user=user)
-        
-        return user
+        fields = '__all__'
 
 class BusinessProfileForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        # Get the user from the form kwargs
+        user = kwargs.pop('user', None)
+        super(BusinessProfileForm, self).__init__(*args, **kwargs)
+        if user and not user.is_superuser:
+            # Filter shop choices based on the currently logged-in user's associated shop
+            self.fields['shop'].queryset = Shop.objects.filter(admin_user=user)
+
     class Meta:
         model = BusinessProfile
         fields = '__all__'
 
-def clean_license_number(self):
-        license_number = self.cleaned_data.get('license_number')
-        shop_license_numbers = [choice.split('-')[1] for choice in self.fields['shop'].choices if choice[0] != '']
-        if license_number not in shop_license_numbers:
-            raise forms.ValidationError("Invalid license number selected.")
-        return license_number
+    # def clean_license_number(self):
+    #         license_number = self.cleaned_data.get('license_number')
+    #         shop_license_numbers = [choice.split('-')[1] for choice in self.fields['shop'].choices if choice[0] != '']
+    #         if license_number not in shop_license_numbers:
+    #             raise forms.ValidationError("Invalid license number selected.")
+    #         return license_number
     
 class RoleForm(forms.ModelForm):
     class Meta:

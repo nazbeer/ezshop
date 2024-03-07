@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from .constants import NATIONALITIES 
 from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth.decorators import login_required
@@ -64,35 +65,70 @@ class ShopListView(ListView):
 
         return Shop.objects.all().order_by('-name')
 
+# class ShopCreateView(CreateView):
+#     model = Shop
+#     form_class = ShopForm
+#     template_name = 'create_shop.html'
+#     success_url = reverse_lazy('shop_list')
+
+#     def form_valid(self, form):
+#         shop_instance = form.save(commit=False)
+
+#         username = form.cleaned_data['username']
+#         email = form.cleaned_data['email']
+#         password = form.cleaned_data['password']
+
+#         try:
+#             # Check if a superuser already exists for the given shop
+#             if User.objects.filter(is_superuser=True, shop=shop_instance).exists():
+#                 messages.error(self.request, "A superuser already exists for this shop.")
+#                 return redirect('shop_list')
+
+#             # Create a new superuser
+#             user = User.objects.create_superuser(username=username, email=email, password=password)
+#             user.is_staff = True  
+#             user.is_active = True
+#             user.is_superuser = True  
+#             user.save()
+
+#             shop_instance.user = user
+#             shop_instance.save()
+
+#             return super().form_valid(form)
+#         except IntegrityError:
+#             messages.error(self.request, "An error occurred while creating the shop.")
+#             return super().form_valid(form)
+        
+
+class ShopAdminCreateView(CreateView):
+    model = User
+    form_class = ShopAdminForm
+    template_name = 'create_admin_user.html'
+    success_url = '/home'
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        user.set_password(form.cleaned_data['password'])
+        user.save()
+        shop = Shop.objects.create(name=user.username + "'s Shop", license_number="License-" + user.username)
+        ShopAdmin.objects.create(user=user, shop=shop)
+        return super().form_valid(form)
+
 class ShopCreateView(CreateView):
     model = Shop
     form_class = ShopForm
     template_name = 'create_shop.html'
-    success_url = reverse_lazy('shop_list')
+    success_url = '/login'
 
     def form_valid(self, form):
-
-        shop_instance = form.save(commit=False)
-
-        username = form.cleaned_data['username']
-        email = form.cleaned_data['email']
-        password = form.cleaned_data['password']
-
-        try:
-
-            user = User.objects.create_superuser(username=username, email=email, password=password)
-            user.is_staff = True  
-            user.is_active = True
-            user.is_superuser = True  
-            user.save()
-
-            shop_instance.user = user
-            shop_instance.save()
-
+        shop = form.save(commit=False)
+        admin_user = self.request.user
+        if not ShopAdmin.objects.filter(user=admin_user).exists():
+            ShopAdmin.objects.create(user=admin_user, shop=shop)
             return super().form_valid(form)
-        except IntegrityError:
-
-            return super().form_valid(form)
+        else:
+            # Only one shop can be created under each user
+            return super().form_invalid(form)
 
 class ShopUpdateView(UpdateView):
     model = Shop
@@ -214,16 +250,12 @@ def create_employee(request):
         form = EmployeeForm(request.POST)
         if form.is_valid():
             try:
-                business_profile_id = form.cleaned_data.get('business_profile')
-                if business_profile_id:
-                    business_profile = BusinessProfile.objects.get(pk=business_profile_id)
-                    form.instance.business_profile = business_profile
-                    form.save()
-                    return redirect('employee_list')  
+                employee = form.save(commit=False)
+                employee.save()
+                return redirect('employee_list') 
             except Exception as e:
                 print("An error occurred while saving the form:", e)
                 error_occurred = True  
-
                 messages.error(request, "An error occurred while saving the form.")
     else:
         form = EmployeeForm()
@@ -232,7 +264,8 @@ def create_employee(request):
     context = {
         'form': form,
         'business_profiles': business_profiles,
-        'error_occurred': error_occurred,  
+        'error_occurred': error_occurred,
+        'nationalities': NATIONALITIES,  # Pass NATIONALITIES to the template context
     }
     return render(request, 'create_employee.html', context)
 
@@ -481,21 +514,53 @@ def get_shop_details(request, name):
         })
     except Shop.DoesNotExist:
         return JsonResponse({'error': 'Shop not found'}, status=404)
+@login_required
 def create_business_profile(request):
     if request.method == 'POST':
         business_profile_form = BusinessProfileForm(request.POST, request.FILES)
         if business_profile_form.is_valid():
-            business_profile = business_profile_form.save()
-            return redirect('success')  
+            business_profile = business_profile_form.save(commit=False)
+            business_profile.save()
+            return redirect('success')
+        else:
+            # Form is not valid, display form with errors
+            messages.error(request, "Please correct the errors below.")
     else:
         business_profile_form = BusinessProfileForm()
 
-    shop_details = Shop.objects.all()  
+    context = {'business_profile_form': business_profile_form}
+    if request.user.is_authenticated:
+        # Fetch the shop details associated with the logged-in user
+        try:
+            shop_admin = ShopAdmin.objects.get(admin_user=request.user)
+            context['shop_details'] = shop_admin.shop
+            context['license_number'] = shop_admin.shop.license_number
+        except ShopAdmin.DoesNotExist:
+            context['shop_details'] = None
+            context['license_number'] = None
 
-    return render(request, 'create_business_profile.html', {
-        'business_profile_form': business_profile_form,
-        'shop_details': shop_details,  
-    })
+    return render(request, 'create_business_profile.html', context)
+
+
+def edit_business_profile(request, pk):
+    business_profile = get_object_or_404(BusinessProfile, pk=pk)
+    if request.method == 'POST':
+        form = BusinessProfileForm(request.POST, request.FILES, instance=business_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Business profile updated successfully.')
+            return redirect('business_profile_list')
+    else:
+        form = BusinessProfileForm(instance=business_profile)
+    return render(request, 'edit_business_profile.html', {'form': form})
+
+def delete_business_profile(request, pk):
+    business_profile = get_object_or_404(BusinessProfile, pk=pk)
+    if request.method == 'POST':
+        business_profile.delete()
+        messages.success(request, 'Business profile deleted successfully.')
+        return redirect('business_profile_list')
+    return render(request, 'delete_business_profile.html', {'business_profile': business_profile})
 
 def fetch_shop_details(request):
     shop_id = request.GET.get('shop_id')
@@ -514,6 +579,7 @@ def fetch_shop_details(request):
             return JsonResponse({'error': 'Shop not found'}, status=404)
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
+    
 def business_profile_list(request):
     profiles = BusinessProfile.objects.all()
     return render(request, 'business_profile_list.html', {'profiles': profiles})
@@ -750,6 +816,14 @@ class HomeView(TemplateView):
     template_name = 'home.html'
 
     def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            # Fetch the shop details associated with the logged-in user
+            try:
+                shop_admin = ShopAdmin.objects.get(admin_user=self.request.user)
+                context['shop'] = shop_admin.shop
+            except ShopAdmin.DoesNotExist:
+                context['shop'] = None
         total_employees = Employee.objects.all().count()
         total_business = BusinessProfile.objects.all().count()
         num_products = Product.objects.all().count()
@@ -759,7 +833,7 @@ class HomeView(TemplateView):
                 'links': [
 
                     {'label': 'Create Business', 'url_name': 'create_business_profile'},
-                    {'label': 'All Business Profiles', 'url_name': 'business_profile_list'},
+                    {'label': 'Business Profiles', 'url_name': 'business_profile_list'},
             ]
             },
             {
@@ -843,4 +917,4 @@ class HomeView(TemplateView):
             },
         ]
 
-        return {'categories': categories, 'total_employees': total_employees, 'total_business': total_business, 'num_products':num_products}
+        return {'categories': categories, 'total_employees': total_employees, 'total_business': total_business, 'num_products':num_products, **context }

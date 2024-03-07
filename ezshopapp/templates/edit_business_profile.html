@@ -1,0 +1,16 @@
+<!-- edit_business_profile.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Edit Business Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Edit Business Profile</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Update</button>
+  </form>
+</div>
+{% endblock %}
