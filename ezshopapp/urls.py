@@ -1,29 +1,13 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import (
-    CustomLoginView, CustomLogoutView, HomeView, create_business_profile, fetch_shop_details,
-    profile_created, business_profile_list, get_shop_details, ShopListView, ShopCreateView,
-    ShopUpdateView, ShopDeleteView, SaleListCreateView, submit_sale, get_employee_data,
-    DayClosingView, day_closing_report, edit_day_closing, approve_day_closing, create_sale,
-    success_view, sales_by_staff_item_service, sale_by_admin_service, sales_report,
-    RoleListView, create_role, RoleDeleteView, employee_list, create_receipt_type,
-    create_employee, employee_edit, employee_delete, ExpenseTypeListView,
-    create_expense_type, ExpenseTypeUpdateView, ExpenseTypeDeleteView,
-    ReceiptTransactionListView, ReceiptTransactionUpdateView,
-    ReceiptTransactionDeleteView, PaymentTransactionListView, PaymentTransactionCreateView,
-    PaymentTransactionUpdateView, PaymentTransactionDeleteView, BankDepositListView,
-    create_bank_deposit,create_bank, BankListView,  BankDepositUpdateView, BankDepositDeleteView, ServiceListView,
-    ServiceCreateView, ServiceUpdateView, ServiceDeleteView, ProductListView, create_product,
-    ProductUpdateView, ProductDeleteView, EmployeeTransactionListView, employee_transaction_create,
-    EmployeeTransactionUpdateView, EmployeeTransactionDeleteView, DailySummaryListView, sidebar,
-    DailySummaryCreateView, DailySummaryUpdateView, DailySummaryDeleteView, RoleUpdateView, create_receipt_transaction, day_closing_admin
-)
+from .views import *
 
 urlpatterns = [
+    path('', CustomLoginView.as_view(), name='login'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
-    path('', sidebar, name='sidebar'),
+    path('sidebar/', sidebar, name='sidebar'),
     path('home/', HomeView.as_view(), name='home'),
     path('create-business-profile/', create_business_profile, name='create_business_profile'),
     path('fetch_shop_details/', fetch_shop_details, name='fetch_shop_details'),

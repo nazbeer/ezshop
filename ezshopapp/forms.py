@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 # from django.contrib.auth.forms import UserCreationForm
-from .models import Shop, Sale,Employee, UserProfile, DayClosingAdmin, AdminProfile, Service,BusinessProfile,DayClosing,  SalesByAdminItem, SaleByAdminService, Role, SaleItem, Employee, ExpenseType, ReceiptType, Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product, EmployeeTransaction, DailySummary, SalesByAdminItem,SalesByStaffItemService
+from .models import *
 from django.db import models
 from django.forms import inlineformset_factory
 from django.core.exceptions import ValidationError
@@ -51,11 +51,13 @@ class ShopForm(forms.ModelForm):
         password = self.cleaned_data.get('password')
 
         if commit:
-            user = User.objects.create_user(username=username, email=email, password=password)
+            user = User.objects.create_superuser(username=username, email=email, password=password)
             # You can adjust this part to associate the created user with the shop as needed
             # For example: UserProfile.objects.create(shop=shop, user=user)
-
-        return shop
+        shop.save()
+        Shop.objects.create(shop=shop, user=user)
+        
+        return user
 
 class BusinessProfileForm(forms.ModelForm):
     class Meta:

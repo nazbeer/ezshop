@@ -16,16 +16,54 @@ PAYMENT_METHOD_CHOICES = (
     ("card", "Card")
 )
 
+
+class Shop(models.Model):
+    name = models.CharField(max_length=255, verbose_name='Shop Name')
+    license_number = models.CharField(max_length=50, unique=True)
+    num_users = models.PositiveIntegerField(verbose_name='Number of Users')
+    vat_remainder = models.BooleanField(default=False, verbose_name='VAT Reminder')
+    employee_transaction_window = models.BooleanField(default=False)
+    license_expiration_reminder = models.BooleanField(default=False, verbose_name='License Expiration Reminder')
+    employee_visa_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Visa Expiration Reminder')
+    employee_passport_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Passport Expiration Reminder')
+    
+    created_on = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class UserProfile(models.Model):
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='user_profiles')
+    email = models.EmailField(null=True)  # Nullable email field
+    username = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
+    created_on = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return self.username
+
+class ShopAdmin(models.Model):
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='admin_users')
+    email = models.EmailField(max_length=100, default='example@example.com')
+
+    # username = models.CharField(max_length=100, default='', null=True)  
+    # password = models.CharField(max_length=100, default='Mite@2024', null=True)  
+    admin_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_on = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return f"{self.shop.name}"
+
 class Modules(models.Model):
     name = models.CharField(max_length=255)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
-    
+
     @classmethod
     def get_sidebar_choices(cls):
-        # Define the sidebar URL labels and corresponding module names
+
         sidebar_choices = [
             ('shop', 'Shop'),
             ('business', 'Business Profile'),
@@ -52,64 +90,18 @@ class Module(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=255)
-    modules = models.ManyToManyField(Module, null=True)
+    modules = models.ManyToManyField(Module, default=None)
     is_employee = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
 
-# Populating Module instances based on sidebar choices
 for choice in Modules.get_sidebar_choices():
     module_name = choice[1]
     Module.objects.get_or_create(name=module_name)
-
-
-class Shop(models.Model):
-    name = models.CharField(max_length=255, verbose_name='Shop Name')
-    license_number = models.CharField(max_length=50, unique=True)
-    num_users = models.PositiveIntegerField(verbose_name='Number of Users')
-    vat_remainder = models.BooleanField(default=False, verbose_name='VAT Reminder')
-    employee_transaction_window = models.BooleanField(default=False)
-    license_expiration_reminder = models.BooleanField(default=False, verbose_name='License Expiration Reminder')
-    employee_visa_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Visa Expiration Reminder')
-    employee_passport_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Passport Expiration Reminder')
-    email = models.EmailField(default='')  # Add email field with a default value
-    username = models.CharField(max_length=100, default='root')  # Add username field to the Shop model
-    password = models.CharField(max_length=100, default='password')  # Add password field to the Shop model
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-class UserProfile(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='user_profiles')
-    email = models.EmailField()
-    username = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__(self):
-        return self.username
     
-class ShopAdmin(models.Model):
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='admins')
-    license_expiration = models.DateField()
-    license_file = models.FileField(upload_to='licenses/')
-    phone_number = models.CharField(max_length=20)
-    vat_percentage = models.FloatField()
-    vat_number = models.CharField(max_length=50)
-    vat_submission_date = models.DateField()
-    vat_certificate = models.FileField(upload_to='vat_certificate/')
-    address = models.TextField()
-    admin_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    license_expiration_reminder_days = models.PositiveIntegerField(verbose_name='License Expiration Reminder (days)')
-    vat_submission_date_reminder_days = models.PositiveIntegerField(verbose_name='VAT Submission Date Reminder (days)')
-    employee_visa_expiration_reminder_days = models.PositiveIntegerField(verbose_name='Employee Visa Expiration Reminder (days)')
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
 
-    def __str__(self):
-        return f"{self.shop.name} - {self.admin_user.username}"
 class BusinessProfile(models.Model):
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=False, related_name='shop')
     license_number = models.CharField(max_length=255)
@@ -131,29 +123,25 @@ class BusinessProfile(models.Model):
     def __str__(self):
         return self.shop.name
 
-    
-
 class AdminProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
     business_profile = models.ForeignKey('BusinessProfile', on_delete=models.CASCADE)
     email = models.EmailField()
     mobile = models.CharField(max_length=25, null=True)
-    password = models.CharField(max_length=128, default='ezshop@2024')  # Add password field
+    password = models.CharField(max_length=128, default='ezshop@2024')  
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def save(self, *args, **kwargs):
-        # Set the username and password for the associated user if they are not set already
+
         if not self.user.username:
-            self.user.username = self.email  # Use email as default username
+            self.user.username = self.email  
         if not self.user.password:
             self.user.set_password(self.password)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email 
-  
 
-    
 class ExpenseType(models.Model):
     name = models.CharField(max_length=255)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
@@ -194,7 +182,7 @@ class PaymentTransaction(models.Model):
 class BankDeposit(models.Model):
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    transaction_type = models.CharField(max_length=20)  # Cash, Cheque, Bank Transfer
+    transaction_type = models.CharField(max_length=20)  
     narration = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -221,7 +209,6 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-
 class Employee(models.Model):
     employee_id = models.CharField(max_length=10, unique=True)
     first_name = models.CharField(max_length=255)
@@ -246,7 +233,7 @@ class Employee(models.Model):
 
 class DayClosing(models.Model):
     date = models.DateField()
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True)  # ForeignKey relationship with Employee model
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True)  
     total_services = models.DecimalField(max_digits=8, decimal_places=2)
     total_sales = models.DecimalField(max_digits=8, decimal_places=2)
     total_collection = models.DecimalField(max_digits=8, decimal_places=2)
@@ -270,14 +257,14 @@ class DayClosingAdmin(models.Model):
 
     @classmethod
     def calculate_totals(cls):
-        date = timezone.now().date()  # Set date to current date
+        date = timezone.now().date()  
         total_services = SaleByAdminService.objects.filter(date=date).count()
         total_sales = SaleByAdminService.objects.filter(date=date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
         return {
             'total_services': total_services,
             'total_sales': total_sales,
         }
-    
+
 class EmployeeTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ('service', 'Service Transaction'),
@@ -288,7 +275,7 @@ class EmployeeTransaction(models.Model):
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES)
     service_transactions = models.ManyToManyField(Service, related_name='service_transactions', blank=True)
     product_transactions = models.ManyToManyField(Product, related_name='product_transactions', blank=True)
-    #tip_received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_option = models.CharField(max_length=10, choices=[('cash', 'Cash'), ('card', 'Card')])
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True)
@@ -308,18 +295,15 @@ class DailySummary(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def save(self, *args, **kwargs):
-        # Calculate total_received_amount by summing employee transaction amounts
+
         total_received_amount = EmployeeTransaction.objects.filter(
             transaction_type='service_and_product'
         ).aggregate(models.Sum('total_amount'))['total_amount__sum']
 
-        # Calculate total_expense_amount by summing payment transaction amounts
         total_expense_amount = PaymentTransaction.objects.aggregate(models.Sum('amount'))['amount__sum'] 
 
-        # Calculate total_bank_deposit by summing bank deposit amounts
         total_bank_deposit = BankDeposit.objects.aggregate(models.Sum('amount'))['amount__sum'] 
 
-        # Calculate balance
         balance = total_received_amount - total_expense_amount + total_bank_deposit
 
         self.total_received_amount = total_received_amount
@@ -336,7 +320,7 @@ class Sale(models.Model):
     services = models.ManyToManyField(Service, through='SaleItem')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    #tip = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     net_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -357,7 +341,7 @@ class SaleByAdminService(models.Model):
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    #tip = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     payment_method = models.CharField(max_length=100)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -376,7 +360,6 @@ class SalesByAdminItem(models.Model):
 
     def __str__(self):
         return str(self.date)
-
 
 class SalesByStaffItemService(models.Model):
     date = models.DateField(_("Date"))

@@ -2,44 +2,37 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
-from .models import (
-    Shop, Sale, DayClosing, Employee, UserProfile, AdminProfile,
-    Service, BusinessProfile, SalesByAdminItem, SaleByAdminService,
-    Role, SaleItem, ExpenseType, ReceiptType, Bank, ReceiptTransaction,
-    PaymentTransaction, BankDeposit, Product, EmployeeTransaction,
-    DailySummary, SalesByStaffItemService, DayClosingAdmin, ShopAdmin
-)
+from .models import *
 
 admin.site.site_header = "Ezshop Admin"
 admin.site.site_title = "Ezshop Admin Portal"
 admin.site.index_title = "Welcome to Ezshop Mite Solution App"
 
-class ShopAdminModel(admin.ModelAdmin):
-    list_display = ('name', 'username','email', 'password', 'license_number', 'num_users', 'created_on')  # Adjust list_display according to your model fields
-    search_fields = ['name','username', 'email', 'license_number']  # Adjust search_fields according to your model fields
-    list_filter = ['created_on']  # Adjust list_filter according to your model fields
+admin.site.register(Shop)
 
-# Register the Shop model with the custom admin class
-admin.site.register(Shop, ShopAdminModel)
+class ShopAdminAdmin(admin.ModelAdmin):
+    list_display = ('shop', 'email')
+    search_fields = ['shop__name', 'email', 'admin_user__username']
+    list_filter = ['shop']
+    raw_id_fields = ['admin_user']
 
-# Extend the UserAdmin to include Shop details inline
+    # def get_admin_users(self, obj):
+    #     return ", ".join([admin.user.username for admin in obj.admin_user.all()])
+    # get_admin_users.short_description = 'Admin Users'
+
+admin.site.register(ShopAdmin, ShopAdminAdmin)
+
 class ShopInline(admin.StackedInline):
     model = ShopAdmin
     can_delete = False
-    verbose_name_plural = 'admins'
+    verbose_name_plural = 'Shop Admins'
 
-# Extend the UserAdmin to include Shop details
 class CustomUserAdmin(UserAdmin):
     inlines = (ShopInline,)
 
-# Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 
-# Register other models
-admin.site.register(ShopAdmin)
-
-# Register other models
 admin.site.register(Sale)
 admin.site.register(Employee)
 admin.site.register(UserProfile)
