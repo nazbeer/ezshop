@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-# from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm
 from .models import *
 from django.db import models
 from django.forms import inlineformset_factory
@@ -10,8 +10,39 @@ from django.core.exceptions import ValidationError
 #     class Meta:
 #         model = CustomUser
 #         fields = ('username', 'email', 'password1', 'password2', 'full_name', 'date_of_birth', 'profile_picture', 'address', 'phone_number')
-    
+class CustomUserCreationForm(UserCreationForm):
+    shop = forms.ModelChoiceField(queryset=Shop.objects.all())
 
+    class Meta(UserCreationForm.Meta):
+        fields = UserCreationForm.Meta.fields + ('shop', )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        shop = cleaned_data.get('shop')
+        username = cleaned_data.get('username')
+
+        if shop:
+            # Check if the shop is already associated with another admin user
+            try:
+                existing_shop_admin = ShopAdmin.objects.get(shop=shop)
+                raise forms.ValidationError(f"This shop is already associated with the user {existing_shop_admin.admin_user.username}")
+            except ShopAdmin.DoesNotExist:
+                pass
+
+            # Check if the shop is already associated with the username
+            try:
+                existing_user = User.objects.get(username=username)
+                existing_shop_admin = ShopAdmin.objects.get(admin_user=existing_user)
+                if existing_shop_admin.shop == shop:
+                    raise forms.ValidationError(f"This shop is already associated with your username")
+            except User.DoesNotExist:
+                pass
+
+        if ShopAdmin.objects.filter(shop=shop).exists():
+            raise forms.ValidationError("This shop is already associated with a user.")
+        
+        return cleaned_data
+    
 class CustomShopAdminForm(forms.ModelForm):
     class Meta:
         model = ShopAdmin

@@ -23,6 +23,15 @@ from django.urls import get_resolver
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls.resolvers import RoutePattern
 
+class CustomUserAddView(CreateView):
+    model = User
+    form_class = CustomUserCreationForm
+    template_name = 'admin/auth/user/add_form.html'
+    success_url = reverse_lazy('admin:index')  # Redirect to admin index after user creation
+
+custom_user_add_view = CustomUserAddView.as_view()
+
+
 AdminUserForm = formset_factory(AdminUserForm, extra=1)
 @login_required(login_url='login')
 def sidebar(request):
@@ -532,7 +541,7 @@ def create_business_profile(request):
     if request.user.is_authenticated:
         # Fetch the shop details associated with the logged-in user
         try:
-            shop_admin = ShopAdmin.objects.get(admin_user=request.user)
+            shop_admin = ShopAdmin.objects.get(user=request.user)
             context['shop_details'] = shop_admin.shop
             context['license_number'] = shop_admin.shop.license_number
         except ShopAdmin.DoesNotExist:
@@ -820,7 +829,7 @@ class HomeView(TemplateView):
         if self.request.user.is_authenticated:
             # Fetch the shop details associated with the logged-in user
             try:
-                shop_admin = ShopAdmin.objects.get(admin_user=self.request.user)
+                shop_admin = ShopAdmin.objects.get(user=self.request.user)
                 context['shop'] = shop_admin.shop
             except ShopAdmin.DoesNotExist:
                 context['shop'] = None

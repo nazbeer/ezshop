@@ -9,6 +9,7 @@ urlpatterns = [
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('sidebar/', sidebar, name='sidebar'),
     path('home/', HomeView.as_view(), name='home'),
+     path('admin/auth/user/add/', custom_user_add_view, name='custom_user_add'),
     path('create-business-profile/', create_business_profile, name='create_business_profile'),
     path('fetch_shop_details/', fetch_shop_details, name='fetch_shop_details'),
     path('profile-created/', profile_created, name='profile_created'),

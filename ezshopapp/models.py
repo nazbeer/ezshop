@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.forms import inlineformset_factory
@@ -86,20 +88,25 @@ class Shop(models.Model):
     employee_visa_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Visa Expiration Reminder')
     employee_passport_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Passport Expiration Reminder')
     admin_email = models.EmailField(max_length=100, default='')
+    
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
 
-
 class ShopAdmin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, verbose_name="Mite Admin User")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True, null=True, verbose_name="Mite Admin User")
     shop = models.OneToOneField(Shop, on_delete=models.CASCADE)
-    admin_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='shop_admin', unique=True)
-
-    def __str__(self):
-        return self.user.username
+    #admin_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='shop_admin', unique=True)
     
+    def __str__(self):
+        if self.user:
+            return self.user.username
+        else:
+            return "No User Assigned"
+
+
+
 class BusinessProfile(models.Model):
     name = models.CharField(max_length=64, blank=False, default=None, null=True)
     license_number = models.CharField(max_length=255)
