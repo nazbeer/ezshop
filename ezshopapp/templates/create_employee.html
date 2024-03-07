@@ -30,7 +30,7 @@
             <label for="business_profile">Business Profile:</label>
             
             {% for business_profile in business_profiles %}
-            <input type="text" id="business_profile" name="business_profile" value="{{ business_profile.shop }}" class="form-control" readonly>
+            <input type="text" id="business_profile" name="business_profile" value="{{ business_profile.name }}" class="form-control" readonly>
             {% endfor %}
         </div>
         
