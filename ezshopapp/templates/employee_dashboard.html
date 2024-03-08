@@ -1,0 +1,35 @@
+{% extends 'emp_base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Analytics Section -->
+    <div class=" mb-3 d-none" >
+        <div class="card bg-light  ">
+            <div class="card-body mb-0">
+    {% if shop %}
+        <div class="col-md-6">
+        <p class="mb-0">Shop Name: {{ shop.name }}</p>
+        </div>
+        <div class="col-md-6">
+            <p class="mb-0">License Number: {{ shop.license_number }}</p>
+        </div>
+        
+    {% else %}
+        <p>No shop associated with the current user.</p>
+    {% endif %}
+</div>
+        </div>
+    </div>
+    
+
+    <!-- Categories Section -->
+    <div class="row">
+        <ul>
+            {% for employee in employees %}
+                <li>{{ employee.first_name }} {{ employee.second_name }} - <a href="{% url 'dayclosing' %}">Day Closing</a> | <a href="{% url 'create_employee_transaction' %}">Create Employee Transactions</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <!-- End of Categories Section -->
+</div>
+{% endblock %}

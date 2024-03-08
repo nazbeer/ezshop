@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container ml-0">
-  <h2 class="mb-3 mt-3">Business Profiles</h2>
+  <h2 class="mb-3 mt-3">Business Profile</h2>
   <div class="row ">
     {% for profile in profiles %}
     <div class="col-md-6 mb-4 mt-2">
@@ -72,9 +72,9 @@
         <!-- Edit Button -->
         <a href="{% url 'edit_business_profile' profile.id %}" class="btn btn-info">Edit</a>
         <!-- Delete Button -->
-        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal{{ profile.id }}">
+        <!-- <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal{{ profile.id }}">
             Delete
-        </button>
+        </button> -->
         </div>
       </div>
     </div>

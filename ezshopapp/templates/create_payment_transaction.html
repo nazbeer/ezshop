@@ -1,0 +1,37 @@
+<!-- payment_transaction_form.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+    Create Payment Transaction
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Create Payment Transaction</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" name="date" id="date" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="expense_type">Expense Type:</label>
+                <select name="expense_type" id="expense_type" class="form-control" required>
+                    <option value="" disabled selected>Select Expense Type</option>
+                    {% for expense_type in expense_types %}
+                        <option value="{{ expense_type.id }}">{{ expense_type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount:</label>
+                <input type="number" name="amount" id="amount" class="form-control" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="narration">Narration:</label>
+                <textarea name="narration" id="narration" class="form-control" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+{% endblock %}

@@ -4,7 +4,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormVi
 from django.urls import reverse_lazy
 from django.views import View
 from django.db import IntegrityError, transaction
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
 from .constants import NATIONALITIES 
 from django.urls import reverse
 from django.forms import formset_factory
@@ -14,6 +14,7 @@ from django.contrib.auth import authenticate, login
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import *
 from .forms import *
 from .serializers import LoginSerializer, SaleSerializer
@@ -253,8 +254,25 @@ def employee_list(request):
 
     return render(request, 'employee_list.html', {'employees': employees})
 
+@login_required
 def create_employee(request):
     error_occurred = False  
+
+    # Fetch the shop details associated with the logged-in user
+    try:
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        shop = shop_admin.shop
+    except ShopAdmin.DoesNotExist:
+        shop = None
+
+    # if shop:
+    #     # Check the number of users created under this shop
+    #     num_users_created = Shop.objects.filter(num_users=shop.num_users)
+
+    #     # Check if the number of users exceeds the allowed limit
+    #     if num_users_created >= shop.num_users:
+    #         return HttpResponseBadRequest("Cannot create more employees. Maximum number of users reached for this shop.")
+
     if request.method == 'POST':
         form = EmployeeForm(request.POST)
         if form.is_valid():
@@ -269,7 +287,9 @@ def create_employee(request):
     else:
         form = EmployeeForm()
 
-    business_profiles = BusinessProfile.objects.all()
+    # Filter Business Profiles based on the shop associated with the logged-in user
+    business_profiles = BusinessProfile.objects.filter(name=shop)
+
     context = {
         'form': form,
         'business_profiles': business_profiles,
@@ -277,6 +297,7 @@ def create_employee(request):
         'nationalities': NATIONALITIES,  # Pass NATIONALITIES to the template context
     }
     return render(request, 'create_employee.html', context)
+
 
 def get_employee_data(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
@@ -303,6 +324,43 @@ def employee_delete(request, pk):
         employee.delete()
         return redirect('employee_list')
     return render(request, 'employee_delete.html', {'employee': employee})
+
+
+def employee_login(request):
+    if request.method == 'POST':
+        form = EmployeeLoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            
+            # Query the Employee model to check if the username and password match
+            try:
+                employee = Employee.objects.get(username=username)
+            except Employee.DoesNotExist:
+                employee = None
+            
+            # Check if the employee exists and if the password matches
+            if employee is not None and employee.password == password:
+                # If authentication is successful, create a session for the employee and redirect to the dashboard
+                request.session['employee_id'] = employee.pk
+                return redirect('employee_dashboard')
+            else:
+                # If authentication fails, display error message and reload login page
+                messages.error(request, "Invalid username or password.")
+                return redirect('employee_login')
+    else:
+        form = EmployeeLoginForm()
+    return render(request, 'employee_login.html', {'form': form})
+
+def employee_dashboard(request):
+    # Fetch all employees
+    employees = Employee.objects.all()
+    
+    context = {
+        'employees': employees
+    }
+    return render(request, 'employee_dashboard.html', context)
+
 
 class ExpenseTypeListView(ListView):
     model = ExpenseType
@@ -525,6 +583,8 @@ def get_shop_details(request, name):
         return JsonResponse({'error': 'Shop not found'}, status=404)
 @login_required
 def create_business_profile(request):
+    error_occurred = False  
+
     if request.method == 'POST':
         business_profile_form = BusinessProfileForm(request.POST, request.FILES)
         if business_profile_form.is_valid():
@@ -542,8 +602,14 @@ def create_business_profile(request):
         # Fetch the shop details associated with the logged-in user
         try:
             shop_admin = ShopAdmin.objects.get(user=request.user)
+            shop_name = shop_admin.shop.name
             context['shop_details'] = shop_admin.shop
             context['license_number'] = shop_admin.shop.license_number
+
+            # Check if a business profile already exists with the same name as shop name
+            if BusinessProfile.objects.filter(name=shop_name).exists():
+                context['disable_submit'] = True  # Disable submit button
+                messages.info(request, "Only one business profile can be created under a shop.")
         except ShopAdmin.DoesNotExist:
             context['shop_details'] = None
             context['license_number'] = None
@@ -589,9 +655,30 @@ def fetch_shop_details(request):
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
     
+@login_required
 def business_profile_list(request):
-    profiles = BusinessProfile.objects.all()
-    return render(request, 'business_profile_list.html', {'profiles': profiles})
+    context = {}
+    if request.user.is_authenticated:
+        try:
+            # Fetch the shop details associated with the logged-in user
+            shop_admin = ShopAdmin.objects.get(user=request.user)
+            shop_name = shop_admin.shop.name
+            
+            # Filter Business Profiles based on the logged-in user's shop name
+            profiles = BusinessProfile.objects.filter(name=shop_name)
+            context['profiles'] = profiles
+            context['shop_details'] = shop_admin.shop
+            context['license_number'] = shop_admin.shop.license_number
+        except ShopAdmin.DoesNotExist:
+            context['profiles'] = None
+            context['shop_details'] = None
+            context['license_number'] = None
+    else:
+        # If user is not authenticated, set profiles to None
+        context['profiles'] = None
+
+    return render(request, 'business_profile_list.html', context)
+
 
 def profile_created(request):
     return render(request, 'profile_created.html')
@@ -684,7 +771,7 @@ def submit_sale(request):
             return render(request, 'success')
     return render(request, 'submit_sale.html', {'form': form, 'services': services})
 
-def DayClosingView(request):
+def DayClosingCreate(request):
     if request.method == 'POST':
         form = DayClosingForm(request.POST)
 
@@ -821,7 +908,7 @@ def create_receipt_type(request):
         form = ReceiptTypeForm()
     return render(request, 'create_receipt_type.html', {'form': form})
 
-class HomeView(TemplateView):
+class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home.html'
 
     def get_context_data(self, **kwargs):
@@ -927,3 +1014,9 @@ class HomeView(TemplateView):
         ]
 
         return {'categories': categories, 'total_employees': total_employees, 'total_business': total_business, 'num_products':num_products, **context }
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            # Redirect to login page if user is not logged in
+            return redirect(reverse('login'))  # Adjust 'login' to your login URL name
+        return super().dispatch(request, *args, **kwargs)

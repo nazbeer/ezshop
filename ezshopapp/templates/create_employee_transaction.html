@@ -22,7 +22,8 @@
                 <label for="service_transactions">Service Transactions:</label>
                 <select name="service_transactions" id="service_transactions" class="form-control" multiple>
                     {% for service in form.fields.service_transactions.queryset %}
-                        <option value="{{ service.pk }}">{{ service }}</option>
+                    <option value="{{ service.pk }}" data-amount="{{ service.amount }}">{{ service }}</option>
+
                     {% endfor %}
                 </select>
             </div>
@@ -30,13 +31,14 @@
                 <label for="product_transactions">Product Transactions:</label>
                 <select name="product_transactions" id="product_transactions" class="form-control" multiple>
                     {% for product in form.fields.product_transactions.queryset %}
-                        <option value="{{ product.pk }}">{{ product }}</option>
+                    <option value="{{ product.pk }}" data-amount="{{ product.amount }}">{{ product }}</option>
+
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
                 <label for="total_amount">Total Amount:</label>
-                <input type="number" name="total_amount" id="total_amount" class="form-control">
+                <input type="number" name="total_amount" id="total_amount" class="form-control" readonly>
             </div>
             <div class="form-group">
                 <label for="payment_option">Payment Option:</label>
@@ -54,14 +56,14 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-group">
+            <!-- <div class="form-group">
                 <label for="day_closing">Day Closing:</label>
                 <select name="day_closing" id="day_closing" class="form-control">
                     {% for day_closing in form.fields.day_closing.queryset %}
                         <option value="{{ day_closing.pk }}">{{ day_closing }}</option>
                     {% endfor %}
                 </select>
-            </div>
+            </div> -->
             <button type="submit" class="btn btn-success btn-sm">Submit</button>
         </form>
     </div>
@@ -91,7 +93,30 @@
     
             transactionTypeSelect.addEventListener("change", handleTransactionTypeChange);
             handleTransactionTypeChange(); // Initial state setup
+       
+            var serviceTransactionsSelect = document.getElementById("service_transactions");
+            var productTransactionsSelect = document.getElementById("product_transactions");
+            var totalAmountInput = document.getElementById("total_amount");
+    
+            function calculateTotalAmount() {
+                var total = 0;
+                // Calculate total amount based on selected service transactions
+                for (var i = 0; i < serviceTransactionsSelect.selectedOptions.length; i++) {
+                    total += parseFloat(serviceTransactionsSelect.selectedOptions[i].dataset.amount);
+                }
+                // Calculate total amount based on selected product transactions
+                for (var i = 0; i < productTransactionsSelect.selectedOptions.length; i++) {
+                    total += parseFloat(productTransactionsSelect.selectedOptions[i].dataset.amount);
+                }
+                // Update the total amount input field
+                totalAmountInput.value = total.toFixed(2); // Format total to two decimal places
+            }
+    
+            // Add onchange event listeners to service and product transaction selects
+            serviceTransactionsSelect.addEventListener("change", calculateTotalAmount);
+            productTransactionsSelect.addEventListener("change", calculateTotalAmount);
         });
     </script>
+    
     
 {% endblock %}

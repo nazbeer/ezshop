@@ -132,6 +132,14 @@ class EmployeeForm(forms.ModelForm):
         model = Employee
         fields = '__all__'
 
+class EmployeeLoginForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        fields = ['username', 'password','is_employee']
+        widgets = {
+            'password': forms.PasswordInput(),
+        }
+
 class DayClosingForm(forms.ModelForm):
     class Meta:
         model = DayClosing

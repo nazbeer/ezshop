@@ -18,6 +18,10 @@
                     </ul>
                 </div>
             {% endif %}
+            {% if disable_submit %}
+            <div class="alert alert-warning">
+                Only One Business Profile can be created under a Shop. You have exceeded the limit!
+            </div> {% endif %}
             <form method="post" enctype="multipart/form-data" id="business-profile-form">
                 {% csrf_token %}
                 <div class="row">
@@ -38,7 +42,7 @@
                         {{ business_profile_form.license_upload.errors }}
                         <div class="form-group mt-0">
                             <label for="{{ business_profile_form.license_upload.id_for_label }}">Upload License (JPG only):</label>
-                            <input type="file" id="{{ business_profile_form.license_upload.id_for_label }}" name="license_upload" accept="image/jpg" class="form-control-file">
+                            <input type="file" id="{{ business_profile_form.license_upload.id_for_label }}" name="license_upload" accept="image/jpg" class="form-control-file" required>
                         </div>
                         <!-- VAT Number -->
                         {{ business_profile_form.vat_number.errors }}
@@ -50,38 +54,38 @@
                         {{ business_profile_form.vat_submission_date_1.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_submission_date_1.id_for_label }}">VAT Submission Date 1:</label>
-                            <input type="date" id="{{ business_profile_form.vat_submission_date_1.id_for_label }}" name="vat_submission_date_1" class="form-control">
+                            <input type="date" id="{{ business_profile_form.vat_submission_date_1.id_for_label }}" name="vat_submission_date_1" class="form-control" required>
                         </div>
                         <!-- VAT Submission Date 2 -->
                         {{ business_profile_form.vat_submission_date_2.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_submission_date_2.id_for_label }}">VAT Submission Date 2:</label>
-                            <input type="date" id="{{ business_profile_form.vat_submission_date_2.id_for_label }}" name="vat_submission_date_2" class="form-control">
+                            <input type="date" id="{{ business_profile_form.vat_submission_date_2.id_for_label }}" name="vat_submission_date_2" class="form-control" required>
                         </div>
                         <!-- VAT Submission Date 3 -->
                         {{ business_profile_form.vat_submission_date_3.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_submission_date_3.id_for_label }}">VAT Submission Date 3:</label>
-                            <input type="date" id="{{ business_profile_form.vat_submission_date_3.id_for_label }}" name="vat_submission_date_3" class="form-control">
+                            <input type="date" id="{{ business_profile_form.vat_submission_date_3.id_for_label }}" name="vat_submission_date_3" class="form-control" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <!-- License Number (Read-only) -->
                         <div class="form-group">
                             <label for="license_number">License Number:</label>
-                            <input type="text" id="license_number" name="license_number" class="form-control" value="{{ license_number }}" readonly>
+                            <input type="text" id="license_number" name="license_number" class="form-control" value="{{ license_number }}" readonly required>
                         </div>
                         <!-- License Expiration -->
                         {{ business_profile_form.license_expiration.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.license_expiration.id_for_label }}">License Expiration:</label>
-                            <input type="date" id="{{ business_profile_form.license_expiration.id_for_label }}" name="license_expiration" class="form-control">
+                            <input type="date" id="{{ business_profile_form.license_expiration.id_for_label }}" name="license_expiration" class="form-control" required>
                         </div>
                         <!-- Upload VAT Certificate (PDF only) -->
                         {{ business_profile_form.vat_certificate_upload.errors }}
                         <div class="form-group mt-3">
                             <label for="{{ business_profile_form.vat_certificate_upload.id_for_label }}" class="mt-2">Upload VAT Certificate :</label>
-                            <input type="file" id="{{ business_profile_form.vat_certificate_upload.id_for_label }}" name="vat_certificate_upload" accept="image/jpg" class="form-control-file">
+                            <input type="file" id="{{ business_profile_form.vat_certificate_upload.id_for_label }}" name="vat_certificate_upload" accept="image/jpg" class="form-control-file" required>
                         </div>
                         <!-- VAT Percentage -->
                         {{ business_profile_form.vat_percentage.errors }}
@@ -114,11 +118,12 @@
                         {{ business_profile_form.address.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.address.id_for_label }}">Address:</label>
-                            <textarea id="{{ business_profile_form.address.id_for_label }}" name="address" class="form-control" rows="6"></textarea>
+                            <textarea id="{{ business_profile_form.address.id_for_label }}" name="address" class="form-control" rows="6" required></textarea>
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary" {% if disable_submit %}disabled{% endif %}>Submit</button>
+
             </form>
         </div>
     </div>

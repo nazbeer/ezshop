@@ -67,7 +67,7 @@ class Module(models.Model):
 class Role(models.Model):
     name = models.CharField(max_length=255)
     modules = models.ManyToManyField(Module, default=None)
-    is_employee = models.BooleanField(default=False)
+    is_employee = models.BooleanField(default=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -217,6 +217,8 @@ class Product(models.Model):
 
 class Employee(models.Model):
     employee_id = models.CharField(max_length=10, unique=True)
+    username = models.CharField(max_length=50, null=True)
+    password = models.CharField(max_length=50, null=True)
     business_profile = models.CharField(max_length=255, null=True)
     first_name = models.CharField(max_length=255)
     second_name = models.CharField(max_length=255)
@@ -232,12 +234,12 @@ class Employee(models.Model):
     commission_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     joining_date = models.DateField()
     job_role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
-    
+    is_employee = models.BooleanField(default=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return f"{self.employee_id} - {self.first_name} {self.second_name}"
-
+    
 class DayClosing(models.Model):
     date = models.DateField()
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True)  
@@ -249,8 +251,17 @@ class DayClosing(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
-    def __str__(self):
-        return str(self.date)
+    
+    @classmethod
+    def calculate_totals(cls):
+        date = timezone.now().date()  
+        total_services = SaleByAdminService.objects.filter(date=date).count()
+        total_sales = SaleByAdminService.objects.filter(date=date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+        return {
+            'total_services': total_services,
+            'total_sales': total_sales,
+        }
+    
 
 class DayClosingAdmin(models.Model):
     date = models.DateField(default=timezone.now)
@@ -271,6 +282,7 @@ class DayClosingAdmin(models.Model):
             'total_services': total_services,
             'total_sales': total_sales,
         }
+    
 
 class EmployeeTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
@@ -286,9 +298,9 @@ class EmployeeTransaction(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_option = models.CharField(max_length=10, choices=[('cash', 'Cash'), ('card', 'Card')])
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True)
-    day_closing = models.ForeignKey(DayClosing, on_delete=models.CASCADE, null=True, blank=True)
+    #day_closing = models.ForeignKey(DayClosing, on_delete=models.CASCADE, null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
-
+    
     def __str__(self):
         return f"Employee Transaction - {self.id}"
 
