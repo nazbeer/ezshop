@@ -43,22 +43,6 @@
 </div>
 
 <script>
-    // Function to fetch total services and sales when employee is selected
-    document.getElementById('employee').addEventListener('change', function() {
-        var employeeId = this.value;
-        fetchEmployeeData(employeeId);
-    });
-
-    function fetchEmployeeData(employeeId) {
-        // Make an AJAX request to fetch employee data
-        fetch(`/get_employee_data/${employeeId}`)
-            .then(response => response.json())
-            .then(data => {
-                // Update total services and total sales fields with fetched data
-                document.getElementById('total_services').value = data.total_services;
-                document.getElementById('total_sales').value = data.total_sales;
-            })
-            .catch(error => console.error('Error fetching employee data:', error));
-    }
+    
 </script>
 {% endblock %}

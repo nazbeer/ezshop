@@ -187,7 +187,10 @@ class PaymentTransactionForm(forms.ModelForm):
         model = PaymentTransaction
         fields = '__all__'
 
+
 class BankDepositForm(forms.ModelForm):
+    bank = forms.ModelChoiceField(queryset=Bank.objects.all(), empty_label="Select Bank", label="Bank")
+    
     class Meta:
         model = BankDeposit
         fields = '__all__'

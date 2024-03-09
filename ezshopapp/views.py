@@ -423,6 +423,7 @@ class BankDepositListView(ListView):
     model = BankDeposit
     template_name = 'bank_deposit_list.html'
 
+
 def create_bank_deposit(request):
     if request.method == 'POST':
         form = BankDepositForm(request.POST)
@@ -432,11 +433,14 @@ def create_bank_deposit(request):
     else:
         form = BankDepositForm()
 
+    # Fetch all banks
+    banks = Bank.objects.all()
+
     context = {
         'form': form,
+        'banks': banks,  # Pass the banks to the context
     }
     return render(request, 'create_bank_deposit.html', context)
-
 class BankListView(ListView):
     model = Bank
     template_name = 'bank_list.html'
@@ -786,7 +790,7 @@ def DayClosingCreate(request):
 
             employee = form.cleaned_data['employee']
 
-            employee_transactions = Employee.objects.filter(employee=employee)
+            employee_transactions = EmployeeTransaction.objects.filter(employee=employee)
 
             day_closing = DayClosing.objects.create(
                 date=date,

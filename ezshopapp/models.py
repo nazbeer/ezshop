@@ -187,11 +187,17 @@ class PaymentTransaction(models.Model):
 
 class BankDeposit(models.Model):
     date = models.DateField()
+    deposit_date = models.DateField(null=True, blank=True)  # Old field for deposit date
+    #new_deposit_date = models.DateField(null=True, blank=True)  # New field for deposit date
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_type = models.CharField(max_length=20)  
     narration = models.TextField()
+    bank = models.ForeignKey(Bank, on_delete=models.SET_NULL, null=True, blank=True)  # ForeignKey to Bank model
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
+    def __str__(self):
+        return f"Bank Deposit on {self.date}"
+    
 class Service(models.Model):
     name = models.CharField(max_length=255)
     duration = models.DurationField()
@@ -255,8 +261,8 @@ class DayClosing(models.Model):
     @classmethod
     def calculate_totals(cls):
         date = timezone.now().date()  
-        total_services = SaleByAdminService.objects.filter(date=date).count()
-        total_sales = SaleByAdminService.objects.filter(date=date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+        total_services = SalesByStaffItemService.objects.filter(date=date).count()
+        total_sales = SalesByStaffItemService.objects.filter(date=date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
         return {
             'total_services': total_services,
             'total_sales': total_sales,
