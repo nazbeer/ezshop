@@ -291,4 +291,4 @@ class SalesByAdminItemForm(forms.ModelForm):
 class SalesByStaffItemServiceForm(forms.ModelForm):
     class Meta:
         model = SalesByStaffItemService
-        fields = ['date', 'product', 'pquantity', 'pprice', 'service', 'squantity', 'sprice', 'payment_method']
+        fields = ['date', 'product', 'pquantity', 'pprice', 'service', 'squantity', 'sprice','sub_total','discount','total_amount', 'payment_method']

@@ -388,7 +388,7 @@ class SalesByStaffItemService(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, verbose_name=_("Service"),  null=True)
     squantity = models.PositiveIntegerField(_("Service Quantity"),  null=True)
     sprice = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Service Price"),  null=True)
-    sub_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Sub Total"), null=True)
+    sub_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Sub Total"))
     discount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Discount"), null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name=_("Payment Method"))
