@@ -739,12 +739,12 @@ def sale_by_admin_service(request):
 
     return render(request, 'sales_by_admin_service.html', {'formset': formset, 'employees': employees, 'services': services})
 
-def sale_by_admin_service(request):
+# def sale_by_admin_service(request):
 
-    sales_services = SaleByAdminService.objects.all()
-    sales_items = SalesByAdminItem.objects.all()
+#     sales_services = SaleByAdminService.objects.all()
+#     sales_items = SalesByAdminItem.objects.all()
 
-    return render(request, 'sales_by_admin_service.html', {'sales_services': sales_services, 'sales_items': sales_items})
+#     return render(request, 'sales_by_admin_service.html', {'sales_services': sales_services, 'sales_items': sales_items})
 
 class SaleListCreateView(generics.ListCreateAPIView):
     queryset = Sale.objects.all()
@@ -864,17 +864,22 @@ def approve_day_closing(request, dayclosing_id):
 
 def sales_by_staff_item_service(request):
     products = Product.objects.all()
-    service = Service.objects.all()
+    services = Service.objects.all()
+    
     if request.method == 'POST':
         form = SalesByStaffItemServiceForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('success.html')  
+            return redirect('sales_report')  
+        else:
+            print(form.errors)  # Print form errors to debug
     else:
         form = SalesByStaffItemServiceForm()
-    return render(request, 'sales_by_staff_item_service.html', {'form': form, 'products':products, 'services':service})
+        
+    return render(request, 'sales_by_staff_item_service.html', {'form': form, 'products': products, 'services': services})
 
 def sales_report(request):
+    sales_by_staff_item_service = SalesByStaffItemService.objects.all()
     sales_services = SaleByAdminService.objects.all()
     sales_items = SalesByAdminItem.objects.all()
 
@@ -882,6 +887,7 @@ def sales_report(request):
     print("Sales Items:", sales_items)
 
     context = {
+        'sales_by_staff_item_services': sales_by_staff_item_service,
         'sales_services': sales_services,
         'sales_items': sales_items,
     }

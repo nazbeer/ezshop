@@ -12,18 +12,15 @@
             {% csrf_token %}
             <div class="row">
                 <div class="col-md-6">
-                    <div class="form-group  d-inline-flex justify-content-between align-items-center gap-3">
+                    <div class="form-group d-inline-flex justify-content-between align-items-center gap-3">
                         <label for="date" class="mr-2">Date:</label>
-                        <input type="date" id="date" name="date" class="form-control" required>
+                        <input type="date" id="date" name="date" class="form-control" readonly required>
                     </div>
                 </div>
-                
             </div>
 
             <div><h5>Select Items</h5></div>
-             
             {{ sale_item_formset.management_form }}
-
             <div class="table-responsive">
                 <table class="table table-bordered" id="salesItems">
                     <thead>
@@ -36,31 +33,28 @@
                     <tbody id="itemRows">
                         <tr>
                             <td>
-                                <select name="form-0-product" class="form-control" onchange="updatePrice(this)">
+                                <select id="form-0-product" name="product" class="form-control" onchange="updatePrice(this)">
+                                    <option value="">-- Select --</option>
                                     {% for product in products %}
-                                        <option value="{{ product.id }}-{{ product.amount }}">{{ product.name }}</option>
+                                        <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td>
-                                <input type="number" name="form-0-pquantity" class="form-control" min="1" onchange="calculateSubTotal()">
+                                <input type="number" id="form-0-pquantity" name="pquantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">
                             </td>
                             <td>
-                                <input type="number" name="form-0-pprice" class="form-control" readonly>
+                                <input type="number" name="pprice" id="form-0-pprice" class="form-control" readonly>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="form-group">
                 <button type="button" onclick="addItem()" class="btn btn-primary">Add Item</button>
             </div>
 
             <div><h5>Select Service</h5></div>
-            
-            {{ sale_item_formset.management_form }}
-
             <div class="table-responsive">
                 <table class="table table-bordered" id="salesService">
                     <thead>
@@ -71,29 +65,25 @@
                         </tr>
                     </thead>
                     <tbody id="serviceRows">
-                        
                         <tr>
                             <td>
-                                <select name="form-0-service" class="form-control"
-                                onchange="updatePrice1(this)">
+                                <select id="form-0-service" class="form-control" name="service" onchange="updatePrice1(this)">
+                                    <option value="">-- Select --</option>   
                                     {% for service in services %}
-                                        <option value="{{ service.id }}-{{ service.amount}}">{{ service.name }}</option>
+                                        <option value="{{ service.id }}" data-amount="{{ service.amount }}">{{ service.name }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td>
-                                <input  type="number" name="form-0-squantity" class="form-control" min="1" onchange="calculateSubTotal2()">
+                                <input type="number" id="form-0-squantity" name="squantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">
                             </td>
                             <td>
-                                <input type="number" name="form-0-sprice" class="form-control" readonly>
+                                <input type="number" id="form-0-sprice" name="sprice" class="form-control" readonly>
                             </td>
                         </tr>
-                    
                     </tbody>
                 </table>
             </div>
-           
-
             <div class="form-group">
                 <button type="button" onclick="addService()" class="btn btn-primary">Add Service</button>
             </div>
@@ -115,84 +105,41 @@
             <div class="form-group">
                 <label for="payment_method">Payment Method:</label>
                 <select id="payment_method" name="payment_method" class="form-control">
-                    <option value="Cash">Cash</option>
-                    <option value="Card">Card</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <button type="submit" class="btn btn-success">Submit</button>
             </div>
-
-            <!-- Display form errors -->
-            <!-- {% if form.errors %}
-                <div class="alert alert-danger" role="alert">
-                    <strong>Error!</strong> Please correct the following errors:
-                    <ul>
-                        {% for field, errors in form.errors.items %}
-                            {% for error in errors %}
-                                <li>{{ field|title }}: {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %} -->
         </form>
     </div>
 </div>
 <script>
+     var currentDate = new Date();
+    
+    // Format the current date as YYYY-MM-DD
+    var formattedDate = currentDate.toISOString().split('T')[0];
+    
+    // Set the formatted date as the value of the input field
+    document.getElementById("date").value = formattedDate;
+
     var rowCounter = 1;
 
     function updatePrice(select) {
         var selectedOption = select.options[select.selectedIndex];
         var priceInput = select.parentElement.nextElementSibling.nextElementSibling.querySelector('input');
-        var price = selectedOption.value.split('-')[1];
-        priceInput.value = price;
-        calculateSubTotal();
+        var pprice = selectedOption.getAttribute('data-amount');
+        priceInput.value = pprice;
+        calculateTotalSubtotal();
     }
     function updatePrice1(select) {
-        var selectedOption = select.options[select.selectedIndex];
-        var priceInput = select.parentElement.nextElementSibling.nextElementSibling.querySelector('input');
-        var price = selectedOption.value.split('-')[1];
-        priceInput.value = price;
-        calculateSubTotal2();
-    }
-
-    function calculateSubTotal() {
-        var table = document.getElementById("salesItems").getElementsByTagName("tbody")[0];
-        var subTotal = 0;
-
-        for (var i = 0; i < table.rows.length; i++) {
-            var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
-            var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
-            var total = quantity * price;
-            subTotal += isNaN(total) ? 0 : total;
-        }
-
-        document.getElementById("sub_total").value = subTotal.toFixed(2);
-        calculateTotalAmount();
-    }
-
-    function calculateSubTotal2() {
-        var table = document.getElementById("salesService").getElementsByTagName("tbody")[0];
-        var subTotal = 0;
-
-        for (var i = 0; i < table.rows.length; i++) {
-            var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
-            var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
-            var total = quantity * price;
-            subTotal += isNaN(total) ? 0 : total;
-        }
-
-        document.getElementById("sub_total").value = subTotal.toFixed(2);
-        calculateTotalAmount();
-    }
-
-    function calculateTotalAmount() {
-        var subTotal = parseFloat(document.getElementById("sub_total").value);
-        var discount = parseFloat(document.getElementById("discount").value);
-        var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
-        document.getElementById("total_amount").value = totalAmount.toFixed(2);
+        var selectedOption1 = select.options[select.selectedIndex];
+        var priceInput1 = select.parentElement.nextElementSibling.nextElementSibling.querySelector('input');
+        var sprice = selectedOption1.getAttribute('data-amount');
+        priceInput1.value = sprice;
+        calculateTotalSubtotal();
     }
 
     function addItem() {
@@ -203,36 +150,65 @@
         var cell3 = newRow.insertCell(2);
 
         cell1.innerHTML = `
-            <select name="form-${rowCounter}-product" class="form-control" onchange="updatePrice(this)">
+            <select id="form-${rowCounter}-product" name="product" class="form-control" onchange="updatePrice(this)">
+                <option value="">-- Select --</option>
                 {% for product in products %}
-                    <option value="{{ product.id }}-{{ product.amount }}">{{ product.name }}</option>
+                    <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
                 {% endfor %}
             </select>
         `;
-        cell2.innerHTML = `<input type="number" name="form-${rowCounter}-pquantity" class="form-control" min="1" onchange="calculateSubTotal()">`;
+        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-pquantity" name="pquantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">`;
         cell3.innerHTML = `<input type="number" name="form-${rowCounter}-pprice" class="form-control" readonly>`;
         
         rowCounter++;
     }
 
     function addService() {
-        var table = document.getElementById("serviceRows");
-        var row = table.insertRow(table.rows.length);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        var cell3 = row.insertCell(2);
+        var table2 = document.getElementById("serviceRows");
+        var row2 = table2.insertRow(table2.rows.length);
+        var cell1 = row2.insertCell(0);
+        var cell2 = row2.insertCell(1);
+        var cell3 = row2.insertCell(2);
 
         cell1.innerHTML = `
-            <select name="form-${rowCounter}-service" class="form-control">
+            <select id="form-${rowCounter}-service" class="form-control" name="service" onchange="updatePrice1(this)">
+                <option value="">-- Select --</option>
                 {% for service in services %}
-                                        <option value="{{ service.id }}-{{ service.amount}}">{{ service.name }}</option>
-                                    {% endfor %}
+                    <option value="{{ service.id }}" data-amount="{{ service.amount }}">{{ service.name }}</option>
+                {% endfor %}
             </select>
         `;
-        cell2.innerHTML = `<input type="number" name="form-${rowCounter}-squantity" class="form-control" min="1" onchange="calculateSubTotal()">`;
+        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-squantity" name="squantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">`;
         cell3.innerHTML = `<input type="number" name="form-${rowCounter}-sprice" class="form-control" readonly>`;
         rowCounter++;
     }
-   
+
+    function calculateTotalSubtotal() {
+        var subTotal1 = calculateSubTotal("salesItems");
+        var subTotal2 = calculateSubTotal("salesService");
+        var totalSubtotal = subTotal1 + subTotal2;
+        document.getElementById("sub_total").value = totalSubtotal.toFixed(2);
+        calculateTotalAmount();
+    }
+
+    function calculateSubTotal(tableId) {
+        var table = document.getElementById(tableId).getElementsByTagName("tbody")[0];
+        var subTotal = 0;
+        for (var i = 0; i < table.rows.length; i++) {
+            var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
+            var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
+            var total = quantity * price;
+            subTotal += isNaN(total) ? 0 : total;
+        }
+        return subTotal;
+    }
+
+    function calculateTotalAmount() {
+        var subTotal = parseFloat(document.getElementById("sub_total").value);
+        var discount = parseFloat(document.getElementById("discount").value);
+        var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
+        document.getElementById("total_amount").value = totalAmount.toFixed(2);
+    }
+
 </script>
 {% endblock %}

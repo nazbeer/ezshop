@@ -16,12 +16,7 @@
             </div>
             <div class="form-group">
                 <label for="expense_type">Expense Type:</label>
-                <select name="expense_type" id="expense_type" class="form-control" required>
-                    <option value="" disabled selected>Select Expense Type</option>
-                    {% for expense_type in expense_types %}
-                        <option value="{{ expense_type.id }}">{{ expense_type.name }}</option>
-                    {% endfor %}
-                </select>
+                {{ form.expense_type }}
             </div>
             <div class="form-group">
                 <label for="amount">Amount:</label>

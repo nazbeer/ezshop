@@ -355,7 +355,7 @@ SaleItemFormSet = inlineformset_factory(Sale, SaleItem, fields=['product', 'quan
 
 class SaleByAdminService(models.Model):
     date = models.DateField(null=True)
-    employee = models.ForeignKey(User, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -388,8 +388,8 @@ class SalesByStaffItemService(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, verbose_name=_("Service"),  null=True)
     squantity = models.PositiveIntegerField(_("Service Quantity"),  null=True)
     sprice = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Service Price"),  null=True)
-    sub_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Sub Total"), default=0.0)
-    discount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Discount"), default=0.0)
+    sub_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Sub Total"), null=True)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Discount"), null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name=_("Payment Method"))
     created_on = models.DateTimeField(auto_now_add=True, null=True)
