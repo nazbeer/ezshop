@@ -19,11 +19,15 @@ from .models import *
 from .forms import *
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from django.urls import get_resolver
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls.resolvers import RoutePattern
+from .serializers import SalesByStaffItemServiceSerializer
 
+class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
+    queryset = SalesByStaffItemService.objects.all()
+    serializer_class = SalesByStaffItemServiceSerializer
 class CustomUserAddView(CreateView):
     model = User
     form_class = CustomUserCreationForm
@@ -778,31 +782,10 @@ def submit_sale(request):
 def DayClosingCreate(request):
     if request.method == 'POST':
         form = DayClosingForm(request.POST)
-
         if form.is_valid():
-
-            date = form.cleaned_data['date']
-            total_services = form.cleaned_data['total_services']
-            total_sales = form.cleaned_data['total_sales']
-            total_collection = form.cleaned_data['total_collection']
-            advance = form.cleaned_data['advance']
-            net_collection = form.cleaned_data['net_collection']
-
-            employee = form.cleaned_data['employee']
-
-            employee_transactions = EmployeeTransaction.objects.filter(employee=employee)
-
-            day_closing = DayClosing.objects.create(
-                date=date,
-                total_services=total_services,
-                total_sales=total_sales,
-                total_collection=total_collection,
-                advance=advance,
-                net_collection=net_collection
-            )
-
-            day_closing.employee_transactions.set(employee_transactions)
+            day_closing = form.save(commit=False)
             day_closing.save()
+            form.save_m2m()  # Save the many-to-many relationships
             return redirect('day_closing_report')
     else:
         form = DayClosingForm()
@@ -869,7 +852,7 @@ def approve_day_closing(request, dayclosing_id):
 def sales_by_staff_item_service(request):
     products = Product.objects.all()
     services = Service.objects.all()
-    
+    employees = Employee.objects.all()
     if request.method == 'POST':
         form = SalesByStaffItemServiceForm(request.POST)
         if form.is_valid():
@@ -880,22 +863,14 @@ def sales_by_staff_item_service(request):
     else:
         form = SalesByStaffItemServiceForm()
         
-    return render(request, 'sales_by_staff_item_service.html', {'form': form, 'products': products, 'services': services})
-
+    return render(request, 'sales_by_staff_item_service.html', {'form': form, 'products': products, 'services': services, 'employees':employees})
 def sales_report(request):
-    sales_by_staff_item_service = SalesByStaffItemService.objects.all()
-    sales_services = SaleByAdminService.objects.all()
-    sales_items = SalesByAdminItem.objects.all()
-
-    print("Sales Services:", sales_services)
-    print("Sales Items:", sales_items)
-
-    context = {
-        'sales_by_staff_item_services': sales_by_staff_item_service,
-        'sales_services': sales_services,
-        'sales_items': sales_items,
-    }
-
+    # Query the sales data
+    sales = SalesByStaffItemService.objects.all()
+    # employees = Employee.objects.filter(id__in=sales.values_list('employee_id', flat=True)).distinct()
+    
+    # Pass the sales data to the template
+    context = {'sales': sales}
     return render(request, 'sales_report.html', context)
 
 def create_receipt_transaction(request):

@@ -1,9 +1,5 @@
 from rest_framework import serializers
-from .models import (
-    Module, Shop, ShopAdmin, Role, Employee, ExpenseType, ReceiptType,
-    Bank, ReceiptTransaction, PaymentTransaction, BankDeposit, Service, Product,
-    EmployeeTransaction, DailySummary, Sale
-)
+from .models import *
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -87,4 +83,9 @@ class DailySummarySerializer(serializers.ModelSerializer):
 class SaleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sale
+        fields = '__all__'
+
+class SalesByStaffItemServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesByStaffItemService
         fields = '__all__'

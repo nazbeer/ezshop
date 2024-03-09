@@ -17,6 +17,16 @@
                         <input type="date" id="date" name="date" class="form-control" readonly required>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between align-items-center"><label for="employee" class="mr-2">Employee:</label>
+                    <select id="employee_id" name="employee_id" class="form-control">
+                        <option value="">-- Select --</option>
+                        {% for employee in employees %}
+                            <option value="{{ employee.employee_id }}" >{{ employee.first_name }} {{ employee.second_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                </div>
             </div>
 
             <div><h5>Select Items</h5></div>
