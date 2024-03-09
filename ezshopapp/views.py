@@ -786,7 +786,7 @@ def DayClosingCreate(request):
 
             employee = form.cleaned_data['employee']
 
-            employee_transactions = EmployeeTransaction.objects.filter(employee=employee)
+            employee_transactions = Employee.objects.filter(employee=employee)
 
             day_closing = DayClosing.objects.create(
                 date=date,
