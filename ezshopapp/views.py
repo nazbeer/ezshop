@@ -24,8 +24,7 @@ from rest_framework import generics, viewsets
 from django.urls import get_resolver
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls.resolvers import RoutePattern
-from .serializers import SalesByStaffItemServiceSerializer, EmployeeSerializer, DayClosingSerializer
-
+from .serializers import *
 class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
     serializer_class = SalesByStaffItemServiceSerializer
@@ -33,6 +32,10 @@ class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
 class EmployeeViewSet(viewsets.ModelViewSet):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+
+class DayClosingViewSet(viewsets.ModelViewSet):
+    queryset = DayClosing.objects.all()
+    serializer_class = DayClosingSerializer
 
 
 class DayClosingViewSet(viewsets.ModelViewSet):
@@ -738,25 +741,40 @@ def create_sale(request):
         form = SalesByAdminItemForm()
 
     return render(request, 'sales_by_admin_item_form.html', {'form': form, 'employees': employees, 'products': products})
+# @login_required
+# def sales_by_staff_service(request):
+#     employees = Employee.objects.all()
+#     services = Service.objects.all()
+#     SaleByStaffServiceFormSet = formset_factory(SaleByStaffServiceForm, extra=1)
+
+#     if request.method == 'POST':
+#         sales_form = SaleByStaffServiceFormSet(request.POST)
+#         if sales_form.is_valid():
+#             for sales_form in sales_form:
+#                 if sales_form.cleaned_data:
+#                     sales_form = sales_form.save(commit=False)
+#                     sales_form.save()
+#             return redirect('success')  # Make sure you redirect to the correct URL
+#     else:
+#         formset = SaleByStaffServiceFormSet()
+#     return render(request, 'sales_by_admin_service.html', {'formset': formset, 'services': services, 'employees':employees})
 
 def sale_by_admin_service(request):
     employees = Employee.objects.all()
     services = Service.objects.all()
 
-    SaleByAdminServiceFormSet = formset_factory(SaleByAdminServiceForm, extra=1)
-
     if request.method == 'POST':
-        formset = SaleByAdminServiceFormSet(request.POST)
-        if formset.is_valid():
-            for form in formset:
-                if form.cleaned_data:
-                    sale = form.save(commit=False)
-                    sale.save()
-            return redirect('success.html')
+        sales_form = SaleByAdminServiceForm(request.POST)
+        if sales_form.is_valid():
+            sales_form = sales_form.save(commit=False)
+            # sales_form.itemtotal = request.POST['itemTotal']
+            # sales_form.servicetotal = request.POST['serviceTotal']
+            sales_form.save()
+            return redirect('sales_report')
     else:
-        formset = SaleByAdminServiceFormSet()
+        sales_form = SaleByAdminServiceForm()
 
-    return render(request, 'sales_by_admin_service.html', {'formset': formset, 'employees': employees, 'services': services})
+    return render(request, 'sales_by_admin_service.html', {'sales_form': sales_form, 'services': services, 'employees':employees})
 
 # def sale_by_admin_service(request):
 
@@ -770,27 +788,21 @@ class SaleListCreateView(generics.ListCreateAPIView):
     serializer_class = SaleSerializer
 
 def submit_sale(request):
-    form = SaleForm()
+    sales_form = SaleByAdminService()
     services = Service.objects.all()
 
     if request.method == 'POST':
-        form = SaleForm(request.POST)
-        if form.is_valid():
+        sales_form = SaleForm(request.POST)
+        if sales_form.is_valid():
 
-            service = form.cleaned_data['service']
-            quantity = form.cleaned_data['quantity']
-            amount = form.cleaned_data['amount']
-            discount = form.cleaned_data['discount']
-
-            payment_method = form.cleaned_data['payment_method']
-
-            sale = form.save(commit=False)
-            sale.save()
+            sales_form = sales_form.save(commit=False)
+            sales_form.save()
 
             return render(request, 'success')
-    return render(request, 'submit_sale.html', {'form': form, 'services': services})
+    return render(request, 'submit_sale.html', {'sales_form': sales_form, 'services': services})
 
 def DayClosingCreate(request):
+    employees = Employee.objects.all()
     if request.method == 'POST':
         form = DayClosingForm(request.POST)
         if form.is_valid():
@@ -801,7 +813,7 @@ def DayClosingCreate(request):
     else:
         form = DayClosingForm()
 
-    return render(request, 'dayclosing.html', {'form': form})
+    return render(request, 'dayclosing.html', {'form': form, 'employees':employees})
 
 def day_closing_admin(request):
     if request.method == 'POST':
@@ -882,10 +894,11 @@ def sales_by_staff_item_service(request):
 def sales_report(request):
     # Query the sales data
     sales = SalesByStaffItemService.objects.all().select_related('employee')
+    sales_admin = SaleByAdminService.objects.all().select_related('employee')
     # employees = Employee.objects.filter(id__in=sales.values_list('employee_id', flat=True)).distinct()
 
     # Pass the sales data to the template
-    context = {'sales': sales}
+    context = {'sales': sales, 'sales_admin':sales_admin}
     return render(request, 'sales_report.html', context)
 
 def create_receipt_transaction(request):

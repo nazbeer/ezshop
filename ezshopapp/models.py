@@ -270,7 +270,7 @@ class EmployeeTransaction(models.Model):
 
 class DayClosing(models.Model):
     date = models.DateField()
-    employee = models.ForeignKey(EmployeeTransaction, on_delete=models.CASCADE, blank=True, null=True)  
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True)  
     total_services = models.DecimalField(max_digits=8, decimal_places=2)
     total_sales = models.DecimalField(max_digits=8, decimal_places=2)
     total_collection = models.DecimalField(max_digits=8, decimal_places=2)
@@ -279,17 +279,8 @@ class DayClosing(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
-    
-    @classmethod
-    def calculate_totals(cls):
-        date = timezone.now().date()  
-        total_services = SalesByStaffItemService.objects.filter(date=date).count()
-        total_sales = SalesByStaffItemService.objects.filter(date=date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
-        return {
-            'total_services': total_services,
-            'total_sales': total_sales,
-        }
-    
+    def __str__(self):
+        return f"Day Closing by {self.employee.first_name} on {self.date}"
 
 class DayClosingAdmin(models.Model):
     date = models.DateField(default=timezone.now)
@@ -360,20 +351,35 @@ class Sale(models.Model):
 #     def __str__(self):
 #         return f"{self.product.name} - {self.quantity} {self.product.unit}"
     
-class SaleByAdminService(models.Model):
-    date = models.DateField(null=True)
+class SaleByStaffService(models.Model):
+    date = models.DateField(_("Date"))
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name=_("Employee"), null=True)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-
     payment_method = models.CharField(max_length=100)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
-    def total_amount(self):
-        return (self.price * self.quantity) - self.discount + self.tip
+    def __str__(self):
+        return str(self.date)
+    
+  
+class SaleByAdminService(models.Model):
+    date = models.DateField(_("Date"), null=True)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name=_("Employee"), null=True)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, verbose_name=_("Service"),  null=True)
+    quantity = models.PositiveIntegerField(_("Service Quantity"),  null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Service Price"),  null=True)
+    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name=_("Payment Method"))
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
+    created_on = models.DateTimeField(auto_now_add=True, null=True)
 
+    def __str__(self):
+        return f"Sale on {self.date}"
+    
 class SalesByAdminItem(models.Model):
     date = models.DateField()
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name=_("Employee"), null=True)
@@ -385,7 +391,7 @@ class SalesByAdminItem(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
-        return str(self.date)
+        return f"Sale on {self.date}"
 class SalesByStaffItemService(models.Model):
     date = models.DateField(_("Date"))
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name=_("Employee"), null=True)

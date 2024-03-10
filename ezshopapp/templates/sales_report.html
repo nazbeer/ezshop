@@ -5,7 +5,13 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Sales Report - Sales By Staff Item Service</h1>
+    <div class="card">
+        
+
+     <div class="card-header">
+    <h5 class="mb-0">Sales Report - Sales By Staff Item Service</h5>
+</div>   
+<div class="card-body">
     <div class="table-responsive">
         <table class="table table-bordered">
             <thead>
@@ -39,8 +45,9 @@
                     <td>{{ sale.itemtotal }}</td>
                     <td>{{ sale.service.name }}</td>
                     <td>{{ sale.squantity }}</td>
-                    <td>{{ sale.servicetotal }}</td>
+                    
                     <td>{{ sale.sprice }}</td>
+                    <td>{{ sale.servicetotal }}</td>
                     <td>{{ sale.sub_total }}</td>
                     <td>{{ sale.discount }}</td>
                     <td>{{ sale.total_amount }}</td>
@@ -52,4 +59,51 @@
             </tbody>
         </table>
     </div>
+</div>
+</div>
+<div class="card mt-2">
+    
+<div class="card-header">
+    
+<h5 class="mb-0">Sales Report - Sales By Staff Service</h5>
+</div>
+<div class="card-body">
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Employee Details</th>
+                <th>Service</th>
+                <th>Service Quantity</th>
+                <th>Service Price</th>
+                <th>Discount</th>
+                <th>Total Amount</th>
+                <th>Payment Method</th>
+                
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for sales_admin in sales_admin %}
+            <tr>
+                <td>{{ sales_admin.date }}</td>
+                <td>{{ sales_admin.employee.employee_id }} ({{ sales_admin.employee.id}}) - {{ sales_admin.employee.first_name }} {{ sale.employee.second_name }}</td>
+                
+                <td>{{ sales_admin.service.name }}</td>
+                <td>{{ sales_admin.quantity }}</td>
+                <td>{{ sales_admin.price }}</td>
+                
+                <td>{{ sales_admin.discount }}</td>
+                <td>{{ sales_admin.total_amount }}</td>
+                <td>{{ sales_admin.payment_method }}</td>
+                
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
 {% endblock %}

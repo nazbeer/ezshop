@@ -9,23 +9,23 @@
     <div class="card-body">
         
         <h2>Sales by Staff - Products & Services</h2>
-        {% if form.non_field_errors %}
-    <ul>
-    {% for error in form.non_field_errors %}
-        <li>{{ error }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
+        {% if sales_form.non_field_errors %}
+            <ul>
+            {% for error in sales_form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
 
-{% for field in form %}
-    {% if field.errors %}
-        <ul>
-        {% for error in field.errors %}
-            <li>{{ field.label }}: {{ error }}</li>
+        {% for field in sales_form %}
+            {% if field.errors %}
+                <ul>
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
         {% endfor %}
-        </ul>
-    {% endif %}
-{% endfor %}
         <form method="post" action="#">
             {% csrf_token %}
             <div class="row">

@@ -276,7 +276,11 @@ class SaleForm(forms.ModelForm):
 # SaleItemFormSet = inlineformset_factory(Sale, SaleItem, form=SaleItemForm, extra=1, can_delete=True)
 
 
-
+class SaleByStaffServiceForm(forms.ModelForm):
+    class Meta:
+        model = SaleByStaffService
+        fields = '__all__'
+        
 class SaleByAdminServiceForm(forms.ModelForm):
     class Meta:
         model = SaleByAdminService

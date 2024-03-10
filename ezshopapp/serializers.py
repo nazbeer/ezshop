@@ -89,6 +89,10 @@ class SalesByStaffItemServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalesByStaffItemService
         fields = '__all__'
+class SaleByStaffServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SaleByStaffService
+        fields = '__all__'
 
 class DayClosingSerializer(serializers.ModelSerializer):
     class Meta:
