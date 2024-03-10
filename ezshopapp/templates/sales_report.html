@@ -1,4 +1,3 @@
-<!-- sales_report.html -->
 {% extends 'base.html' %}
 
 {% block title %}
@@ -12,34 +11,42 @@
             <thead>
                 <tr>
                     <th>Date</th>
-                    <th>Employee ID</th>
+                    <th>Employee Details</th>
                     <th>Product</th>
                     <th>Product Quantity</th>
                     <th>Product Price</th>
+                    <th>Product Total</th>
                     <th>Service</th>
                     <th>Service Quantity</th>
                     <th>Service Price</th>
+                    <th>Service Total</th>
                     <th>Sub Total</th>
                     <th>Discount</th>
                     <th>Total Amount</th>
                     <th>Payment Method</th>
+                    
+                    
                 </tr>
             </thead>
             <tbody>
                 {% for sale in sales %}
                 <tr>
                     <td>{{ sale.date }}</td>
-                    <td>{{ sale.employee_id }}</td>
-                    <td>{{ sale.product }}</td>
+                    <td>{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                    <td>{{ sale.product.name }}</td>
                     <td>{{ sale.pquantity }}</td>
                     <td>{{ sale.pprice }}</td>
-                    <td>{{ sale.service }}</td>
+                    <td>{{ sale.itemtotal }}</td>
+                    <td>{{ sale.service.name }}</td>
                     <td>{{ sale.squantity }}</td>
+                    <td>{{ sale.servicetotal }}</td>
                     <td>{{ sale.sprice }}</td>
                     <td>{{ sale.sub_total }}</td>
                     <td>{{ sale.discount }}</td>
                     <td>{{ sale.total_amount }}</td>
                     <td>{{ sale.payment_method }}</td>
+                    
+                    
                 </tr>
                 {% endfor %}
             </tbody>

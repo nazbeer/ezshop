@@ -6,6 +6,8 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'salesbyis', SalesByStaffItemServiceViewSet)
+router.register(r'employee', EmployeeViewSet)
+router.register(r'dayclosingemp', DayClosingViewSet)
 
 
 urlpatterns = [

@@ -128,24 +128,24 @@ class BusinessProfile(models.Model):
         return self.name
 
 
-class AdminProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
-    business_profile = models.ForeignKey('BusinessProfile', on_delete=models.CASCADE)
-    email = models.EmailField()
-    mobile = models.CharField(max_length=25, null=True)
-    password = models.CharField(max_length=128, default='ezshop@2024')  
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
+# class AdminProfile(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
+#     business_profile = models.ForeignKey('BusinessProfile', on_delete=models.CASCADE)
+#     email = models.EmailField()
+#     mobile = models.CharField(max_length=25, null=True)
+#     password = models.CharField(max_length=128, default='ezshop@2024')  
+#     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
-    def save(self, *args, **kwargs):
+#     def save(self, *args, **kwargs):
 
-        if not self.user.username:
-            self.user.username = self.email  
-        if not self.user.password:
-            self.user.set_password(self.password)
-        super().save(*args, **kwargs)
+#         if not self.user.username:
+#             self.user.username = self.email  
+#         if not self.user.password:
+#             self.user.set_password(self.password)
+#         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.email 
+#     def __str__(self):
+#         return self.email 
 
 class ExpenseType(models.Model):
     name = models.CharField(max_length=255)
@@ -342,26 +342,27 @@ class DailySummary(models.Model):
 class Sale(models.Model):
     date = models.DateField()
     employee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales')
-    services = models.ManyToManyField(Service, through='SaleItem')
+    services = models.ManyToManyField(Service,)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
     net_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
+# class SaleItem(models.Model):
+#     sale = models.ForeignKey(SalesByStaffItemService, on_delete=models.CASCADE, related_name='sale_items', verbose_name=_("Sale"))
+#     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name=_("Product"),  null=True)
+#     quantity = models.PositiveIntegerField(_("Quantity"),  null=True)
+#     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Price"),  null=True)
+#     service = models.ForeignKey(Service, on_delete=models.CASCADE, verbose_name=_("Service"),  null=True)
+#     service_quantity = models.PositiveIntegerField(_("Service Quantity"),  null=True)
+#     service_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Service Price"),  null=True)
 
-class SaleItem(models.Model):
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-    sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
-
-SaleItemFormSet = inlineformset_factory(Sale, SaleItem, fields=['product', 'quantity', 'price'])
-
+#     def __str__(self):
+#         return f"{self.product.name} - {self.quantity} {self.product.unit}"
+    
 class SaleByAdminService(models.Model):
     date = models.DateField(null=True)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name=_("Employee"), null=True)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -375,7 +376,7 @@ class SaleByAdminService(models.Model):
 
 class SalesByAdminItem(models.Model):
     date = models.DateField()
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name=_("Employee"), null=True)
     item = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
     quantity = models.PositiveIntegerField(null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
@@ -385,12 +386,9 @@ class SalesByAdminItem(models.Model):
 
     def __str__(self):
         return str(self.date)
-
 class SalesByStaffItemService(models.Model):
     date = models.DateField(_("Date"))
-    #eid=models.CharField(max_length=50, null=True)
-    #employee = models.CharField(max_length=50,  null=True, verbose_name=_("Employee"))
-    #employee_id = models.IntegerField(default='1', verbose_name=_("Employee ID"), null=True)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name=_("Employee"), null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name=_("Product"),  null=True)
     pquantity = models.PositiveIntegerField(_("Product Quantity"),  null=True)
     pprice = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Product Price"),  null=True)
@@ -402,6 +400,8 @@ class SalesByStaffItemService(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name=_("Payment Method"))
     created_on = models.DateTimeField(auto_now_add=True, null=True)
-
+    itemtotal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Products Total"), null=True)
+    servicetotal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Service Total"), null=True)
+    
     def __str__(self):
         return f"Sale on {self.date}"

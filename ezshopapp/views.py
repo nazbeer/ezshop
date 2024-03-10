@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
+from django.forms import modelformset_factory
 from .constants import NATIONALITIES 
 from django.urls import reverse
 from django.forms import formset_factory
@@ -23,11 +24,21 @@ from rest_framework import generics, viewsets
 from django.urls import get_resolver
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls.resolvers import RoutePattern
-from .serializers import SalesByStaffItemServiceSerializer
+from .serializers import SalesByStaffItemServiceSerializer, EmployeeSerializer, DayClosingSerializer
 
 class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
     serializer_class = SalesByStaffItemServiceSerializer
+
+class EmployeeViewSet(viewsets.ModelViewSet):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+
+
+class DayClosingViewSet(viewsets.ModelViewSet):
+    queryset = DayClosing.objects.all()
+    serializer_class = DayClosingSerializer
+    
 class CustomUserAddView(CreateView):
     model = User
     form_class = CustomUserCreationForm
@@ -37,7 +48,7 @@ class CustomUserAddView(CreateView):
 custom_user_add_view = CustomUserAddView.as_view()
 
 
-AdminUserForm = formset_factory(AdminUserForm, extra=1)
+#AdminUserForm = formset_factory(AdminUserForm, extra=1)
 @login_required(login_url='login')
 def sidebar(request):
 
@@ -848,27 +859,31 @@ def approve_day_closing(request, dayclosing_id):
     dayclosing.status = 'approved'
     dayclosing.save()
     return redirect('day_closing_report')
-
+@login_required
 def sales_by_staff_item_service(request):
+    employees = Employee.objects.all()
     products = Product.objects.all()
     services = Service.objects.all()
-    employees = Employee.objects.all()
     if request.method == 'POST':
-        form = SalesByStaffItemServiceForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('sales_report')  
-        else:
-            print(form.errors)  # Print form errors to debug
+        sales_form = SalesByStaffItemServiceForm(request.POST)
+        if sales_form.is_valid():
+            sales_form = sales_form.save(commit=False)
+            # sales_form.itemtotal = request.POST['itemTotal']
+            # sales_form.servicetotal = request.POST['serviceTotal']
+            sales_form.save()
+            return redirect('sales_report')
     else:
-        form = SalesByStaffItemServiceForm()
-        
-    return render(request, 'sales_by_staff_item_service.html', {'form': form, 'products': products, 'services': services, 'employees':employees})
+        sales_form = SalesByStaffItemServiceForm()
+
+    return render(request, 'sales_by_staff_item_service.html', {'sales_form': sales_form, 'products': products, 'services': services, 'employees': employees})
+
+
+@login_required
 def sales_report(request):
     # Query the sales data
-    sales = SalesByStaffItemService.objects.all()
+    sales = SalesByStaffItemService.objects.all().select_related('employee')
     # employees = Employee.objects.filter(id__in=sales.values_list('employee_id', flat=True)).distinct()
-    
+
     # Pass the sales data to the template
     context = {'sales': sales}
     return render(request, 'sales_report.html', context)

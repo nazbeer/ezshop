@@ -54,27 +54,27 @@ class CustomShopAdminForm(forms.ModelForm):
         self.fields['name'].queryset = Shop.objects.exclude(id__in=existing_shops)
 
 
-class AdminUserForm(forms.Form):
-    username = forms.CharField(max_length=150)
-    password = forms.CharField(widget=forms.PasswordInput)
+# class AdminUserForm(forms.Form):
+#     username = forms.CharField(max_length=150)
+#     password = forms.CharField(widget=forms.PasswordInput)
     
-class AdminProfileForm(forms.ModelForm):
-    class Meta:
-        model = AdminProfile
-        fields = ['email', 'mobile', 'password']
+# class AdminProfileForm(forms.ModelForm):
+#     class Meta:
+#         model = AdminProfile
+#         fields = ['email', 'mobile', 'password']
 
-    username = forms.CharField(max_length=150, required=False)  # Add username field
+    # username = forms.CharField(max_length=150, required=False)  # Add username field
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        #self.fields['employee'].queryset = EmployeeForm.objects.all()  # Assuming Employee model is defined
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     #self.fields['employee'].queryset = EmployeeForm.objects.all()  # Assuming Employee model is defined
 
-    def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if not username:
-            # Use email as username if not provided
-            username = self.cleaned_data['email']
-        return username
+    # def clean_username(self):
+    #     username = self.cleaned_data.get('username')
+    #     if not username:
+    #         # Use email as username if not provided
+    #         username = self.cleaned_data['email']
+    #     return username
     
 
 class ShopAdminForm(forms.ModelForm):
@@ -254,10 +254,10 @@ class SaleForm(forms.ModelForm):
         model = Sale
         fields = ['date', 'employee', 'amount', 'discount', 'net_amount']
 
-class SaleItemForm(forms.ModelForm):
-    class Meta:
-        model = SaleItem
-        fields = ['service', 'quantity']
+# class SaleItemForm(forms.ModelForm):
+#     class Meta:
+#         model = SaleItem
+#         fields = ['service', 'quantity']
 
 # class SalesbyAdminItemForm(forms.ModelForm):
 #     class Meta:
@@ -273,7 +273,7 @@ class SaleItemForm(forms.ModelForm):
 #     SalesbyAdminItem, SalesbyAdminItemSaleItem, form=SalesbyAdminItemSaleItemForm, extra=1, can_delete=True
 # )
 
-SaleItemFormSet = inlineformset_factory(Sale, SaleItem, form=SaleItemForm, extra=1, can_delete=True)
+# SaleItemFormSet = inlineformset_factory(Sale, SaleItem, form=SaleItemForm, extra=1, can_delete=True)
 
 
 
@@ -303,4 +303,3 @@ class SalesByStaffItemServiceForm(forms.ModelForm):
     class Meta:
         model = SalesByStaffItemService
         fields = '__all__'
-        #fields = ['date','employee', 'product', 'pquantity', 'pprice', 'service', 'squantity', 'sprice','sub_total','discount','total_amount', 'payment_method']
