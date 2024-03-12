@@ -17,21 +17,6 @@
         <a class="dropdown-item" href="/business/">Business Profile List</a>
     </div>
 </li>
-
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sale & Day Closing</a>
-    <div class="dropdown-menu" aria-labelledby="saleDropdown">
-        
-        <a class="dropdown-item" href="/sale/salesbystaff/">Sales by Staff<br/>Products & Services</a>
-        
-        
-        <a class="dropdown-item" href="/sale/sales-by-staff-item-service/">Sales by Staff<br/>Item Service</a>
-        <a class="dropdown-item" href="/sale/sales-by-admin-service">Sales by Admin Service</a>
-        <a class="dropdown-item" href="/sale/dayclosing/">Day Closing</a>
-        <a class="dropdown-item" href="/sale/day-closing-report/">Day Closing Report</a>
-        <a class="dropdown-item" href="/sale/sales-report/">Sales Report</a>
-    </div>
-</li>
 <li class="dropdown d-n">
     <a href="#" class="dropdown-toggle" id="roleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Role</a>
     <div class="dropdown-menu" aria-labelledby="roleDropdown">
@@ -46,6 +31,58 @@
         <a class="dropdown-item" href="/employee/">Employee List</a>
         <a class="dropdown-item" href="/employee/create/">Create Employee</a>
       
+    </div>
+</li>
+
+<li class="dropdown d-n">
+    <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Sales by Staff</a>
+    <div class="dropdown-menu" aria-labelledby="saleDropdown">
+        
+        <a class="dropdown-item" href="/sale/sales-by-staff-item-service/"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Products & Services</a>
+        <a class="dropdown-item" href="/sale/sales-by-staff-service"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Service</a>
+        <a class="dropdown-item" href="/sale/sales-by-staff-item"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Products</a>
+        
+
+        <a class="dropdown-item" href="/sale/sales-report/"><i class="fas fa-chart-bar"></i> Sales Report</a>
+    </div>
+</li>
+<li class="dropdown d-n">
+    <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Sales by Admin</a>
+    <div class="dropdown-menu" aria-labelledby="saleDropdown">
+    
+        <a class="dropdown-item" href="/sale/sales-by-admin-service/"><i class="fas fa-chart-line"></i> Sales by Admin<br/>- Service</a>
+        <a class="dropdown-item" href="/sale/sales_by_admin_item/"><i class="fas fa-chart-line"></i> Sales by Admin<br/>- Products</a>
+        <a class="dropdown-item" href="/sale/sales-report-admin/"><i class="fas fa-chart-bar"></i> Sales Report</a>
+    </div>
+</li>
+
+<li class="dropdown d-n">
+    <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Day Closing</a>
+    <div class="dropdown-menu" aria-labelledby="saleDropdown">
+        
+        
+        <a class="dropdown-item" href="/dayclosing/admin"><i class="fas fa-calendar-check"></i> Day Closing Admin</a>
+        <a class="dropdown-item" href="/sale/dayclosing/"><i class="fas fa-calendar-check"></i> Day Closing - Employee</a>
+        <a class="dropdown-item" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a>
+        <a class="dropdown-item" href="/sale/day-closing-admin-report/"><i class="fas fa-file-alt"></i> Day Closing Admin Report</a>
+        
+    </div>
+</li>
+
+<li class="dropdown d-n">
+    <a href="#" class="dropdown-toggle" id="serviceDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Service</a>
+    <div class="dropdown-menu" aria-labelledby="serviceDropdown">
+        <a class="dropdown-item" href="/service/">Service List</a>
+        <a class="dropdown-item" href="/service/create/">Create Service</a>
+       
+    </div>
+</li>
+<li class="dropdown d-n">
+    <a href="#" class="dropdown-toggle" id="productDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Product</a>
+    <div class="dropdown-menu" aria-labelledby="productDropdown">
+        <a class="dropdown-item" href="/product/">Product List</a>
+        <a class="dropdown-item" href="/product/create/">Create Product</a>
+        
     </div>
 </li>
 <li class="dropdown d-n">
@@ -80,23 +117,7 @@
        
     </div>
 </li>
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="serviceDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Service</a>
-    <div class="dropdown-menu" aria-labelledby="serviceDropdown">
-        <a class="dropdown-item" href="/service/">Service List</a>
-        <a class="dropdown-item" href="/service/create/">Create Service</a>
-       
-    </div>
-</li>
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="productDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Product</a>
-    <div class="dropdown-menu" aria-labelledby="productDropdown">
-        <a class="dropdown-item" href="/product/">Product List</a>
-        <a class="dropdown-item" href="/product/create/">Create Product</a>
-        
-    </div>
-</li>
-<li class="dropdown d-n">
+<li class="dropdown d-n d-none">
     <a href="#" class="dropdown-toggle" id="employeeTransactionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Employee Transaction</a>
     <div class="dropdown-menu" aria-labelledby="employeeTransactionDropdown">
         <a class="dropdown-item" href="/employee-transaction/">Employee Transaction List</a>

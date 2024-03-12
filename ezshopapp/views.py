@@ -183,6 +183,9 @@ class ShopDeleteView(DeleteView):
 class RoleListView(ListView):
     model = Role
     template_name = 'role_list.html'
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return Role.objects.order_by('-created_on')
 @login_required
 def create_role(request):
     if request.method == 'POST':
@@ -394,7 +397,9 @@ def employee_dashboard(request):
 class ExpenseTypeListView(ListView):
     model = ExpenseType
     template_name = 'expense_type_list.html'
-
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return ExpenseType.objects.order_by('-created_on')
 class ExpenseTypeUpdateView(UpdateView):
     model = ExpenseType
     form_class = ExpenseTypeForm
@@ -409,7 +414,10 @@ class ExpenseTypeDeleteView(DeleteView):
 class ReceiptTransactionListView(ListView):
     model = ReceiptTransaction
     template_name = 'receipt_transaction_list.html'
-
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return ReceiptTransaction.objects.order_by('-created_on')
+    
 class ReceiptTransactionCreateView(CreateView):
     model = ReceiptTransaction
     form_class = ReceiptTransactionForm
@@ -430,7 +438,10 @@ class ReceiptTransactionDeleteView(DeleteView):
 class PaymentTransactionListView(ListView):
     model = PaymentTransaction
     template_name = 'payment_transaction_list.html'
-
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return PaymentTransaction.objects.order_by('-created_on')
+    
 class PaymentTransactionCreateView(CreateView):
     model = PaymentTransaction
     form_class = PaymentTransactionForm
@@ -451,7 +462,9 @@ class PaymentTransactionDeleteView(DeleteView):
 class BankDepositListView(ListView):
     model = BankDeposit
     template_name = 'bank_deposit_list.html'
-
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return BankDeposit.objects.order_by('-created_on')
 
 def create_bank_deposit(request):
     if request.method == 'POST':
@@ -473,7 +486,10 @@ def create_bank_deposit(request):
 class BankListView(ListView):
     model = Bank
     template_name = 'bank_list.html'
-
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return Bank.objects.order_by('-created_on')
+    
 def create_bank(request):
     if request.method == 'POST':
         form = BankForm(request.POST)
@@ -502,7 +518,10 @@ class BankDepositDeleteView(DeleteView):
 class ServiceListView(ListView):
     model = Service
     template_name = 'service_list.html'
-
+    def get_queryset(self):
+            # Return the queryset of DailySummary objects sorted by date in ascending order
+            return Service.objects.order_by('-created_on')
+    
 class ServiceCreateView(CreateView):
     model = Service
     form_class = ServiceForm
@@ -529,7 +548,10 @@ class ServiceDeleteView(DeleteView):
 class ProductListView(ListView):
     model = Product
     template_name = 'product_list.html'
-
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return Product.objects.order_by('-created_on')
+    
 def create_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST)
@@ -564,7 +586,10 @@ def employee_transaction_create(request):
 class EmployeeTransactionListView(ListView):
     model = EmployeeTransaction
     template_name = 'employee_transaction_list.html'
-
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return EmployeeTransaction.objects.order_by('-created_on')
+    
 class EmployeeTransactionCreateView(CreateView):
     model = EmployeeTransaction
     form_class = EmployeeTransactionForm
@@ -585,6 +610,11 @@ class EmployeeTransactionDeleteView(DeleteView):
 class DailySummaryListView(ListView):
     model = DailySummary
     template_name = 'daily_summary_list.html'
+
+    def get_queryset(self):
+        # Return the queryset of DailySummary objects sorted by date in ascending order
+        return DailySummary.objects.order_by('-created_on')
+    
 logger = logging.getLogger(__name__)
 
 
@@ -1133,15 +1163,14 @@ class HomeView(LoginRequiredMixin, TemplateView):
                     {'label': 'Business Profiles', 'url_name': 'business_profile_list'},
             ]
             },
-            {
-                'name': 'Service and Product Management',
+               {
+                'name': 'Role Management',
                 'links': [
-                    {'label': 'Service List', 'url_name': 'service_list'},
-                    {'label': 'Product List', 'url_name': 'product_list'},
-                    {'label': 'Create Product', 'url_name': 'create_product'},
-                    {'label': 'Create Service', 'url_name': 'create_service'},
+                    {'label': 'Role List', 'url_name': 'role_list'},
+                    {'label': 'Create Role', 'url_name': 'create_role'},
                 ]
             },
+           
             {
                 'name': 'Sales by Admin',
                 'links': [
@@ -1154,6 +1183,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 'links': [
                    {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
                     {'label': 'Sales by Staff - Products', 'url_name':'sales_by_staff_item'},
+                    {'label': 'Sales by Staff - Services', 'url_name':'sales-by-staff-service'},
                 ]
             },
             {
@@ -1165,11 +1195,13 @@ class HomeView(LoginRequiredMixin, TemplateView):
                     {'label': 'Day Closing Report', 'url_name':'day_closing_report'},
                 ]
             },
-            {
-                'name': 'Role Management',
+          {
+                'name': 'Service and Product Management',
                 'links': [
-                    {'label': 'Role List', 'url_name': 'role_list'},
-                    {'label': 'Create Role', 'url_name': 'create_role'},
+                    {'label': 'Service List', 'url_name': 'service_list'},
+                    {'label': 'Product List', 'url_name': 'product_list'},
+                    {'label': 'Create Product', 'url_name': 'create_product'},
+                    {'label': 'Create Service', 'url_name': 'create_service'},
                 ]
             },
             {
@@ -1189,29 +1221,36 @@ class HomeView(LoginRequiredMixin, TemplateView):
             {
                 'name': 'Transaction Management',
                 'links': [
+                    {'label': 'Create Receipt Transaction', 'url_name': 'create_receipt_type'},
                     {'label': 'Receipt Transactions', 'url_name': 'receipt_transaction_list'},
+                    {'label': 'Create Payment Transaction', 'url_name': 'create_payment_transaction'},
                     {'label': 'Payment Transactions', 'url_name': 'payment_transaction_list'},
                 ]
             },
             {
                 'name': 'Bank Management',
                 'links': [
+                    
+                    {'label': 'Create Bank', 'url_name': 'create_bank'},
+                    {'label': 'Create Bank Deposits', 'url_name': 'create_bank_deposit'},
+                    {'label': 'Banks', 'url_name': 'bank_list'},
                     {'label': 'Bank Deposits', 'url_name': 'bank_deposit_list'},
                 ]
             },
-            {
-                'name': 'Employee Transaction Management',
-                'links': [
-                    {'label': 'Employee Transactions', 'url_name': 'employee_transaction_list'},
-                    {'label': 'Create Transactions', 'url_name': 'create_employee_transaction'},
-                ]
-            },
+            # {
+            #     'name': 'Employee Transaction Management',
+            #     'links': [
+            #         {'label': 'Employee Transactions', 'url_name': 'employee_transaction_list'},
+            #         {'label': 'Create Transactions', 'url_name': 'create_employee_transaction'},
+            #     ]
+            # },
             {
                 'name': 'Daily Summary Management',
                 'links': [
                     {'label': 'Daily Summaries', 'url_name': 'daily_summary_list'},
                 ]
             },
+           
         ]
 
         return {'categories': categories, 'total_employees': total_employees, 'total_business': total_business, 'num_products':num_products, **context }

@@ -6,16 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+        <link rel="stylesheet" href="https://templates.hibootstrap.com/farol/assets/css/style.css">
     <!-- Custom CSS -->
     <style>
         body {
             background-color: #f8f9fa; /* Bootstrap background color */
         }
 
-        .container {
+        /* .container {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -47,22 +47,57 @@
 
         .login-form button {
             width: 100%;
+        } */
+        label{
+            font-size: 20px;
         }
     </style>
 </head>
-<body>
+<body >
 
-<div class="container">
-    <div class="login-form">
-        <h2>Login</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
+    <div class="container-fluid">
+        <div class="main-content d-flex flex-column px-0">
+            <div class="m-auto mw-510 py-5">
+                <div class="row">
+                    <div class="d-flex align-items-center justify-content-center gap-4 mb-3">
+                        <h4 class="fs-3 mb-0">Get’s started.</h4>
+                       
+                        </div>
+                </div>
+        <div class="card bg-white border-0 rounded-10 mb-4" style="min-width: 500px;">
+            <div class="card-header bg-light" style="border-bottom:0px;">
+                <div class="row text-center align-items-center m-auto justify-content-center mb-3">
+                    <img src="https://mitesolutions.com/images/logo.png" style="max-width: 300px;">
+            </div>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                <div class="form-group mb-4">
+                    <label for="id_username" class="mb-2">Username:</label>
+                    <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group mb-4">
+                    <label for="id_password" class="mb-2">Password:</label>
+                    <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter your password" required>
+                
+                </div>
+                <div class="form-group mb-2 ">
+                    <button type="submit" class="btn btn-success fs-16 fw-semibold text-dark heading-fornt py-2 py-md-3 px-4 text-white w-100">Login</button>
+                </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
+
+
+
+
+       
+    </div>
+    
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
