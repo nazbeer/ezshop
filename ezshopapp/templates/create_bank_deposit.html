@@ -6,8 +6,8 @@
   <form method="post" enctype="multipart/form-data" class="form">
     {% csrf_token %}
     <div class="form-group">
-      <label for="id_date">Day Closing Date:</label>
-      <input type="date" id="id_date" name="date" class="form-control" readonly required>
+      <label for="id_date">Daily summary Date: <small class="text-muted">last daily summary date + 1 or more only should be active</small></label>
+      <input type="date" id="id_date" name="date" class="form-control" required>
     </div>
     <div class="form-group">
       <label for="id_deposit_date">Deposit Date:</label>
@@ -42,12 +42,16 @@
 </div>
 <script>
    var currentDate = new Date();
+   var lastSummaryDate = new Date('{{ last_summary_date }}');
     
-    // Format the current date as YYYY-MM-DD
-    var formattedDate = currentDate.toISOString().split('T')[0];
+   // Add one day to the last summary date
+   lastSummaryDate.setDate(lastSummaryDate.getDate() + 1);
+
+   // Format the last summary date plus one day as YYYY-MM-DD
+   var formattedDate = lastSummaryDate.toISOString().split('T')[0];
     
-    // Set the formatted date as the value of the input field
-    document.getElementById("id_date").value = formattedDate;
+   // Set the formatted date as the value of the input field
+   document.getElementById("id_date").value = formattedDate;
 
 </script>
 {% endblock %}

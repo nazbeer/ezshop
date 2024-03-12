@@ -3,15 +3,32 @@
 {% block content %}
 <div class="container">
     <h2>Day Closing by Employee</h2>
+    {% if form.non_field_errors %}
+            <ul>
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% for field in form %}
+            {% if field.errors %}
+                <ul>
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endfor %}
     <form method="post" id="dayClosingForm">
         {% csrf_token %}
         <div class="form-group">
             <label for="date">Date:</label>
-            <input type="date" id="date" name="date" class="form-control" readonly required>
+            <input type="date" id="date" name="date" class="form-control" value="{{ current_date }}" required>
         </div>
         <div class="form-group">
             <label for="employee">Employee:</label>
-            <select id="employee" class="form-control" required>
+            <select id="employee" name="employee" class="form-control" required>
                 <option value="" selected disabled>Select Employee</option>
                 {% for employee in employees %}
                     <option value="{{ employee.id }}">{{ employee.first_name }} {{ employee.second_name }}</option>
@@ -20,36 +37,66 @@
         </div>
         <div class="form-group">
             <label for="total_services">Total Services:</label>
-            <input type="number" step="0.01" class="form-control" id="total_services" name="total_services" required>
+            <input type="number"  class="form-control" id="total_services" name="total_services" readonly required>
         </div>
         <div class="form-group">
             <label for="total_sales">Total Sales:</label>
-            <input type="number" step="0.01" class="form-control" id="total_sales" name="total_sales" required>
+            <input type="number"  class="form-control" id="total_sales" name="total_sales" readonly required>
         </div>
         <div class="form-group">
             <label for="total_collection">Total Collection:</label>
-            <input type="number" step="0.01" class="form-control" id="total_collection" name="total_collection" required>
+            <input type="number"  class="form-control" id="total_collection" name="total_collection" readonly required>
         </div>
         <div class="form-group">
             <label for="advance">Advance:</label>
-            <input type="number" step="0.01" class="form-control" id="advance" name="advance">
+            <input type="number" class="form-control" id="advance" name="advance">
         </div>
         <div class="form-group">
             <label for="net_collection">Net Collection:</label>
-            <input type="number" step="0.01" class="form-control" id="net_collection" name="net_collection" required>
+            <input type="number" class="form-control" id="net_collection" name="net_collection" readonly required>
         </div>
+        <input type="hidden" id="status" name="status" value="pending">
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
 
 <script>
-     var currentDate = new Date();
-    
-    // Format the current date as YYYY-MM-DD
-    var formattedDate = currentDate.toISOString().split('T')[0];
-    
-    // Set the formatted date as the value of the input field
-    document.getElementById("date").value = formattedDate;
+    var currentDate = "{{ current_date }}";
+    document.getElementById("date").value = currentDate;
 
+    // Fetch data when an employee is selected
+    document.getElementById("employee").addEventListener("change", function() {
+        var employeeId = this.value;
+        fetch('/fetch-data/' + employeeId + '/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("total_services").value = data.total_services;
+                document.getElementById("total_sales").value = data.total_sales;
+                document.getElementById("total_collection").value = data.total_collection;
+
+                // Calculate net collection
+                var totalServices = parseFloat(data.total_services);
+                var totalSales = parseFloat(data.total_sales);
+                var totalCollection = parseFloat(data.total_collection);
+                var advance = parseFloat(document.getElementById("advance").value);
+                var netCollection =  totalCollection- advance;
+
+                // Update net collection input field
+                document.getElementById("net_collection").value = netCollection.toFixed(2);
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+    // Update net collection when advance value changes
+    document.getElementById("advance").addEventListener("input", function() {
+        // var totalServices = parseFloat(document.getElementById("total_services").value);
+        // var totalSales = parseFloat(document.getElementById("total_sales").value);
+         var totalCollection = parseFloat(document.getElementById("total_collection").value);
+        var advance = parseFloat(this.value);
+        var netCollection = totalCollection - advance;
+
+        // Update net collection input field
+        document.getElementById("net_collection").value = netCollection.toFixed(2);
+    });
 </script>
 {% endblock %}

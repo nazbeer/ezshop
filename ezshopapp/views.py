@@ -1,10 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
+import logging
 from django.urls import reverse_lazy
 from django.views import View
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
+from django.core.mail.backends.smtp import EmailBackend
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.forms import modelformset_factory
 from .constants import NATIONALITIES 
 from django.urls import reverse
@@ -41,6 +47,11 @@ class DayClosingViewSet(viewsets.ModelViewSet):
 class DayClosingViewSet(viewsets.ModelViewSet):
     queryset = DayClosing.objects.all()
     serializer_class = DayClosingSerializer
+    
+
+class DailySummaryViewSet(viewsets.ModelViewSet):
+    queryset = DailySummary.objects.all()
+    serializer_class = DailySummarySerializer
     
 class CustomUserAddView(CreateView):
     model = User
@@ -574,13 +585,98 @@ class EmployeeTransactionDeleteView(DeleteView):
 class DailySummaryListView(ListView):
     model = DailySummary
     template_name = 'daily_summary_list.html'
+logger = logging.getLogger(__name__)
 
-class DailySummaryCreateView(CreateView):
-    model = DailySummary
-    form_class = DailySummaryForm
-    template_name = 'create_daily_summary.html'
-    success_url = reverse_lazy('daily_summary_list')
 
+@login_required
+def DailySummaryCreate(request):
+    if request.method == 'POST':
+        form = DailySummaryForm(request.POST)
+        if form.is_valid():
+            daily_summary = form.save()
+            # Pass the created daily_summary object to send_daily_summary_email function
+            send_daily_summary_email(request, daily_summary)
+            return redirect('daily_summary_list')
+    else:
+        last_daily_summary_date = DailySummary.objects.order_by('-date').first().date
+        # Calculate the minimum date as last_daily_summary_date + 1 day
+        min_date = last_daily_summary_date + timedelta(days=1)
+        # Pass the minimum date to the form
+        form = DailySummaryForm(initial={'min_date': min_date})
+
+    return render(request, 'create_daily_summary.html', {'form': form})
+
+def fetch_summary_data(request, date):
+    # Initialize default values
+    opening_balance = 0
+    total_received_amount = 0
+    total_expense_amount = 0
+    total_bank_deposit = 0
+    net_collection = 0
+    balance = 0
+
+    # Fetch the latest DailySummary for the selected date
+    try:
+        daily_summary = DailySummary.objects.filter(date=date).latest('created_on')
+        opening_balance = daily_summary.opening_balance
+    except DailySummary.DoesNotExist:
+        pass
+
+    # Fetch the DayClosingAdmin objects for the given date
+    day_closing_admins = DayClosingAdmin.objects.filter(date=date)
+    if day_closing_admins.exists():
+        # If there are multiple DayClosingAdmin objects, take the latest one
+        day_closing_admin = day_closing_admins.latest('created_on')
+        net_collection = day_closing_admin.net_collection
+
+    # Calculate total_received_amount from ReceiptTransactions
+    receipt_transactions_total = ReceiptTransaction.objects.filter(date=date).aggregate(total_amount=Sum('received_amount'))['total_amount'] or 0
+    total_received_amount = receipt_transactions_total + net_collection
+
+    # Calculate total_bank_deposit from BankDeposit
+    total_bank_deposit = BankDeposit.objects.filter(date=date).aggregate(amount=Sum('amount'))['amount'] or 0
+
+    # Calculate total_expense_amount from PaymentTransactions
+    payment_transactions_total = PaymentTransaction.objects.filter(date=date).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+    total_expense_amount = payment_transactions_total
+
+    # Calculate the balance
+    balance = opening_balance + total_received_amount - total_expense_amount - total_bank_deposit
+
+    # Construct data dictionary
+    data = {
+        'opening_balance': opening_balance,
+        'net_collection': net_collection,
+        'total_received_amount': total_received_amount,
+        'total_expense_amount': total_expense_amount,
+        'total_bank_deposit': total_bank_deposit,
+        'balance': balance
+    }
+
+    return JsonResponse(data)
+
+def send_daily_summary_email(request, daily_summary):
+    try:
+        # Construct HTML email content using the passed daily_summary object
+        email_subject = 'Latest Daily Summary Data'
+        email_html = render_to_string('daily_summary_email.html', {'daily_summary': daily_summary})
+        email_text = strip_tags(email_html)
+
+        # Send email to admin
+        send_mail(
+            email_subject,
+            email_text,
+            'nazbeer.ahammed@gmail.com',  # Use sender email from settings
+           # [settings.EMAIL_HOST_USER],  # Change this to your admin email address
+           ['6598040e-ceb7-44ae-a975-e1630c4856e4@mailslurp.com'],
+            html_message=email_html,
+        )
+
+        logger.info('Email sent successfully')  # Log success message
+        messages.success(request, 'Email sent successfully')  # Add success message
+    except Exception as e:
+        logger.error(f'Failed to send email: {e}')  # Log error message
+        messages.error(request, f'Failed to send email: {e}')  # Add error message
 class DailySummaryUpdateView(UpdateView):
     model = DailySummary
     form_class = DailySummaryForm
@@ -726,21 +822,21 @@ def login_view(request):
 
     return render(request, 'login.html', {'serializer': serializer})
 
-def create_sale(request):
+def sales_by_admin_item(request):
     employees = Employee.objects.all()
     products = Product.objects.all()
     if request.method == 'POST':
         form = SalesByAdminItemForm(request.POST)
         if form.is_valid():
-            sale = form.save()
-            return HttpResponse(f'Sale created successfully with ID: {sale.id}')  
+            form = form.save()
+            #return HttpResponse(f'Sale created successfully')  
         else:
 
-            return render(request, 'success.html') 
+            return render(request, 'sales_report_admin.html') 
     else:
         form = SalesByAdminItemForm()
 
-    return render(request, 'sales_by_admin_item_form.html', {'form': form, 'employees': employees, 'products': products})
+    return render(request, 'sales_by_admin_item.html', {'form': form, 'employees': employees, 'products': products})
 # @login_required
 # def sales_by_staff_service(request):
 #     employees = Employee.objects.all()
@@ -776,71 +872,98 @@ def sale_by_admin_service(request):
 
     return render(request, 'sales_by_admin_service.html', {'sales_form': sales_form, 'services': services, 'employees':employees})
 
-# def sale_by_admin_service(request):
-
-#     sales_services = SaleByAdminService.objects.all()
-#     sales_items = SalesByAdminItem.objects.all()
-
-#     return render(request, 'sales_by_admin_service.html', {'sales_services': sales_services, 'sales_items': sales_items})
-
 class SaleListCreateView(generics.ListCreateAPIView):
     queryset = Sale.objects.all()
     serializer_class = SaleSerializer
 
 def submit_sale(request):
-    sales_form = SaleByAdminService()
+    #sales_form = SaleByAdminService()
     services = Service.objects.all()
+    employees = Employee.objects.all()
 
     if request.method == 'POST':
-        sales_form = SaleForm(request.POST)
+        sales_form = SalesByStaffServiceForm(request.POST)
         if sales_form.is_valid():
-
             sales_form = sales_form.save(commit=False)
+            # sales_form.itemtotal = request.POST['itemTotal']
+            # sales_form.servicetotal = request.POST['serviceTotal']
             sales_form.save()
+            return redirect('sales_report')
+    else:
+        sales_form = SalesByStaffServiceForm()
 
-            return render(request, 'success')
-    return render(request, 'submit_sale.html', {'sales_form': sales_form, 'services': services})
+    return render(request, 'sales-by-staff-service.html', {'sales_form': sales_form, 'services': services,'employees':employees})
 
+@login_required
 def DayClosingCreate(request):
     employees = Employee.objects.all()
+    current_date = timezone.now().strftime('%Y-%m-%d')
+
     if request.method == 'POST':
         form = DayClosingForm(request.POST)
         if form.is_valid():
             day_closing = form.save(commit=False)
-            day_closing.save()
-            form.save_m2m()  # Save the many-to-many relationships
+            day_closing.save()  # This line should be indented properly
             return redirect('day_closing_report')
     else:
         form = DayClosingForm()
 
-    return render(request, 'dayclosing.html', {'form': form, 'employees':employees})
+    return render(request, 'dayclosing.html', {'employees': employees, 'current_date': current_date, 'form': form})
+    
 
+
+def fetch_data(request, employee_id):
+    # Fetch data for the selected employee
+    # Example: calculate total_services, total_sales, total_collection
+    total_services = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('itemtotal'))['total_services'] or 0
+    total_sales = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('servicetotal'))['total_sales'] or 0
+    total_collection = total_sales + total_services  # Assuming total collection is the same as total sales initially
+
+    data = {
+        'total_services': total_services,
+        'total_sales': total_sales,
+        'total_collection': total_collection
+    }
+
+    return JsonResponse(data)
+
+@login_required
 def day_closing_admin(request):
+    current_date = timezone.now().date()
+  
     if request.method == 'POST':
-        form = DayClosingFormAdmin(request.POST)
+        form = DayClosingAdminForm(request.POST)
         if form.is_valid():
-
-            date = timezone.now().date()  
-            total_collection = form.cleaned_data['total_collection']
-            advance = form.cleaned_data['advance']
-            net_collection = form.cleaned_data['net_collection']
-
-            day_closing_admin = DayClosingAdmin(
-                date=date,
-                total_collection=total_collection,
-                advance=advance,
-                net_collection=net_collection,
-                **DayClosingAdmin.calculate_totals()
-            )
-            day_closing_admin.save()
-            return redirect('day_closing_report')
+            form.save()
+            return redirect('day_closing_admin_report')
     else:
-        form = DayClosingFormAdmin(initial={'date': timezone.now().date()})  
+        form = DayClosingAdminForm(initial={'date': current_date})  # Initialize with current date
 
-    return render(request, 'dayclosing_admin.html', {'form': form})
+    return render(request, 'dayclosing_admin.html', {'current_date': current_date, 'form': form })
 
+def fetch_data_admin(request, selected_date):
+    # Fetch data for the selected date
+    total_services = SalesByAdminItem.objects.filter(date=selected_date).aggregate(total_services=Sum('total_amount'))['total_services'] or 0
+    total_sales = SaleByAdminService.objects.filter(date=selected_date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+    total_collection = total_sales + total_services
+    advance = DayClosing.objects.filter(date=selected_date).aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+
+    # Create a dictionary containing the fetched data
+    data = {
+        'total_services': total_services,
+        'total_sales': total_sales,
+        'total_collection': total_collection,
+        'advance': advance
+    }
+
+    # Return the data as a JSON response
+    return JsonResponse(data)
+
+@login_required
 def edit_day_closing(request, pk):
     day_closing = get_object_or_404(DayClosing, pk=pk)
+    employees = Employee.objects.all()
+    status_choices = STATUS_CHOICES 
     if request.method == 'POST':
         form = DayClosingForm(request.POST, instance=day_closing)
         if form.is_valid():
@@ -848,29 +971,83 @@ def edit_day_closing(request, pk):
             return redirect('day_closing_report')  
     else:
         form = DayClosingForm(instance=day_closing)
-    return render(request, 'dayclosing_edit.html', {'form': form})
-
+    
+    return render(request, 'dayclosing_edit.html', {'form': form, 'employees': employees, 'status_choices': status_choices })
+@login_required
 def day_closing_report(request):
     day_closings_list = DayClosing.objects.all()
-    paginator = Paginator(day_closings_list, 10)  
+    #day_closings_admin_list = DayClosingAdmin.objects.all()
+    paginator = Paginator(day_closings_list, 10)
+    #paginator_admin = Paginator(day_closings_admin_list, 10)
 
     page = request.GET.get('page')
+    #page_admin = request.GET.get('page_admin')
+
     try:
         day_closings = paginator.page(page)
+        #day_closings_admin = paginator_admin.page(page_admin)
     except PageNotAnInteger:
-
         day_closings = paginator.page(1)
+        #day_closings_admin = paginator_admin.page(1)
     except EmptyPage:
-
         day_closings = paginator.page(paginator.num_pages)
+        #day_closings_admin = paginator_admin.page(paginator_admin.num_pages)
 
     return render(request, 'day_closing_report.html', {'day_closings': day_closings})
 
+@login_required
+def day_closing_admin_report(request):
+    day_closings_list = DayClosingAdmin.objects.all()
+    #day_closings_admin_list = DayClosingAdmin.objects.all()
+    paginator = Paginator(day_closings_list, 10)
+    #paginator_admin = Paginator(day_closings_admin_list, 10)
+
+    page = request.GET.get('page')
+    #page_admin = request.GET.get('page_admin')
+
+    try:
+        day_closings = paginator.page(page)
+        #day_closings_admin = paginator_admin.page(page_admin)
+    except PageNotAnInteger:
+        day_closings = paginator.page(1)
+        #day_closings_admin = paginator_admin.page(1)
+    except EmptyPage:
+        day_closings = paginator.page(paginator.num_pages)
+        #day_closings_admin = paginator_admin.page(paginator_admin.num_pages)
+
+    return render(request, 'day_closing_admin_report.html', {'day_closings': day_closings})
+
+
+@login_required
 def approve_day_closing(request, dayclosing_id):
     dayclosing = DayClosing.objects.get(pk=dayclosing_id)
+    dayclosingadmin = DayClosingAdmin.objects.get(pk=dayclosing_id)
     dayclosing.status = 'approved'
+    dayclosingadmin.status = 'approved'
     dayclosing.save()
+    dayclosingadmin.save()
     return redirect('day_closing_report')
+
+
+@login_required
+def sales_by_staff_item(request):
+    employees = Employee.objects.all()
+    products = Product.objects.all()
+    #services = Service.objects.all()
+    if request.method == 'POST':
+        sales_form = SaleByStaffItemForm(request.POST)
+        if sales_form.is_valid():
+            sales_form = sales_form.save(commit=False)
+            # sales_form.itemtotal = request.POST['itemTotal']
+            # sales_form.servicetotal = request.POST['serviceTotal']
+            sales_form.save()
+            return redirect('sales_report')
+    else:
+        sales_form = SaleByStaffItemForm()
+
+    return render(request, 'sales_by_staff_item.html', {'sales_form': sales_form, 'products': products, 'employees': employees})
+
+
 @login_required
 def sales_by_staff_item_service(request):
     employees = Employee.objects.all()
@@ -894,12 +1071,23 @@ def sales_by_staff_item_service(request):
 def sales_report(request):
     # Query the sales data
     sales = SalesByStaffItemService.objects.all().select_related('employee')
-    sales_admin = SaleByAdminService.objects.all().select_related('employee')
+    sales_staff_service = SaleByStaffService.objects.all().select_related('employee')
+    sales_staff_item = SaleByStaffItem.objects.all().select_related('employee')
     # employees = Employee.objects.filter(id__in=sales.values_list('employee_id', flat=True)).distinct()
 
     # Pass the sales data to the template
-    context = {'sales': sales, 'sales_admin':sales_admin}
+    context = {'sales': sales, 'sales_staff_service':sales_staff_service, 'sales_staff_item':sales_staff_item}
     return render(request, 'sales_report.html', context)
+@login_required
+def sales_report_admin(request):
+    # Query the sales data
+    sales = SalesByAdminItem.objects.all().select_related('employee')
+    sales_admin_service = SaleByAdminService.objects.all().select_related('employee')
+    # employees = Employee.objects.filter(id__in=sales.values_list('employee_id', flat=True)).distinct()
+
+    # Pass the sales data to the template
+    context = {'sales': sales, 'sales_admin_service':sales_admin_service}
+    return render(request, 'sales_report_admin.html', context)
 
 def create_receipt_transaction(request):
     if request.method == 'POST':
@@ -957,7 +1145,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
             {
                 'name': 'Sales by Admin',
                 'links': [
-                     {'label': 'Sales by Admin Item', 'url_name':'sales_by_admin_item_form'},
+                     {'label': 'Sales by Admin Item', 'url_name':'sales_by_admin_item'},
                      {'label': 'Sales by Admin Service', 'url_name':'sales_by_admin_service'},
                 ]
             },
@@ -965,7 +1153,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 'name': 'Sales by Staff',
                 'links': [
                    {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
-                    {'label': 'Sales by Staff', 'url_name':'submit_sale'},
+                    {'label': 'Sales by Staff - Products', 'url_name':'sales_by_staff_item'},
                 ]
             },
             {

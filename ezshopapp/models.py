@@ -9,6 +9,7 @@ from django.db.models import Sum
 from datetime import timedelta
 STATUS_CHOICES = [
     ('pending', 'Pending'),
+    ('approved', 'Approved'),
     ('completed', 'Completed'),
     ('cancelled', 'Cancelled'),
 ]
@@ -262,7 +263,7 @@ class EmployeeTransaction(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_option = models.CharField(max_length=10, choices=[('cash', 'Cash'), ('card', 'Card')])
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True)
-    #day_closing = models.ForeignKey(DayClosing, on_delete=models.CASCADE, null=True, blank=True)
+    
     created_on = models.DateTimeField(auto_now_add=True, null=True)
     
     def __str__(self):
@@ -289,50 +290,25 @@ class DayClosingAdmin(models.Model):
     total_collection = models.DecimalField(max_digits=10, decimal_places=2)
     advance = models.DecimalField(max_digits=10, decimal_places=2)
     net_collection = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='approved')
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
-    # @classmethod
-    # def calculate_totals(cls):
-    #     date = timezone.now().date()  
-    #     total_services = SaleByAdminService.objects.filter(date=date).count()
-    #     total_sales = SaleByAdminService.objects.filter(date=date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
-    #     return {
-    #         'total_services': total_services,
-    #         'total_sales': total_sales,
-    #     }
 class DailySummary(models.Model):
     date = models.DateField()
+    opening_balance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     total_received_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_expense_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_bank_deposit = models.DecimalField(max_digits=10, decimal_places=2)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
     narration = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True, null=True)
+    def __str__(self):
+        return f"Daily Summary on {self.date}"
 
-    def save(self, *args, **kwargs):
-
-        total_received_amount = EmployeeTransaction.objects.filter(
-            transaction_type='service_and_product'
-        ).aggregate(models.Sum('total_amount'))['total_amount__sum']
-
-        total_expense_amount = PaymentTransaction.objects.aggregate(models.Sum('amount'))['amount__sum'] 
-
-        total_bank_deposit = BankDeposit.objects.aggregate(models.Sum('amount'))['amount__sum'] 
-
-        balance = total_received_amount - total_expense_amount + total_bank_deposit
-
-        self.total_received_amount = total_received_amount
-        self.total_expense_amount = total_expense_amount
-        self.total_bank_deposit = total_bank_deposit
-        self.balance = balance
-
-        super(DailySummary, self).save(*args, **kwargs)
-        self.created_on = timezone.now()
 
 class Sale(models.Model):
     date = models.DateField()
-    employee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales')
+    #employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='sales')
     services = models.ManyToManyField(Service,)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -365,6 +341,19 @@ class SaleByStaffService(models.Model):
     def __str__(self):
         return str(self.date)
     
+class SaleByStaffItem(models.Model):
+    date = models.DateField()
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, verbose_name=_("Employee"), null=True)
+    item = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
+    quantity = models.PositiveIntegerField(null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
+    created_on = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return f"Sale on {self.date}"  
   
 class SaleByAdminService(models.Model):
     date = models.DateField(_("Date"), null=True)
@@ -387,6 +376,7 @@ class SalesByAdminItem(models.Model):
     quantity = models.PositiveIntegerField(null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 

@@ -10,6 +10,7 @@
       <tr>
         <th scope="col">#</th>
         <th scope="col">Date</th>
+        <th scope="col">Opening Balance</th>
         <th scope="col">Total Received Amount</th>
         <th scope="col">Total Expense Amount</th>
         <th scope="col">Total Bank Deposit</th>
@@ -22,6 +23,7 @@
         <tr>
           <th scope="row">{{ forloop.counter }}</th>
           <td>{{ summary.date }}</td>
+          <td>{{ summary.opening_balance }}</td>
           <td>{{ summary.total_received_amount }}</td>
           <td>{{ summary.total_expense_amount }}</td>
           <td>{{ summary.total_bank_deposit }}</td>

@@ -8,6 +8,7 @@ router = DefaultRouter()
 router.register(r'salesbyis', SalesByStaffItemServiceViewSet)
 router.register(r'employee', EmployeeViewSet)
 router.register(r'dayclosingemp', DayClosingViewSet)
+router.register(r'dailysummary', DailySummaryViewSet)
 
 
 urlpatterns = [
@@ -24,25 +25,33 @@ urlpatterns = [
     path('business/', business_profile_list, name='business_profile_list'),
     path('business_profiles/<int:pk>/edit/', edit_business_profile, name='edit_business_profile'),
     path('business_profiles/<int:pk>/delete/', delete_business_profile, name='delete_business_profile'),
-   
+    # path('calculate-summary/', calculate_summary, name='calculate_summary'),
     path('get_shop_details/<str:name>/', get_shop_details, name='get_shop_details'),
     path('shop/', ShopListView.as_view(), name='shop_list'),
     path('shop/create/', ShopCreateView.as_view(), name='create_shop'),
     path('shop/update/<int:pk>/', ShopUpdateView.as_view(), name='update_shop'),
     path('shop/delete/<int:pk>/', ShopDeleteView.as_view(), name='delete_shop'),
    # path('sales/', SaleListCreateView.as_view(), name='sale-list-create'),
-    path('sale/salesbystaff/', submit_sale, name='submit_sale'),
+    
     path('get_employee_data/<int:employee_id>/', get_employee_data, name='get_employee_data'),
     path('dayclosing/admin/', day_closing_admin, name='dayclosing_admin'),
+
+    path('fetch-data-admin/<str:selected_date>/', fetch_data_admin, name='fetch_data_admin'),
     path('sale/dayclosing/', DayClosingCreate, name='dayclosing'),
+    path('fetch-data/<int:employee_id>/', fetch_data, name='fetch_data'),
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
+    path('sale/day-closing-admin-report/', day_closing_admin_report, name='day_closing_admin_report'),
     path('sale/dayclosing/<int:pk>/edit/', edit_day_closing, name='edit_day_closing'),
     path('sale/day-closing-report/<int:dayclosing_id>/approve/', approve_day_closing, name='approve_day_closing'),
-    path('sale/', create_sale, name='sales_by_admin_item_form'),
+    
+    path('sale/sales_by_admin_item/', sales_by_admin_item, name='sales_by_admin_item'),
     path('sale/success/', success_view, name='success'),
+    path('sale/sales-by-admin-service/', sale_by_admin_service, name='sales_by_admin_service'),
     path('sale/sales-by-staff-item-service/', sales_by_staff_item_service, name='sales_by_staff_item_service'),
-    path('sale/sales-by-admin-service', sale_by_admin_service, name='sales_by_admin_service'),
+    path('sale/sales-by-staff-service', submit_sale, name='sales-by-staff-service'),
+    path('sale/sales-by-staff-item/', sales_by_staff_item, name='sales_by_staff_item'),
     path('sale/sales-report/', sales_report, name='sales_report'),
+    path('sale/sales-report-admin/', sales_report_admin, name='sales_report_admin'),
     path('role/', RoleListView.as_view(), name='role_list'),
     path('role/create/', create_role, name='create_role'),
     path('role/update/<int:pk>/', RoleUpdateView.as_view(), name='update_role'),
@@ -85,7 +94,9 @@ urlpatterns = [
     path('employee-transaction/update/<int:pk>/', EmployeeTransactionUpdateView.as_view(), name='update_employee_transaction'),
     path('employee-transaction/delete/<int:pk>/', EmployeeTransactionDeleteView.as_view(), name='delete_employee_transaction'),
     path('daily-summary/', DailySummaryListView.as_view(), name='daily_summary_list'),
-    path('daily-summary/create/', DailySummaryCreateView.as_view(), name='create_daily_summary'),
+    path('daily-summary/create/', DailySummaryCreate, name='daily_summary_create'),
+    path('fetch-summary-data/<str:date>/', fetch_summary_data, name='fetch_summary_data'),
+    path('send-daily-summary-email/', send_daily_summary_email, name='send_daily_summary_email'),
     path('daily-summary/update/<int:pk>/', DailySummaryUpdateView.as_view(), name='update_daily_summary'),
     path('daily-summary/delete/<int:pk>/', DailySummaryDeleteView.as_view(), name='delete_daily_summary'),
 ]

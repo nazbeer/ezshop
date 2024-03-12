@@ -9,7 +9,8 @@
     <thead>
       <tr>
         <th scope="col">#</th>
-        <th scope="col">Date</th>
+        <th scope="col">Deposit Date</th>
+        <th scope="col">Day Closing Date</th>
         <th scope="col">Amount</th>
         <th scope="col">Transaction Type</th>
         <th scope="col">Narration</th>
@@ -20,6 +21,7 @@
         <tr>
           <th scope="row">{{ forloop.counter }}</th>
           <td>{{ bank_deposit.date }}</td>
+          <td>{{ bank_deposit.deposit_date }}</td>
           <td>{{ bank_deposit.amount }}</td>
           <td>{{ bank_deposit.transaction_type }}</td>
           <td>{{ bank_deposit.narration }}</td>

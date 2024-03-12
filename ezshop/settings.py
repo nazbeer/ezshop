@@ -4,6 +4,21 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = 'django-insecure-$^&k6)rkdqe$++!*^-(&kojpfpi*-%2#_f!1sf898rkb-ju^zq'
 
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'mail.mitesolutions.com'  # Replace 'smtp.example.com' with your SMTP server
+# EMAIL_PORT = 465  # Replace with the port of your SMTP server
+# EMAIL_USE_TLS = True  # Set it to True if your SMTP server uses TLS
+# EMAIL_HOST_USER = 'nasbeer@mitesolutions.com'  # Replace with your email address
+# EMAIL_HOST_PASSWORD = 'MTqa@#748857'  # Replace with your email password
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mx.mailslurp.com'  # Replace 'smtp.example.com' with your SMTP server
+EMAIL_PORT = 25  # Replace with the port of your SMTP server
+EMAIL_USE_TSL = False  # Set it to True if your SMTP server uses TLS
+EMAIL_HOST_USER = '3XuAF86a05YLhLwO2vYB3oykQflir7J1'  # Replace with your email address
+EMAIL_HOST_PASSWORD = 'y05g7jL61VapbV2eFOrCqrd2FVNJeWrB'  # Replace with your email password
+
+
 DEBUG = True
 
 ALLOWED_HOSTS = ['ezshopapp.onrender.com', 'localhost', '127.0.0.1']

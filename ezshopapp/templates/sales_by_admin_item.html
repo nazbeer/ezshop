@@ -46,17 +46,18 @@
                     <tbody id="itemRows">
                         <tr>
                             <td>
-                                <select name="form-0-service" class="form-control" onchange="updatePrice(this)">
+                                <select id="form-0-service" name="item" class="form-control" onchange="updatePrice(this)">
+                                   <option>-- Select --</option>
                                     {% for product in products %}
-                                        <option value="{{ product.id }}-{{ product.amount }}">{{ product.name }}</option>
+                                        <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td>
-                                <input type="number" name="form-0-quantity" class="form-control" min="1" onchange="calculateSubTotal()">
+                                <input type="number" id="form-0-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal()">
                             </td>
                             <td>
-                                <input type="number" name="form-0-price" class="form-control" readonly>
+                                <input type="number" id="form-0-price" name="price" class="form-control" readonly>
                             </td>
                         </tr>
                     </tbody>
@@ -85,8 +86,8 @@
             <div class="form-group">
                 <label for="payment_method">Payment Method:</label>
                 <select id="payment_method" name="payment_method" class="form-control">
-                    <option value="Cash">Cash</option>
-                    <option value="Card">Card</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
                 </select>
             </div>
 
@@ -116,7 +117,7 @@
     function updatePrice(select) {
         var selectedOption = select.options[select.selectedIndex];
         var priceInput = select.parentElement.nextElementSibling.nextElementSibling.querySelector('input');
-        var price = selectedOption.value.split('-')[1];
+        var price = selectedOption.getAttribute('data-amount');
         priceInput.value = price;
         calculateSubTotal();
     }
@@ -151,14 +152,15 @@
         var cell3 = newRow.insertCell(2);
 
         cell1.innerHTML = `
-            <select name="form-${rowCounter}-service" class="form-control" onchange="updatePrice(this)">
-                {% for product in products %}
-                    <option value="{{ product.id }}-{{ product.amount }}">{{ product.name }}</option>
-                {% endfor %}
+            <select id="form-${rowCounter}-service" name="item" class="form-control" onchange="updatePrice(this)">
+                <option>-- Select --</option>
+                                    {% for product in products %}
+                                        <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
+                                    {% endfor %}
             </select>
         `;
-        cell2.innerHTML = `<input type="number" name="form-${rowCounter}-quantity" class="form-control" min="1" onchange="calculateSubTotal()">`;
-        cell3.innerHTML = `<input type="number" name="form-${rowCounter}-price" class="form-control" readonly>`;
+        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal()">`;
+        cell3.innerHTML = `<input type="number" id="form-${rowCounter}-price" name="price" class="form-control" readonly>`;
         
         rowCounter++;
     }

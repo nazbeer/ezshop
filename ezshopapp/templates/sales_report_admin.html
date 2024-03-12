@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Sales Report
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        
+
+     <div class="card-header">
+    <h5 class="mb-0">Sales Report by Admin - Item</h5>
+</div>   
+<div class="card-body">
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Employee Details</th>
+                    <th>Product</th>
+                    <th>Product Quantity</th>
+                    <th>Product Price</th>
+                    
+                    
+                    <th>Discount</th>
+                    <th>Total Amount</th>
+                    <th>Payment Method</th>
+                    
+                    
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.date }}</td>
+                    <td>{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                    <td>{{ sale.product.name }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>{{ sale.price }}</td>
+                    
+                    <td>{{ sale.discount }}</td>
+                    <td>{{ sale.total_amount }}</td>
+                    <td>{{ sale.payment_method }}</td>
+                    
+                    
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+<div class="card mt-2">
+    
+<div class="card-header">
+    
+<h5 class="mb-0">Sales Report by Admin - Service</h5>
+</div>
+<div class="card-body">
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Employee Details</th>
+                <th>Service</th>
+                <th>Service Quantity</th>
+                <th>Service Price</th>
+                <th>Discount</th>
+                <th>Total Amount</th>
+                <th>Payment Method</th>
+                
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for sales_admin in sales_admin_service %}
+            <tr>
+                <td>{{ sales_admin.date }}</td>
+                <td>{{ sales_admin.employee.employee_id }} ({{ sales_admin.employee.id}}) - {{ sales_admin.employee.first_name }} {{ sale.employee.second_name }}</td>
+                
+                <td>{{ sales_admin.service.name }}</td>
+                <td>{{ sales_admin.quantity }}</td>
+                <td>{{ sales_admin.price }}</td>
+                
+                <td>{{ sales_admin.discount }}</td>
+                <td>{{ sales_admin.total_amount }}</td>
+                <td>{{ sales_admin.payment_method }}</td>
+                
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
+{% endblock %}

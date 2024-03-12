@@ -140,35 +140,23 @@ class EmployeeLoginForm(forms.ModelForm):
             'password': forms.PasswordInput(),
         }
 
-# class DayClosingForm(forms.ModelForm):
-#     class Meta:
-#         model = DayClosing
-#         fields = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection']
-#         widgets = {
-#             'date': forms.DateInput(attrs={'type': 'date'}),
-#         }
-        
-#     def __init__(self, *args, **kwargs):
-#         super(DayClosingForm, self).__init__(*args, **kwargs)
-#         self.fields['employee'].queryset = Employee.objects.all()
-
-#     def clean_employee(self):
-#         employee = self.cleaned_data.get('employee')
-#         if employee:
-#             employee_transactions = EmployeeTransaction.objects.filter(employee=employee)
-#             total_services = sum(transaction.total_services for transaction in employee_transactions)
-#             total_sales = sum(transaction.total_sales for transaction in employee_transactions)
-#             self.cleaned_data['total_services'] = total_services
-#             self.cleaned_data['total_sales'] = total_sales
-#         return employee
-        
 class DayClosingForm(forms.ModelForm):
-    employee_transactions = forms.ModelMultipleChoiceField(queryset=EmployeeTransaction.objects.all(), widget=forms.CheckboxSelectMultiple)
-
     class Meta:
         model = DayClosing
-        fields = ['date', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection', 'employee_transactions']
-
+        fields = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection', 'status']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+        }
+class DayClosingAdminForm(forms.ModelForm):
+    class Meta:
+        model = DayClosingAdmin
+        fields = '__all__'
+        widgets = {
+            'date': forms.DateInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'total_collection': forms.NumberInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'advance': forms.NumberInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'net_collection': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly', 'required': 'required'}),
+        }
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
         model = ExpenseType
@@ -221,7 +209,9 @@ class DailySummaryForm(forms.ModelForm):
     class Meta:
         model = DailySummary
         fields = '__all__'
-
+        widgets = {
+                'date': forms.DateInput(attrs={'type': 'date'}),
+            }
 
 class CustomLoginForm(forms.Form):
     username = forms.CharField(max_length=150, label='Username')
@@ -229,30 +219,8 @@ class CustomLoginForm(forms.Form):
 class SalesForm(forms.ModelForm):
     class Meta:
         model = Sale
-        fields = ['amount', 'discount']
+        fields = '__all__'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['payment_method'].required = True
-        self.services = kwargs.pop('services', None)
-        self.fields['amount'].initial = self.calculate_total_amount()
-    
-    def calculate_total_amount(self):
-        total_amount = 0
-        if self.services:
-            for service in self.services:
-                total_amount += service.price * service.quantity
-
-        # Apply discount
-        discount = self.cleaned_data.get('discount', 0)
-        total_amount -= discount
-
-        return total_amount
-
-class SaleForm(forms.ModelForm):
-    class Meta:
-        model = Sale
-        fields = ['date', 'employee', 'amount', 'discount', 'net_amount']
 
 # class SaleItemForm(forms.ModelForm):
 #     class Meta:
@@ -276,26 +244,21 @@ class SaleForm(forms.ModelForm):
 # SaleItemFormSet = inlineformset_factory(Sale, SaleItem, form=SaleItemForm, extra=1, can_delete=True)
 
 
-class SaleByStaffServiceForm(forms.ModelForm):
+class SalesByStaffServiceForm(forms.ModelForm):
     class Meta:
         model = SaleByStaffService
         fields = '__all__'
-        
+
 class SaleByAdminServiceForm(forms.ModelForm):
     class Meta:
         model = SaleByAdminService
         fields = '__all__'
-        # fields = ['date', 'employee', 'service', 'quantity', 'price', 'discount',  'payment_method']
-        # widgets = {
-        #     'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-        #     'employee': forms.Select(attrs={'class': 'form-control', 'required': True}),
-        #     'service': forms.Select(attrs={'class': 'form-control', 'required': True}),
-        #     'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'value': '1'}),
-        #     'price': forms.NumberInput(attrs={'class': 'form-control', 'readonly': True}),
-        #     'discount': forms.NumberInput(attrs={'class': 'form-control'}),
-            
-        #     'payment_method': forms.Select(attrs={'class': 'form-control'}),
-        # }
+        
+
+class SaleByStaffItemForm(forms.ModelForm):
+    class Meta:
+        model = SaleByStaffItem
+        fields = '__all__'
 
 class SalesByAdminItemForm(forms.ModelForm):
     class Meta:

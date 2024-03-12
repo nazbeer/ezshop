@@ -1,3 +1,4 @@
+<!-- day_closing_admin.html -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -7,38 +8,108 @@
 <div class="container mt-4">
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Day Closing Admin</h3>
+            <h3 class="card-title mb-0">Day Closing Admin</h3>
+            {% if form.non_field_errors %}
+            <ul>
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% for field in form %}
+            {% if field.errors %}
+                <ul>
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endfor %}
         </div>
         <div class="card-body">
-            <form method="POST">
+            <form method="POST" id="dayClosingForm">
                 {% csrf_token %}
                 <div class="mb-3">
-                    <label for="id_date" class="form-label">Date</label>
-                    <input type="date" name="date" id="id_date" class="form-control" value="{{ dayclosing_admin.date|date:'Y-m-d' }}" readonly>
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" name="date" id="date" class="form-control" required>
+                    
                 </div>
                 <div class="mb-3">
                     <label for="id_total_services" class="form-label">Total Services</label>
-                    <input type="number" name="total_services" id="id_total_services" class="form-control" value="{{ dayclosing_admin.calculate_totals.total_services }}" readonly>
+                    <input type="number" name="total_services" id="id_total_services" class="form-control" readonly>
                 </div>
                 <div class="mb-3">
                     <label for="id_total_sales" class="form-label">Total Sales</label>
-                    <input type="text" name="total_sales" id="id_total_sales" class="form-control" value="{{ dayclosing_admin.calculate_totals.total_sales }}" readonly>
+                    <input type="text" name="total_sales" id="id_total_sales" class="form-control" readonly>
                 </div>
                 <div class="mb-3">
                     <label for="id_total_collection" class="form-label">Total Collection</label>
-                    <input type="text" name="total_collection" id="id_total_collection" class="form-control" required>
+                    <input type="text" name="total_collection" id="id_total_collection" class="form-control" readonly required>
                 </div>
                 <div class="mb-3">
                     <label for="id_advance" class="form-label">Advance</label>
-                    <input type="text" name="advance" id="id_advance" class="form-control" required>
+                    <input type="text" name="advance" id="id_advance" class="form-control" readonly required>
                 </div>
                 <div class="mb-3">
                     <label for="id_net_collection" class="form-label">Net Collection</label>
-                    <input type="text" name="net_collection" id="id_net_collection" class="form-control" required>
+                    <input type="text" name="net_collection" id="id_net_collection" class="form-control" readonly>
                 </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <input type="text" id="status" name="status" value="approved" class="form-control" readonly>
+                </div>
+                
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    var currentDate = "{{ current_date }}";
+    document.getElementById("date").value = currentDate;
+
+    // Function to fetch data when date is chosen
+    document.getElementById("date").addEventListener("change", function() {
+        var selectedDate = this.value;
+        fetch('/fetch-data-admin/' + selectedDate + '/')
+            .then(response => {
+                console.log('Response:', response);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data:', data);
+                document.getElementById("id_total_services").value = data.total_services;
+                document.getElementById("id_total_sales").value = data.total_sales;
+                document.getElementById("id_total_collection").value = data.total_collection;
+                document.getElementById("id_advance").value = data.advance;
+                // Update net collection input field
+                var totalCollection = parseFloat(data.total_collection);
+                var advance = parseFloat(data.advance);
+                var netCollection = totalCollection - advance;
+                document.getElementById("id_net_collection").value = netCollection.toFixed(2);
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+    // Calculate net collection when advance is input
+    document.getElementById("id_advance").addEventListener("input", function() {
+        var totalCollection = parseFloat(document.getElementById("id_total_collection").value);
+        var advance = parseFloat(this.value);
+        var netCollection = totalCollection - advance;
+
+        // Update net collection input field
+        document.getElementById("id_net_collection").value = netCollection.toFixed(2);
+    });
+
+    // Disable selecting dates for which data is available
+    var availableDates = document.getElementById("available_dates").value.split(',');
+    availableDates.forEach(function(date) {
+        var option = document.querySelector('input[type="date"][value="' + date + '"]');
+        if (option) {
+            option.disabled = true;
+        }
+    });
+</script>
 {% endblock %}
