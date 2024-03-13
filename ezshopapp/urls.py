@@ -104,7 +104,7 @@ urlpatterns = [
     path('sale/dayclosing/', DayClosingCreate, name='dayclosing'),
     path('fetch-data/<int:employee_id>/', fetch_data, name='fetch_data'),
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
-   
+    path('profile/', employee_profile, name='employee_profile'),
 ]
 
 if settings.DEBUG:

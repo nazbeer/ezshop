@@ -462,6 +462,18 @@ def employee_dashboard(request):
     }
     return render(request, 'employee_dashboard.html', context)
 
+def employee_profile(request):
+    # Retrieve employee ID from session
+    employee_id = request.session.get('employee_id')
+    
+    # Fetch employee details
+    employee = get_object_or_404(Employee, id=employee_id)
+    
+    context = {
+        'employee': employee
+    }
+    return render(request, 'employee_profile.html', context)
+
 class ExpenseTypeListView(ListView):
     model = ExpenseType
     template_name = 'expense_type_list.html'
