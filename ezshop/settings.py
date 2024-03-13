@@ -18,6 +18,11 @@ EMAIL_USE_TSL = False  # Set it to True if your SMTP server uses TLS
 EMAIL_HOST_USER = '3XuAF86a05YLhLwO2vYB3oykQflir7J1'  # Replace with your email address
 EMAIL_HOST_PASSWORD = 'y05g7jL61VapbV2eFOrCqrd2FVNJeWrB'  # Replace with your email password
 
+# EMPLOYEE_LOGIN_URL = 'employee_login'  # Define the URL for employee login
+
+# # Set the LOGIN_URL for the Employee model
+# LOGIN_URL = EMPLOYEE_LOGIN_URL
+
 
 DEBUG = True
 

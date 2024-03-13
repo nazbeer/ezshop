@@ -1,72 +1,81 @@
-{% extends 'base.html' %}
+{% extends 'emp_base.html' %}
 
 {% block content %}
 <div class="container">
-    <h2>Day Closing by Employee</h2>
-    {% if form.non_field_errors %}
-            <ul>
-            {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-
-        {% for field in form %}
-            {% if field.errors %}
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0 text-white">Day Closing by Employee</h4>
+        </div>
+        <div class="card-body">
+            {% if form.non_field_errors %}
                 <ul>
-                {% for error in field.errors %}
-                    <li>{{ field.label }}: {{ error }}</li>
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
                 {% endfor %}
                 </ul>
             {% endif %}
-        {% endfor %}
-    <form method="post" id="dayClosingForm">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="date">Date:</label>
-            <input type="date" id="date" name="date" class="form-control" value="{{ current_date }}" required>
+
+            {% for field in form %}
+                {% if field.errors %}
+                    <ul>
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endfor %}
+            <form method="post" id="dayClosingForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="date" class="form-control" value="{{ current_date }}" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="employee">Employee:</label>
+                    <input type="hidden" name="employee" value="{% if employees %}{{employees.id}}{% endif %}">
+                    <input type="text" class="form-control text-capitalize" readonly value="{% if employees %}{{ employees.first_name }} {{ employees.second_name }}{% endif %}">
+                </div>
+                <div class="form-group">
+                    <label for="total_services">Total Services:</label>
+                    <input type="number" class="form-control" id="total_services" name="total_services" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="total_sales">Total Sales:</label>
+                    <input type="number" class="form-control" id="total_sales" name="total_sales" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="total_collection">Total Collection:</label>
+                    <input type="number" class="form-control" id="total_collection" name="total_collection" readonly required>
+                </div>
+                <div class="form-group">
+                    <label for="advance">Advance:</label>
+                    <input type="number" class="form-control" id="advance" name="advance">
+                </div>
+                <div class="form-group">
+                    <label for="net_collection">Net Collection:</label>
+                    <input type="number" class="form-control" id="net_collection" name="net_collection" readonly required>
+                </div>
+                <input type="hidden" id="status" name="status" value="pending">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="employee">Employee:</label>
-            <select id="employee" name="employee" class="form-control" required>
-                <option value="" selected disabled>Select Employee</option>
-                {% for employee in employees %}
-                    <option value="{{ employee.id }}">{{ employee.first_name }} {{ employee.second_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="total_services">Total Services:</label>
-            <input type="number"  class="form-control" id="total_services" name="total_services" readonly required>
-        </div>
-        <div class="form-group">
-            <label for="total_sales">Total Sales:</label>
-            <input type="number"  class="form-control" id="total_sales" name="total_sales" readonly required>
-        </div>
-        <div class="form-group">
-            <label for="total_collection">Total Collection:</label>
-            <input type="number"  class="form-control" id="total_collection" name="total_collection" readonly required>
-        </div>
-        <div class="form-group">
-            <label for="advance">Advance:</label>
-            <input type="number" class="form-control" id="advance" name="advance">
-        </div>
-        <div class="form-group">
-            <label for="net_collection">Net Collection:</label>
-            <input type="number" class="form-control" id="net_collection" name="net_collection" readonly required>
-        </div>
-        <input type="hidden" id="status" name="status" value="pending">
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    </div>
 </div>
 
 <script>
     var currentDate = "{{ current_date }}";
     document.getElementById("date").value = currentDate;
 
-    // Fetch data when an employee is selected
-    document.getElementById("employee").addEventListener("change", function() {
-        var employeeId = this.value;
+    // Fetch data when the page loads
+    window.addEventListener("load", function() {
+        var employeeId = localStorage.getItem('employee_id');
+        if (employeeId) {
+            fetchEmployeeData(employeeId);
+        }
+    });
+
+    // Fetch data function
+    function fetchEmployeeData(employeeId) {
         fetch('/fetch-data/' + employeeId + '/')
             .then(response => response.json())
             .then(data => {
@@ -79,19 +88,17 @@
                 var totalSales = parseFloat(data.total_sales);
                 var totalCollection = parseFloat(data.total_collection);
                 var advance = parseFloat(document.getElementById("advance").value);
-                var netCollection =  totalCollection- advance;
+                var netCollection = totalCollection - advance;
 
                 // Update net collection input field
                 document.getElementById("net_collection").value = netCollection.toFixed(2);
             })
             .catch(error => console.error('Error:', error));
-    });
+    }
 
     // Update net collection when advance value changes
     document.getElementById("advance").addEventListener("input", function() {
-        // var totalServices = parseFloat(document.getElementById("total_services").value);
-        // var totalSales = parseFloat(document.getElementById("total_sales").value);
-         var totalCollection = parseFloat(document.getElementById("total_collection").value);
+        var totalCollection = parseFloat(document.getElementById("total_collection").value);
         var advance = parseFloat(this.value);
         var netCollection = totalCollection - advance;
 

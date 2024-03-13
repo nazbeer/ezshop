@@ -7,10 +7,14 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
+    <meta name="author" content="Nasbeer Ahammed | CTO | Mite Solutions LLC | www.nasbeer.com">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://templates.hibootstrap.com/farol/assets/css/style.css" rel="stylesheet">
+    <!-- <link href="https://admin.pixelstrap.net/dunzo/assets/css/responsive.css" rel="stylesheet"> -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
@@ -23,6 +27,9 @@
     <title>{% block title %}EZShop{% endblock %}</title>
 
     <style>
+    body, p, h1, h2, h3, h4, h5, h6, a, li, label, input, div, span, small{
+        font-family: "Open Sans", sans-serif !important;
+    }
     #font-c>li>a{
         font-size:14px !important;
     }
@@ -35,18 +42,32 @@
         max-width:40px !important;
     } 
     }
+    button:disabled {
+        cursor: not-allowed;
+        pointer-events: all !important;
+    }
     
      body {
         padding-top: 56px;
+        background-color:  #ffffff !important;
     }
 
     .navbar-light {
         border-bottom: 0.1em solid #f5f5f5;
         box-shadow: 1px -2px 5px 4px #ccc;
     }
-    thead{
-        background-color: #343a40;
-    color: #d9d9d9;
+    table thead{
+        border-radius: 5px !important;
+    }
+    table thead th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #dee2e6;
+        background-color: #184b7c !important;
+        color: #fff !important;
+        
+    }
+    tbody{
+        border-bottom: 0px !important;
     }
     thead>tr>th>a{
         color:#fff;
@@ -75,13 +96,15 @@
         border-radius: 5px;
     }
     table{
-        border:0px !important;
+        border:1px !important;
     }
     #content {
         margin-left: 200px;
         padding: 15px;
     }
-
+    button.navbar-toggler {
+        margin-right: 10px !important;
+    }
     #sidebar ul {
         list-style: none;
         padding: 0;
@@ -146,9 +169,82 @@
             padding-bottom: 5px;
         }
     }
+    div>.table-responsive, table, table>thead{
+        border-radius: 10px !important;
+    }
+    .card{
+        border:0px !important;
+        margin-top:15px;
+        margin-bottom:15px;
+        box-shadow: 0px 2px 6px -1px #ccc;
+    }
+    .card-header{
+        background-color: #184b7c !important;
+        color:#fff !important;
+    
+    }
+    .card-header>a, .card-header>h5{
+        color:#fff !important;
+    }
+    a{
+        text-decoration: none !important;
+    }
+    .bg-dark{
+        background-color: #343a40 !important;
+    }
+    .btn-primary {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #00B69B;
+        --bs-btn-border-color: #00B69B;
+        --bs-btn-hover-color: #000;
+        --bs-btn-hover-bg: #26c1aa;
+        --bs-btn-hover-border-color: #1abda5;
+        --bs-btn-focus-shadow-rgb: 0, 155, 132;
+        --bs-btn-active-color: #000;
+        --bs-btn-active-bg: #33c5af;
+        --bs-btn-active-border-color: #1abda5;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #000;
+        --bs-btn-disabled-bg: #00B69B;
+        --bs-btn-disabled-border-color: #00B69B;
+    }
+    .dropdown-toggle::after {
+        display: inline-block;
+        margin-left: 0.355em;
+        margin-top: 1.1em;
+        vertical-align: 0.255em;
+        content: "";
+        border-top: 0.3em solid;
+        border-right: 0.3em solid transparent;
+        border-bottom: 0;
+        border-left: 0.3em solid transparent;
+    }
+    .list-group{
+        border:1px solid #184b7c;
+        /* box-shadow: 0px 2px 6px -1px #ccc; */
+    }
+    .list-group-item:hover{
+        background-color: #005bb252;
+    }
         .logo{
             filter: brightness(0) invert(1);
             margin:0px;
+        }
+        @media screen and (max-width:769px) {
+            .logo{
+                filter: brightness(0) invert(1);
+                margin:0px;
+                width: 56px;
+            }
+            .bg-dark{
+                background-color: #184b7c !important;
+            }
+            .navbar-nav.ml-auto a {
+                color: #fff !important;
+                margin-right: 15px;
+                font-size: 22px;
+                text-decoration: none;
+            }
         }
     /* Add new styles for the logout link */
     .navbar-nav.ml-auto {
@@ -204,12 +300,20 @@
 
         
     }
+    .footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #343a40; /* Adjust background color as needed */
+    color: #fff; /* Adjust text color as needed */
+    padding: 10px 0; /* Adjust padding as needed */
+}
     </style>
 </head>
 <body>
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand text-left" href="/home/">
+    <a class="navbar-brand text-left" href="/employee-dashboard/">
         <!-- <img src="{% static '/ezshopapp/mite.png' %}" alt="Mite Solutions" width="5%"> -->
          <img src="https://mitesolutions.com/images/logo.png" class="logo" alt="Mite Solutions" width="5%"> 
     </a>
@@ -218,19 +322,47 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto pl-3">
-            <li class="d-n"><a href="{% url 'dayclosing' %}">Day Closing</a></li>
-            <li class="d-n"><a href="{% url 'create_employee_transaction' %}">Create Employee Transactions</a></li>
+            <li class="d-n"><a href="/employee-dashboard/"><i class="fas fa-home"></i> Home</a></li>
+            <li class="dropdown d-n">
+                <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Sales by Staff</a>
+                <div class="dropdown-menu" aria-labelledby="saleDropdown">
+                    
+                    <a class="dropdown-item" href="/sale/sales-by-staff-item-service/"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Products & Services</a>
+                    <a class="dropdown-item" href="/sale/sales-by-staff-service"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Service</a>
+                    <a class="dropdown-item" href="/sale/sales-by-staff-item"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Products</a>
+                    
+    
+                    <a class="dropdown-item" href="/sale/sales-report/"><i class="fas fa-chart-bar"></i> Sales Report</a>
+                </div>
+            </li>
+            <li class="d-n"><a href="/sale/dayclosing/"><i class="fas fa-calendar-check"></i> Day Closing</a></li>
+            <li class="d-n"> <a class="" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a></li>
             <li>
-                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                <a class="nav-link" href="{% url 'employee_logout' %}">Logout</a>
             </li>
         </ul>
     </div>
 </nav>
 <div id="sidebar">
     <hr/>
-    <ul id="font-c" style="max-height: 400px; overflow-y: scroll;">
-        <li><a href="{% url 'dayclosing' %}">Day Closing</a></li>
-        <li><a href="{% url 'create_employee_transaction' %}">Create Employee Transactions</a></li>
+    <ul id="font-c" >
+        <li><a href="/employee-dashboard/"><i class="fas fa-home"></i> Home</a></li>
+       
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Sales by Staff</a>
+            <div class="dropdown-menu" aria-labelledby="saleDropdown">
+                
+                <a class="dropdown-item" href="/sale/sales-by-staff-item-service/"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Products & Services</a>
+                <a class="dropdown-item" href="/sale/sales-by-staff-service"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Service</a>
+                <a class="dropdown-item" href="/sale/sales-by-staff-item"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Products</a>
+                
+
+                <a class="dropdown-item" href="/sale/sales-report/"><i class="fas fa-chart-bar"></i> Sales Report</a>
+            </div>
+        </li>
+        <li class=""><a href="/sale/dayclosing/"><i class="fas fa-calendar-check"></i> Day Closing</a></li>
+        <li class=""> <a class="" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a></li>
+       
     </ul>
     
 </div>
@@ -238,7 +370,11 @@
 <div id="content">
     {% block content %}{% endblock %}
 </div>
-
+<footer class="footer mt-auto py-3 bg-light">
+    <div class="container text-center">
+        <span class="text-muted">&copy; 2024 Mite Solutions LLC</span>
+    </div>
+</footer>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

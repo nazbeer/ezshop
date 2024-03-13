@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
+import json
 from django.core.mail.backends.smtp import EmailBackend
 from django.conf import settings
 from django.core.mail import send_mail
@@ -31,6 +32,7 @@ from django.urls import get_resolver
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls.resolvers import RoutePattern
 from .serializers import *
+from datetime import datetime, timedelta
 class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
     serializer_class = SalesByStaffItemServiceSerializer
@@ -264,16 +266,28 @@ def create_expense_type(request):
         form = ExpenseTypeForm()
     return render(request, 'create_expense_type.html', {'form': form})
 
+@login_required
 def employee_list(request):
+    # Get the shop admin user
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    
+    # Get the shop associated with the shop admin
+    shop = shop_admin.shop
+
+    # Get the business profile associated with the shop
+    business_profile = shop
+
     query = request.GET.get('q')
     if query:
         employees = Employee.objects.filter(
             Q(employee_id__icontains=query) |
             Q(first_name__icontains=query) |
-            Q(second_name__icontains=query)
+            Q(second_name__icontains=query),
+            business_profile=business_profile,
+            # shop=shop
         )
     else:
-        employees = Employee.objects.all()
+        employees = Employee.objects.filter(business_profile=business_profile)
 
     paginator = Paginator(employees, 10)
     page = request.GET.get('page')
@@ -384,15 +398,69 @@ def employee_login(request):
         form = EmployeeLoginForm()
     return render(request, 'employee_login.html', {'form': form})
 
-def employee_dashboard(request):
-    # Fetch all employees
-    employees = Employee.objects.all()
+def employee_logout(request):
+    # Remove employee_id from the session if it exists
+    if 'employee_id' in request.session:
+        del request.session['employee_id']
     
+    # Redirect to the login page after logout
+    return redirect('employee_login')
+
+def employee_dashboard(request):
+    # Get the employee_id from the session
+    employee_id = request.session.get('employee_id')
+    
+    # Fetch the employee object using the employee_id
+    employee = get_object_or_404(Employee, pk=employee_id)
+
+    # Fetch the associated BusinessProfile for the employee
+    business_profile = BusinessProfile.objects.filter(name=employee.business_profile).first()
+    
+    # Fetch the associated Shop for the employee
+    shop = Shop.objects.filter(name=business_profile.name).first()
+    
+    # Querying the models to calculate analytics
+    total_sales_amount = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_sales_amount=Sum('total_amount'))['total_sales_amount']
+    total_service_amount = SaleByStaffService.objects.filter(employee_id=employee_id).aggregate(total_service_amount=Sum('total_amount'))['total_service_amount']
+    advance_taken = DayClosing.objects.filter(employee_id=employee_id).aggregate(advance_taken=Sum('advance'))['advance_taken']
+    ten_days_ago = datetime.now() - timedelta(days=10)
+
+    # Query the database for transactions for the last 10 days
+    sales_by_item_service = SalesByStaffItemService.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
+    sales_by_item = SaleByStaffItem.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
+    sales_by_service = SaleByStaffService.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
+    day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
+
+    # Convert queryset data to JSON format
+    sales_by_item_service_data = list(sales_by_item_service.values('date', 'total_amount'))
+    sales_by_item_data = list(sales_by_item.values('date', 'total_amount'))
+    sales_by_service_data = list(sales_by_service.values('date', 'total_amount'))
+    day_closings_data = list(day_closings.values('date', 'advance'))
+    
+    sales_by_item_service_data = [{'date': str(item['date']), 'total_amount': float(item['total_amount'])} for item in sales_by_item_service_data]
+    sales_by_item_data = [{'date': str(item['date']), 'total_amount': float(item['total_amount'])} for item in sales_by_item_data]
+    sales_by_service_data = [{'date': str(item['date']), 'total_amount': float(item['total_amount'])} for item in sales_by_service_data]
+    day_closings_data = [{'date': str(item['date']), 'advance': float(item['advance'])} for item in day_closings_data]
+
+    # Serialize queryset data to JSON strings
+    sales_by_item_service_data_json = json.dumps(sales_by_item_service_data)
+    sales_by_item_data_json = json.dumps(sales_by_item_data)
+    sales_by_service_data_json = json.dumps(sales_by_service_data)
+    day_closings_data_json = json.dumps(day_closings_data)
+
     context = {
-        'employees': employees
+        'employee': employee,
+        'business_profile': business_profile,
+        'shop': shop,
+        'total_sales_amount': total_sales_amount,
+        'total_service_amount': total_service_amount,
+        'advance_taken': advance_taken,
+        'sales_by_item_service_data_json': sales_by_item_service_data_json,
+        'sales_by_item_data_json': sales_by_item_data_json,
+        'sales_by_service_data_json': sales_by_service_data_json,
+        'day_closings_data_json': day_closings_data_json,
     }
     return render(request, 'employee_dashboard.html', context)
-
 
 class ExpenseTypeListView(ListView):
     model = ExpenseType
@@ -757,7 +825,7 @@ def create_business_profile(request):
             # Check if a business profile already exists with the same name as shop name
             if BusinessProfile.objects.filter(name=shop_name).exists():
                 context['disable_submit'] = True  # Disable submit button
-                messages.info(request, "Only one business profile can be created under a shop.")
+                # messages.info(request, "Only one business profile can be created under a shop.")
         except ShopAdmin.DoesNotExist:
             context['shop_details'] = None
             context['license_number'] = None
@@ -907,9 +975,12 @@ class SaleListCreateView(generics.ListCreateAPIView):
     serializer_class = SaleSerializer
 
 def submit_sale(request):
-    #sales_form = SaleByAdminService()
+    employee_id = request.session.get('employee_id')
+
+    # Filter employees based on the retrieved employee ID
+    employees = Employee.objects.filter(id=employee_id)
     services = Service.objects.all()
-    employees = Employee.objects.all()
+    
 
     if request.method == 'POST':
         sales_form = SalesByStaffServiceForm(request.POST)
@@ -924,29 +995,53 @@ def submit_sale(request):
 
     return render(request, 'sales-by-staff-service.html', {'sales_form': sales_form, 'services': services,'employees':employees})
 
-@login_required
+# @login_required
+
 def DayClosingCreate(request):
-    employees = Employee.objects.all()
+    # Retrieve the logged-in employee's ID from the session
+    employee_id = request.session.get('employee_id')
+    
+    # Fetch the employee object using the employee_id
+    employees = get_object_or_404(Employee, pk=employee_id)
+
+    # Fetch the associated BusinessProfile for the employee
+    business_profile = BusinessProfile.objects.filter(name=employees.business_profile).first()
+    
+    # Fetch the associated Shop for the employee
+    shop = Shop.objects.filter(name=business_profile.name).first()
+    
+    # context = {
+    #     'employees': employees,
+    #     'business_profile': business_profile,
+    #     'shop': shop
+    # }
+
     current_date = timezone.now().strftime('%Y-%m-%d')
 
     if request.method == 'POST':
         form = DayClosingForm(request.POST)
         if form.is_valid():
             day_closing = form.save(commit=False)
-            day_closing.save()  # This line should be indented properly
+            
+            # Assign the logged-in employee to the day closing object
+            #day_closing.employee = logged_in_employee
+            
+            day_closing.save()  # Save the day closing object
             return redirect('day_closing_report')
     else:
         form = DayClosingForm()
 
-    return render(request, 'dayclosing.html', {'employees': employees, 'current_date': current_date, 'form': form})
-    
+    # Pass the logged-in employee to the template as a list
+    #employees = logged_in_employee
+
+    return render(request, 'dayclosing.html', {'current_date': current_date, 'form': form, 'employees':employees})
 
 
 def fetch_data(request, employee_id):
     # Fetch data for the selected employee
     # Example: calculate total_services, total_sales, total_collection
-    total_services = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('itemtotal'))['total_services'] or 0
-    total_sales = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('servicetotal'))['total_sales'] or 0
+    total_services = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('itemtotal'))['total_services']  + SaleByStaffItem.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('total_amount'))['total_services'] or 0
+    total_sales = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('servicetotal'))['total_sales'] + SaleByStaffService.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
     total_collection = total_sales + total_services  # Assuming total collection is the same as total sales initially
 
     data = {
@@ -989,7 +1084,7 @@ def fetch_data_admin(request, selected_date):
     # Return the data as a JSON response
     return JsonResponse(data)
 
-@login_required
+
 def edit_day_closing(request, pk):
     day_closing = get_object_or_404(DayClosing, pk=pk)
     employees = Employee.objects.all()
@@ -1003,25 +1098,26 @@ def edit_day_closing(request, pk):
         form = DayClosingForm(instance=day_closing)
     
     return render(request, 'dayclosing_edit.html', {'form': form, 'employees': employees, 'status_choices': status_choices })
-@login_required
-def day_closing_report(request):
-    day_closings_list = DayClosing.objects.all()
-    #day_closings_admin_list = DayClosingAdmin.objects.all()
-    paginator = Paginator(day_closings_list, 10)
-    #paginator_admin = Paginator(day_closings_admin_list, 10)
 
+def day_closing_report(request):
+    # Retrieve the logged-in employee's ID from the session or local storage
+    logged_in_employee_id = request.session.get('employee_id')  # If using session
+    # logged_in_employee_id = localStorage.getItem('employee_id')  # If using local storage in JavaScript
+
+    # Filter the DayClosing queryset to get only the day closings associated with the logged-in employee
+    day_closings_list = DayClosing.objects.filter(employee__id=logged_in_employee_id).order_by('-created_on')
+
+
+    # Paginate the day closings list
+    paginator = Paginator(day_closings_list, 10)
     page = request.GET.get('page')
-    #page_admin = request.GET.get('page_admin')
 
     try:
         day_closings = paginator.page(page)
-        #day_closings_admin = paginator_admin.page(page_admin)
     except PageNotAnInteger:
         day_closings = paginator.page(1)
-        #day_closings_admin = paginator_admin.page(1)
     except EmptyPage:
         day_closings = paginator.page(paginator.num_pages)
-        #day_closings_admin = paginator_admin.page(paginator_admin.num_pages)
 
     return render(request, 'day_closing_report.html', {'day_closings': day_closings})
 
@@ -1059,9 +1155,12 @@ def approve_day_closing(request, dayclosing_id):
     return redirect('day_closing_report')
 
 
-@login_required
+
 def sales_by_staff_item(request):
-    employees = Employee.objects.all()
+    employee_id = request.session.get('employee_id')
+
+    # Filter employees based on the retrieved employee ID
+    employees = Employee.objects.filter(id=employee_id)
     products = Product.objects.all()
     #services = Service.objects.all()
     if request.method == 'POST':
@@ -1078,9 +1177,12 @@ def sales_by_staff_item(request):
     return render(request, 'sales_by_staff_item.html', {'sales_form': sales_form, 'products': products, 'employees': employees})
 
 
-@login_required
+
 def sales_by_staff_item_service(request):
-    employees = Employee.objects.all()
+    employee_id = request.session.get('employee_id')
+
+    # Filter employees based on the retrieved employee ID
+    employees = Employee.objects.filter(id=employee_id)
     products = Product.objects.all()
     services = Service.objects.all()
     if request.method == 'POST':
@@ -1097,17 +1199,19 @@ def sales_by_staff_item_service(request):
     return render(request, 'sales_by_staff_item_service.html', {'sales_form': sales_form, 'products': products, 'services': services, 'employees': employees})
 
 
-@login_required
 def sales_report(request):
-    # Query the sales data
-    sales = SalesByStaffItemService.objects.all().select_related('employee')
-    sales_staff_service = SaleByStaffService.objects.all().select_related('employee')
-    sales_staff_item = SaleByStaffItem.objects.all().select_related('employee')
-    # employees = Employee.objects.filter(id__in=sales.values_list('employee_id', flat=True)).distinct()
+    # Retrieve the logged-in employee's ID from the session
+    logged_in_employee_id = request.session.get('employee_id') 
 
-    # Pass the sales data to the template
-    context = {'sales': sales, 'sales_staff_service':sales_staff_service, 'sales_staff_item':sales_staff_item}
+    # Query the sales data filtered by the logged-in employee's ID
+    sales = SalesByStaffItemService.objects.filter(employee__id=logged_in_employee_id)
+    sales_staff_service = SaleByStaffService.objects.filter(employee__id=logged_in_employee_id)
+    sales_staff_item = SaleByStaffItem.objects.filter(employee__id=logged_in_employee_id)
+
+    # Pass the filtered sales data to the template
+    context = {'sales': sales, 'sales_staff_service': sales_staff_service, 'sales_staff_item': sales_staff_item}
     return render(request, 'sales_report.html', context)
+
 @login_required
 def sales_report_admin(request):
     # Query the sales data
@@ -1178,21 +1282,21 @@ class HomeView(LoginRequiredMixin, TemplateView):
                      {'label': 'Sales by Admin Service', 'url_name':'sales_by_admin_service'},
                 ]
             },
-            {
-                'name': 'Sales by Staff',
-                'links': [
-                   {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
-                    {'label': 'Sales by Staff - Products', 'url_name':'sales_by_staff_item'},
-                    {'label': 'Sales by Staff - Services', 'url_name':'sales-by-staff-service'},
-                ]
-            },
+            # {
+            #     'name': 'Sales by Staff',
+            #     'links': [
+            #        {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
+            #         {'label': 'Sales by Staff - Products', 'url_name':'sales_by_staff_item'},
+            #         {'label': 'Sales by Staff - Services', 'url_name':'sales-by-staff-service'},
+            #     ]
+            # },
             {
                 'name': 'Closing & Reports',
                 'links': [
-                    {'label': 'Day Closing', 'url_name':'dayclosing'},
+                    # {'label': 'Day Closing', 'url_name':'dayclosing'},
                     {'label': 'Day Closing by Admin', 'url_name':'dayclosing_admin'},
-                    {'label': 'Sales Report', 'url_name':'sales_report'},
-                    {'label': 'Day Closing Report', 'url_name':'day_closing_report'},
+                    # {'label': 'Sales Report', 'url_name':'sales_report'},
+                    {'label': 'Day Closing Admin Report', 'url_name':'day_closing_admin_report'},
                 ]
             },
           {
