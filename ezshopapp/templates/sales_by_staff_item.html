@@ -25,7 +25,7 @@
                 <div class="col-md-6">
                     <div class="d-flex justify-content-between align-items-center"><label for="employee" class="mr-2">Employee:</label>
                         <input type="text" id="employee" name="employee" class="form-control" value="{{ request.session.employee_id }}" readonly >
-                </div>
+                    </div>
                 </div>  
             </div>
 
@@ -54,10 +54,10 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="number" id="form-0-squantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal2()">
+                                <input type="number" id="form-0-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal()">
                             </td>
                             <td>
-                                <input type="number" id="form-0-sprice" name="price"  class="form-control" readonly>
+                                <input type="number" id="form-0-price" name="price"  class="form-control" readonly>
                             </td>
                             <td class="text-center"> <!-- Add Action cell -->
                                 <button class="btn btn-danger" type="button" onclick="removeItemRow(this)"><i class="fas fa-trash"></i></button>
@@ -164,7 +164,8 @@
         var cell4 = row.insertCell(3); // Add cell for delete button
 
         cell1.innerHTML = `
-            <select id="form-${rowCounter}-item" name="item" class="form-control">
+            <select id="form-${rowCounter}-item" name="item" class="form-control" onchange="updatePrice(this)">
+                <option value="">-- Select --</option>   
                 {% for product in products %}
                     <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
                 {% endfor %}
@@ -187,5 +188,21 @@
     var employeeId = localStorage.getItem('employee_id');
     document.getElementById('employee').value = employeeId;
 
+    // Save total quantity when submitting the form
+    document.querySelector('form').addEventListener('submit', function() {
+        var totalQuantity = 0;
+        var rows = document.querySelectorAll('#itemRows tr');
+        rows.forEach(function(row) {
+            var quantity = parseFloat(row.querySelector('input[name="quantity"]').value);
+            totalQuantity += isNaN(quantity) ? 0 : quantity;
+        });
+        // Create a hidden input field to store total quantity
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'total_quantity';
+        input.value = totalQuantity;
+        // Append the hidden input to the form
+        document.querySelector('form').appendChild(input);
+    });
 </script>
 {% endblock %}

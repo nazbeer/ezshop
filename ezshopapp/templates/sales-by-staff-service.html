@@ -167,7 +167,7 @@
         var cell4 = row.insertCell(3); // Corrected cell index for delete button
 
         cell1.innerHTML = `
-            <select id="form-${rowCounter}-service" name="services" class="form-control">
+            <select id="form-${rowCounter}-service" name="services" class="form-control" onchange="updatePrice(this)">
                 <option value="" selected disabled>Select Service</option>
                 {% for service in services %}
                     <option value="{{ service.id }}-{{ service.amount }}" data-amount="{{ service.amount }}">{{ service.name }}</option>
@@ -185,6 +185,23 @@
         row.parentNode.removeChild(row);
         calculateSubTotal(); // Recalculate subtotal after removing row
     }
+
+    // Save total quantity when submitting the form
+    document.querySelector('form').addEventListener('submit', function() {
+        var totalQuantity = 0;
+        var rows = document.querySelectorAll('#itemRows tr');
+        rows.forEach(function(row) {
+            var quantity = parseFloat(row.querySelector('input[name="quantity"]').value);
+            totalQuantity += isNaN(quantity) ? 0 : quantity;
+        });
+        // Create a hidden input field to store total quantity
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'total_quantity';
+        input.value = totalQuantity;
+        // Append the hidden input to the form
+        document.querySelector('form').appendChild(input);
+    });
 </script>
 <script>
     // Store employee_id in local session storage

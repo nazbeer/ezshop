@@ -7,7 +7,6 @@
 {% block content %}
 <div class="card">
     <div class="card-body">
-        
         <h2>Sales by Staff - Products & Services</h2>
         {% if sales_form.non_field_errors %}
             <ul>
@@ -26,7 +25,7 @@
                 </ul>
             {% endif %}
         {% endfor %}
-        <form method="post" action="#">
+        <form id="salesForm" method="post" action="#">
             {% csrf_token %}
             <div class="row">
                 <div class="col-md-6">
@@ -39,8 +38,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <label for="employee" class="mr-2">Employee:</label>
                         <input type="text" id="employee" name="employee" class="form-control" value="{{ request.session.employee_id }}" readonly >
-
-                </div>
+                    </div>
                 </div>
             </div>
 
@@ -53,6 +51,7 @@
                             <th>Particular</th>
                             <th>Qty</th>
                             <th>Amount</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="itemRows">
@@ -69,7 +68,12 @@
                                 <input type="number" id="form-0-pquantity" name="pquantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">
                             </td>
                             <td>
-                                <input type="number" name="pprice" id="form-0-pprice" class="form-control" readonly>
+                                <input type="number" id="form-0-pprice" name="pprice" class="form-control" readonly>
+                            </td>
+                            <td class=" text-center">
+                                <div class="mt-2 justify-content-center align-items-center"  id="form-0-delete">
+                                    <button class="btn btn-danger" type="button" onclick="removeRow(this, 'itemRows')"><i class="fas fa-trash"></i></button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -87,6 +91,7 @@
                             <th>Particular</th>
                             <th>Qty</th>
                             <th>Amount</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="serviceRows">
@@ -100,10 +105,15 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="number" id="form-0-squantity" name="squantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">
+                                <input type="number" id="form-0-squantity" name="squantity" class="form-control" min="1" onchange="calculateTotalSubtotal1()">
                             </td>
                             <td>
                                 <input type="number" id="form-0-sprice" name="sprice" class="form-control" readonly>
+                            </td>
+                            <td class=" text-center">
+                                <div class="mt-2 justify-content-center align-items-center"  id="form-0-delete">
+                                    <button class="btn btn-danger" type="button" onclick="removeRow(this, 'serviceRows')"><i class="fas fa-trash"></i></button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -151,37 +161,32 @@
     </div>
 </div>
 <script>
-     var currentDate = new Date();
-    
-    // Format the current date as YYYY-MM-DD
-    var formattedDate = currentDate.toISOString().split('T')[0];
-    
-    // Set the formatted date as the value of the input field
-    document.getElementById("date").value = formattedDate;
-
-    var rowCounter = 1;
-
+    // Function to update price for items
     function updatePrice(select) {
         var selectedOption = select.options[select.selectedIndex];
         var priceInput = select.parentElement.nextElementSibling.nextElementSibling.querySelector('input');
-        var pprice = selectedOption.getAttribute('data-amount');
-        priceInput.value = pprice;
-        calculateTotalSubtotal();
-    }
-    function updatePrice1(select) {
-        var selectedOption1 = select.options[select.selectedIndex];
-        var priceInput1 = select.parentElement.nextElementSibling.nextElementSibling.querySelector('input');
-        var sprice = selectedOption1.getAttribute('data-amount');
-        priceInput1.value = sprice;
+        var price = selectedOption.getAttribute('data-amount');
+        priceInput.value = price;
         calculateTotalSubtotal();
     }
 
+    // Function to update price for services
+    function updatePrice1(select) {
+        var selectedOption = select.options[select.selectedIndex];
+        var priceInput = select.parentElement.nextElementSibling.nextElementSibling.querySelector('input');
+        var sprice = selectedOption.getAttribute('data-amount');
+        priceInput.value = sprice;
+        calculateTotalSubtotal1();
+    }
+
+    // Function to add a new item row
     function addItem() {
         var table = document.getElementById("itemRows");
         var newRow = table.insertRow(table.rows.length);
         var cell1 = newRow.insertCell(0);
         var cell2 = newRow.insertCell(1);
         var cell3 = newRow.insertCell(2);
+        var cell4 = newRow.insertCell(3);
 
         cell1.innerHTML = `
             <select id="form-${rowCounter}-product" name="product" class="form-control" onchange="updatePrice(this)">
@@ -192,65 +197,123 @@
             </select>
         `;
         cell2.innerHTML = `<input type="number" id="form-${rowCounter}-pquantity" name="pquantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">`;
-        cell3.innerHTML = `<input type="number" name="form-${rowCounter}-pprice" class="form-control" readonly>`;
-        
+        cell3.innerHTML = `<input type="number" id="form-${rowCounter}-pprice" name="pprice" class="form-control" readonly>`;
+        cell4.innerHTML = `<div class="mt-2 justify-content-center align-items-center"  id="form-${rowCounter}-delete"><button class="btn btn-danger" type="button" onclick="removeRow(this, 'itemRows')"><i class="fas fa-trash"></i></button>`;
+
         rowCounter++;
     }
 
+    // Function to add a new service row
     function addService() {
-        var table2 = document.getElementById("serviceRows");
-        var row2 = table2.insertRow(table2.rows.length);
-        var cell1 = row2.insertCell(0);
-        var cell2 = row2.insertCell(1);
-        var cell3 = row2.insertCell(2);
+        var table = document.getElementById("serviceRows");
+        var newRow = table.insertRow(table.rows.length);
+        var cell1 = newRow.insertCell(0);
+        var cell2 = newRow.insertCell(1);
+        var cell3 = newRow.insertCell(2);
+        var cell4 = newRow.insertCell(3);
 
         cell1.innerHTML = `
-            <select id="form-${rowCounter}-service" class="form-control" name="service" onchange="updatePrice1(this)">
+            <select id="form-${rowCounter}-service" name="service" class="form-control" onchange="updatePrice1(this)">
                 <option value="">-- Select --</option>
                 {% for service in services %}
                     <option value="{{ service.id }}" data-amount="{{ service.amount }}">{{ service.name }}</option>
                 {% endfor %}
             </select>
         `;
-        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-squantity" name="squantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">`;
-        cell3.innerHTML = `<input type="number" name="form-${rowCounter}-sprice" class="form-control" readonly>`;
+        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-squantity" name="squantity" class="form-control" min="1" onchange="calculateTotalSubtotal1()">`;
+        cell3.innerHTML = `<input type="number" id="form-${rowCounter}-sprice" name="sprice" class="form-control" readonly>`;
+        cell4.innerHTML = `<div class="mt-2 justify-content-center align-items-center"  id="form-${rowCounter}-delete"><button class="btn btn-danger" type="button" onclick="removeRow(this, 'serviceRows')"><i class="fas fa-trash"></i></button>`;
+
         rowCounter++;
     }
 
-    function calculateTotalSubtotal() {
-        var subTotal1 = calculateSubTotal("salesItems");
-        var subTotal2 = calculateSubTotal("salesService");
-        var totalSubtotal = subTotal1 + subTotal2;
-        document.getElementById("sub_total").value = totalSubtotal.toFixed(2);
-        document.getElementById("itemtotal").value = subTotal1.toFixed(2);
-        document.getElementById("servicetotal").value = subTotal2.toFixed(2);
-        calculateTotalAmount();
-    }
-    function calculateSubTotal(tableId) {
-        var table = document.getElementById(tableId).getElementsByTagName("tbody")[0];
-        var subTotal = 0;
-        for (var i = 0; i < table.rows.length; i++) {
-            var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
-            var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
-            var total = quantity * price;
-            subTotal += isNaN(total) ? 0 : total;
+    // Function to remove a row
+    function removeRow(button, tableId) {
+        var row = button.closest('tr');
+        row.parentNode.removeChild(row);
+        if (tableId === 'itemRows') {
+            calculateTotalSubtotal();
+        } else if (tableId === 'serviceRows') {
+            calculateTotalSubtotal1();
         }
-        return subTotal;
     }
 
+    // Function to calculate subtotal for items
+    function calculateTotalSubtotal() {
+        var itemSubtotal = calculateSubTotal("itemRows");
+        document.getElementById("itemtotal").value = itemSubtotal.toFixed(2);
+        calculateTotalAmount();
+    }
+
+    // Function to calculate subtotal for services
+    function calculateTotalSubtotal1() {
+        var serviceSubtotal = calculateSubTotal("serviceRows");
+        document.getElementById("servicetotal").value = serviceSubtotal.toFixed(2);
+        calculateTotalAmount();
+    }
+
+    // Function to calculate subtotal
+    function calculateSubTotal(type) {
+        var table = document.getElementById(type);
+        if (!table) return 0; // Return 0 if table is undefined
+
+        var subtotal = 0;
+
+        // Calculate subtotal for the table
+        for (var i = 0; i < table.rows.length; i++) {
+            var quantity = parseFloat(table.rows[i].cells[1].querySelector('input').value);
+            var price = parseFloat(table.rows[i].cells[2].querySelector('input').value);
+            var total = quantity * price;
+            subtotal += isNaN(total) ? 0 : total;
+        }
+
+        return subtotal;
+    }
+
+    // Function to calculate total amount
     function calculateTotalAmount() {
-        //var itemTotal= parseFloat(document.getElementById("itemTotal").value);
-        var subTotal = parseFloat(document.getElementById("sub_total").value);
+        var itemSubtotal = parseFloat(document.getElementById("itemtotal").value);
+        var serviceSubtotal = parseFloat(document.getElementById("servicetotal").value);
+        var subtotal = itemSubtotal + serviceSubtotal;
         var discount = parseFloat(document.getElementById("discount").value);
-        var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
+        var totalAmount = subtotal - (isNaN(discount) ? 0 : discount);
+
+        document.getElementById("sub_total").value = subtotal.toFixed(2);
         document.getElementById("total_amount").value = totalAmount.toFixed(2);
     }
 
-    
+    // Add event listener to form submission
+    document.querySelector('#salesForm').addEventListener('submit', function() {
+        var totalQuantity = 0;
+        var rows = document.querySelectorAll('#itemRows tr, #serviceRows tr');
+        
+        rows.forEach(function(row) {
+            var quantity = parseFloat(row.querySelector('input[name$="quantity"]').value);
+            totalQuantity += isNaN(quantity) ? 0 : quantity;
+        });
+
+        // Create a hidden input field to store total quantity
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'total_quantity';
+        input.value = totalQuantity;
+
+        // Append the hidden input to the form
+        document.querySelector('#salesForm').appendChild(input);
+    });
+
+    // Set the current date in the date input field
+    var currentDate = new Date();
+    var formattedDate = currentDate.toISOString().split('T')[0];
+    document.getElementById("date").value = formattedDate;
+
     // Store employee_id in local session storage
     localStorage.setItem('employee_id', '{{ request.session.employee_id }}');
     var employeeId = localStorage.getItem('employee_id');
     document.getElementById('employee').value = employeeId;
-  </script>
+
+    // Counter for row IDs
+    var rowCounter = 1;
+</script>
 
 {% endblock %}

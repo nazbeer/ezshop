@@ -2,17 +2,16 @@
 
 {% block content %}
 <style>
-    .custom-graph{
-        width:400px;
-        height:100px;
-
+    .custom-graph {
+        width: 400px;
+        height: 300px;
     }
-    @media screen and (max-width:767px) {
-        .custom-graph{
-        width:auto;
-        height:300px;
 
-    }
+    @media screen and (max-width: 767px) {
+        .custom-graph {
+            width: auto;
+            height: 300px;
+        }
     }
 </style>
 <div class="container mt-2 mb-4">
@@ -71,40 +70,40 @@
     </div>
     <!-- End of Analytics Section -->
 
-    <!-- Analytics Section -->
+    <!-- Total Amounts Section -->
     <div class="row">
         <div class="col-md-4">
             <div class="card mb-3">
                 <div class="card-header">
-                    Total Sales Amount
+                    Total Services
                 </div>
                 <div class="card-body">
-                    <p>{{ total_sales_amount }}</p>
+                    <p>{{ total_services }}</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card mb-3">
                 <div class="card-header">
-                    Total Service Amount
+                    Total Sales
                 </div>
                 <div class="card-body">
-                    <p>{{ total_service_amount }}</p>
+                    <p>{{ total_sales }}</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card mb-3">
                 <div class="card-header">
-                    Advance Amount Taken
+                    Total Advance
                 </div>
                 <div class="card-body">
-                    <p>{{ advance_taken }}</p>
+                    <p>{{ total_advance }}</p>
                 </div>
             </div>
         </div>
     </div>
-    <!-- End of Analytics Section -->
+    <!-- End of Total Amounts Section -->
 
     <!-- Bar Chart Section -->
     <div class=" mt-2 mb-4">
@@ -128,68 +127,60 @@
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
 <script>
-     localStorage.setItem('employee_id', '{{ request.session.employee_id }}');
     // JavaScript code for rendering the bar chart using Chart.js
-    var sales_by_item_service_data = JSON.parse('{{ sales_by_item_service_data_json|escapejs }}');
-    var sales_by_item_data = JSON.parse('{{ sales_by_item_data_json|escapejs }}');
-    var sales_by_service_data = JSON.parse('{{ sales_by_service_data_json|escapejs }}');
-    var day_closings_data = JSON.parse('{{ day_closings_data_json|escapejs }}');
+    var chart_data = JSON.parse('{{ chart_data_json|escapejs }}');
 
-    var chart_labels = [];
-    var sales_amount_data = [];
-    var service_amount_data = [];
-    var advance_amount_data = [];
+var chart_labels = [];
+var total_services_data = [];
+var total_sales_data = [];
+var total_advance_data = [];
 
-    // Extracting data for chart
-    sales_by_item_service_data.forEach(function(item) {
-        chart_labels.push(item.date);
-        sales_amount_data.push(item.total_amount);
-    });
+// Extracting data for chart
+chart_data.forEach(function(item) {
+    chart_labels.push(item.date);
+    total_services_data.push(item.total_services);
+    total_sales_data.push(item.total_sales);
+    total_advance_data.push(item.advance);
+});
 
-    sales_by_item_data.forEach(function(item) {
-        service_amount_data.push(item.total_amount);
-    });
-
-    sales_by_service_data.forEach(function(item) {
-        advance_amount_data.push(item.total_amount);
-    });
-
-    // Drawing the chart
-    var ctx = document.getElementById('transactionChart').getContext('2d');
-    var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: chart_labels,
-            datasets: [{
-                label: 'Total Sales Amount',
-                data: sales_amount_data,
-                backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1,
-                fontSize:'16px'
-            }, {
-                label: 'Total Service Amount',
-                data: service_amount_data,
-                backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }, {
-                label: 'Advance Amount Taken',
-                data: advance_amount_data,
-                backgroundColor: 'rgba(255, 206, 86, 0.1)',
-                borderColor: 'rgba(255, 206, 86, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+// Drawing the chart
+var ctx = document.getElementById('transactionChart').getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: chart_labels,
+        datasets: [{
+            label: 'Total Services',
+            data: total_services_data,
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }, {
+            label: 'Total Sales',
+            data: total_sales_data,
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }, {
+            label: 'Total Advance',
+            data: total_advance_data,
+            backgroundColor: 'rgba(255, 206, 86, 0.1)',
+            borderColor: 'rgba(255, 206, 86, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
             }
         }
-    });
+    }
+});
 
+    localStorage.setItem('employee_id', '{{ request.session.employee_id }}');
+    var employeeId = localStorage.getItem('employee_id');
+    document.getElementById('employee').value = employeeId;
 
 </script>
 {% endblock %}

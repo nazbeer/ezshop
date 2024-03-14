@@ -419,48 +419,38 @@ def employee_dashboard(request):
     # Fetch the associated Shop for the employee
     shop = Shop.objects.filter(name=business_profile.name).first()
     
-    # Querying the models to calculate analytics
-    total_sales_amount = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_sales_amount=Sum('total_amount'))['total_sales_amount']
-    total_service_amount = SaleByStaffService.objects.filter(employee_id=employee_id).aggregate(total_service_amount=Sum('total_amount'))['total_service_amount']
-    advance_taken = DayClosing.objects.filter(employee_id=employee_id).aggregate(advance_taken=Sum('advance'))['advance_taken']
+    # Aggregate total services, total sales, and total advance
+    total_services = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('total_services'))['total_services']
+    total_sales = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('total_sales'))['total_sales']
+    total_advance = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_advance=Sum('advance'))['total_advance']
+
     ten_days_ago = datetime.now() - timedelta(days=10)
 
     # Query the database for transactions for the last 10 days
-    sales_by_item_service = SalesByStaffItemService.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
-    sales_by_item = SaleByStaffItem.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
-    sales_by_service = SaleByStaffService.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
     day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
 
-    # Convert queryset data to JSON format
-    sales_by_item_service_data = list(sales_by_item_service.values('date', 'total_amount'))
-    sales_by_item_data = list(sales_by_item.values('date', 'total_amount'))
-    sales_by_service_data = list(sales_by_service.values('date', 'total_amount'))
-    day_closings_data = list(day_closings.values('date', 'advance'))
-    
-    sales_by_item_service_data = [{'date': str(item['date']), 'total_amount': float(item['total_amount'])} for item in sales_by_item_service_data]
-    sales_by_item_data = [{'date': str(item['date']), 'total_amount': float(item['total_amount'])} for item in sales_by_item_data]
-    sales_by_service_data = [{'date': str(item['date']), 'total_amount': float(item['total_amount'])} for item in sales_by_service_data]
-    day_closings_data = [{'date': str(item['date']), 'advance': float(item['advance'])} for item in day_closings_data]
+    # Prepare data for the chart
+    chart_data = [{
+        'date': closing.date.strftime('%Y-%m-%d'),
+        'total_services': float(closing.total_services),
+        'total_sales': float(closing.total_sales),
+        'advance': float(closing.advance)
+    } for closing in day_closings]
 
-    # Serialize queryset data to JSON strings
-    sales_by_item_service_data_json = json.dumps(sales_by_item_service_data)
-    sales_by_item_data_json = json.dumps(sales_by_item_data)
-    sales_by_service_data_json = json.dumps(sales_by_service_data)
-    day_closings_data_json = json.dumps(day_closings_data)
+    # Convert data to JSON format
+    chart_data_json = json.dumps(chart_data)
 
     context = {
         'employee': employee,
         'business_profile': business_profile,
         'shop': shop,
-        'total_sales_amount': total_sales_amount,
-        'total_service_amount': total_service_amount,
-        'advance_taken': advance_taken,
-        'sales_by_item_service_data_json': sales_by_item_service_data_json,
-        'sales_by_item_data_json': sales_by_item_data_json,
-        'sales_by_service_data_json': sales_by_service_data_json,
-        'day_closings_data_json': day_closings_data_json,
+        'total_services': total_services,
+        'total_sales': total_sales,
+        'total_advance': total_advance,
+        'chart_data_json': chart_data_json,
     }
     return render(request, 'employee_dashboard.html', context)
+
 
 def employee_profile(request):
     # Retrieve employee ID from session

@@ -41,19 +41,13 @@ class Modules(models.Model):
     def get_sidebar_choices(cls):
 
         sidebar_choices = [
-            ('shop', 'Shop'),
-            ('business', 'Business Profile'),
-            ('employee', 'Employee'),
-            ('sale', 'Sale & Day Closing'),
-            ('role', 'Role'),
-            ('expense-type', 'Expense Type'),
-            ('receipt-transaction', 'Receipt Transaction'),
-            ('payment-transaction', 'Payment Transaction'),
-            ('service', 'Service'),
-            ('product', 'Product'),
-            ('employee-transaction', 'Employee Transaction'),
-            ('daily-summary', 'Daily Summary'),
-            ('bank', 'Bank Deposit'),
+          
+            ('day-closing',  'Day Closing'),
+            ('sales-by-staff-item-service', 'Sales by Staff - Product/Service'),
+            ('sales-by-staff-item', 'Sales by Staff - Service'),
+            ('sales-by-staff-item', 'Sales by Staff - Product'),
+            ('day-closing-report',  'Day Closing Report'),
+            ('sales-report',  'Sales Report'),
         ]
         return sidebar_choices
 
