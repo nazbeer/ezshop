@@ -27,7 +27,9 @@ from .models import *
 from .forms import *
 from .serializers import LoginSerializer, SaleSerializer
 from django.contrib.auth.views import LogoutView, LoginView
-from rest_framework import generics, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import generics, viewsets, status
 from django.urls import get_resolver
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls.resolvers import RoutePattern
@@ -37,9 +39,43 @@ class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
     serializer_class = SalesByStaffItemServiceSerializer
 
-class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
+class EmployeeViewSet(viewsets.ViewSet):
+    @action(detail=False, methods=['get'])
+    def list_employees(self, request):
+        employees = Employee.objects.all()
+        serializer = EmployeeSerializer(employees, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post', 'get'])
+    def login(self, request):
+        form = EmployeeLoginForm(request.data)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            try:
+                employee = Employee.objects.get(username=username)
+            except Employee.DoesNotExist:
+                employee = None
+            if employee is not None and employee.password == password:
+                request.session['employee_id'] = employee.pk
+                return redirect('employee_dashboard')
+            else:
+                messages.error(request, "Invalid username or password.")
+                return redirect('employee_login')
+        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'])
+    def logout(self, request):
+        if 'employee_id' in request.session:
+            del request.session['employee_id']
+        return redirect('employee_login')
+
+    @action(detail=False, methods=['get'])
+    def profile(self, request):
+        employee_id = request.session.get('employee_id')
+        employee = Employee.objects.get(id=employee_id)
+        serializer = EmployeeSerializer(employee)
+        return Response(serializer.data)
 
 class DayClosingViewSet(viewsets.ModelViewSet):
     queryset = DayClosing.objects.all()

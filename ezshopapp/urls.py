@@ -6,13 +6,14 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'salesbyis', SalesByStaffItemServiceViewSet)
-router.register(r'employee', EmployeeViewSet)
+router.register(r'employees', EmployeeViewSet, basename='employee')
 router.register(r'dayclosingemp', DayClosingViewSet)
 router.register(r'dailysummary', DailySummaryViewSet)
 
 
 urlpatterns = [
     path('api/', include(router.urls)),
+    path('employees/', include('rest_framework.urls', namespace='rest_framework')),
     path('', CustomLoginView.as_view(), name='login'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
