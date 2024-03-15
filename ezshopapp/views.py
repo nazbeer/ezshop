@@ -1165,8 +1165,20 @@ def DayClosingCreate(request):
 def fetch_data(request, employee_id):
     # Fetch data for the selected employee
     # Example: calculate total_services, total_sales, total_collection
-    total_services = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('itemtotal'))['total_services']  + SaleByStaffItem.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('total_amount'))['total_services'] or 0
-    total_sales = SalesByStaffItemService.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('servicetotal'))['total_sales'] + SaleByStaffService.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+    current_date = timezone.now().strftime('%Y-%m-%d')
+    total_services = (SalesByStaffItemService.objects
+                    .filter(employee_id=employee_id, date=current_date)
+                    .aggregate(total_services=Sum('itemtotal'))['total_services'] or 0) + \
+                    (SaleByStaffItem.objects
+                    .filter(employee_id=employee_id, date=current_date)
+                    .aggregate(total_services=Sum('total_amount'))['total_services'] or 0)
+
+    total_sales = (SalesByStaffItemService.objects
+                .filter(employee_id=employee_id, date=current_date)
+                .aggregate(total_sales=Sum('servicetotal'))['total_sales'] or 0) + \
+                (SaleByStaffService.objects
+                .filter(employee_id=employee_id, date=current_date)
+                .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0)
     total_collection = total_sales + total_services  # Assuming total collection is the same as total sales initially
 
     data = {
