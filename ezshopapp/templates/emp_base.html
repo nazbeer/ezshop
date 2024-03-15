@@ -339,7 +339,7 @@
             <li class="d-n"> <a class="" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a></li>
             <li class="d-n"><a href="/profile/"><i class="fas fa-user"></i> Profile</a></li>
             <li>
-                <a class="nav-link" href="{% url 'employee_logout' %}">Logout</a>
+                <a class="nav-link" href="{% url 'employee_logout' %}" id="logout-link">Logout</a>
             </li>
         </ul>
     </div>
@@ -388,7 +388,12 @@
         });
     });
 </script>
-
+<script>
+    // Clear localStorage and redirect to the logout page when logout link is clicked
+    document.getElementById('logout-link').addEventListener('click', function(event) {
+        localStorage.clear();
+    });
+</script>
 
 </body>
 </html>

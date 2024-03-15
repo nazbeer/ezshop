@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
-import json
+import json, jwt
 from django.core.mail.backends.smtp import EmailBackend
 from django.conf import settings
 from django.core.mail import send_mail
@@ -35,6 +35,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls.resolvers import RoutePattern
 from .serializers import *
 from datetime import datetime, timedelta
+from django.contrib.auth.hashers import check_password
+
 class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
     serializer_class = SalesByStaffItemServiceSerializer
@@ -48,35 +50,109 @@ class EmployeeViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post', 'get'])
     def login(self, request):
-        form = EmployeeLoginForm(request.data)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            try:
-                employee = Employee.objects.get(username=username)
-            except Employee.DoesNotExist:
-                employee = None
-            if employee is not None and employee.password == password:
-                request.session['employee_id'] = employee.pk
-                return redirect('employee_dashboard')
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        try:
+            # Attempt to get an Employee instance with the provided username
+            employee = Employee.objects.get(username=username, password=password)
+            
+            # Validate the password
+            if check_password(password, employee.password):
+                # Password is correct, generate JWT token
+                secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
+                token = jwt.encode({'employee_id': employee.pk, 'exp': timezone.now() + timedelta(hours=20)}, secretkey, algorithm='HS256')
+                return JsonResponse({'token': token.decode('utf-8')})
             else:
-                messages.error(request, "Invalid username or password.")
-                return redirect('employee_login')
-        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
-
+                # Password is incorrect
+                return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+        except Employee.DoesNotExist:
+            # Employee with the provided username does not exist
+            return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+        
     @action(detail=False, methods=['post'])
     def logout(self, request):
-        if 'employee_id' in request.session:
-            del request.session['employee_id']
-        return redirect('employee_login')
+        # You can revoke the token here if needed
+        return JsonResponse({'message': 'Logged out successfully'})
 
     @action(detail=False, methods=['get'])
     def profile(self, request):
-        employee_id = request.session.get('employee_id')
-        employee = Employee.objects.get(id=employee_id)
-        serializer = EmployeeSerializer(employee)
-        return Response(serializer.data)
+        try:
+            # Extract employee_id from the JWT token
+            token = request.headers.get('Authorization').split(' ')[1]  # Assuming token is passed in the Authorization header
+            secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
+            decoded_token = jwt.decode(token, secretkey, algorithms=['HS256'])
+            employee_id = decoded_token['employee_id']
+            
+            # Fetch employee profile using employee_id
+            employee = get_object_or_404(Employee, id=employee_id)
+            serializer = EmployeeSerializer(employee)
+            return Response(serializer.data)
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'error': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.InvalidTokenError:
+            return JsonResponse({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
 
+    @action(detail=False, methods=['get'])
+    def employee_dashboard(self, request):
+        try:
+            # Extract employee_id from the JWT token
+            token = request.headers.get('Authorization').split(' ')[1]  # Assuming token is passed in the Authorization header
+            secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
+            decoded_token = jwt.decode(token, secretkey, algorithms=['HS256'])
+            employee_id = decoded_token['employee_id']
+            
+            # Fetch employee data using employee_id
+            employee = get_object_or_404(Employee, pk=employee_id)
+
+            # Fetch other related data (business_profile, shop, etc.)
+            business_profile = BusinessProfile.objects.filter(name=employee.business_profile).first()
+            shop = Shop.objects.filter(name=business_profile.name).first()
+            
+            # Fetch dashboard metrics
+            total_services = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('total_services'))['total_services']
+            total_sales = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('total_sales'))['total_sales']
+            total_advance = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_advance=Sum('advance'))['total_advance']
+
+            # Fetch chart data for the last 10 days
+            ten_days_ago = datetime.now() - timedelta(days=10)
+            day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
+
+            chart_data = [{
+                'date': closing.date.strftime('%Y-%m-%d'),
+                'total_services': float(closing.total_services),
+                'total_sales': float(closing.total_sales),
+                'advance': float(closing.advance)
+            } for closing in day_closings]
+
+            # Construct response context
+            context = {
+                'employee': {
+                    'id': employee.id,
+                    'employee_id': employee.employee_id,
+                    'username': employee.username,
+                    # Add other fields as needed
+                },
+                'business_profile': {
+                    'name': business_profile.name,
+                    # Add other fields as needed
+                },
+                'shop': {
+                    'name': shop.name,
+                    # Add other fields as needed
+                },
+                'total_services': total_services,
+                'total_sales': total_sales,
+                'total_advance': total_advance,
+                'chart_data': chart_data,
+            }
+            return JsonResponse(context)
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'error': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.InvalidTokenError:
+            return JsonResponse({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class DayClosingViewSet(viewsets.ModelViewSet):
     queryset = DayClosing.objects.all()
     serializer_class = DayClosingSerializer
@@ -434,13 +510,24 @@ def employee_login(request):
         form = EmployeeLoginForm()
     return render(request, 'employee_login.html', {'form': form})
 
+
 def employee_logout(request):
     # Remove employee_id from the session if it exists
     if 'employee_id' in request.session:
         del request.session['employee_id']
     
     # Redirect to the login page after logout
-    return redirect('employee_login')
+    response = redirect('employee_login')
+    
+    # Clear localStorage session using JavaScript
+    response.content = """
+    <script>
+        // Clear all items in localStorage
+        localStorage.clear();
+    </script>
+    """
+    
+    return response
 
 def employee_dashboard(request):
     # Get the employee_id from the session
