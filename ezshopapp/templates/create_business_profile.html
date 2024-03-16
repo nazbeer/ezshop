@@ -36,19 +36,21 @@
                         {{ business_profile_form.shop_phone_number.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.shop_phone_number.id_for_label }}">Shop Phone Number:</label>
-                            {{ business_profile_form.shop_phone_number }}
+                            <input type="text" id="{{ business_profile_form.shop_phone_number.id_for_label }}" name="shop_phone_number" class="form-control" oninput="validatePhoneNumber(this)" >
                         </div>
                         <!-- Upload License (PDF only) -->
                         {{ business_profile_form.license_upload.errors }}
                         <div class="form-group mt-0">
-                            <label for="{{ business_profile_form.license_upload.id_for_label }}">Upload License (JPG only):</label>
-                            <input type="file" id="{{ business_profile_form.license_upload.id_for_label }}" name="license_upload" accept="image/jpg" class="form-control-file" required>
+                            <label for="{{ business_profile_form.license_upload.id_for_label }}">Upload License: <small class="text-muted">(JPEG/PDF only Allowed)</small></label>
+                            <input type="file" id="{{ business_profile_form.license_upload.id_for_label }}"  style="line-height: 1.5em !important;
+                            padding-top: 12px;" name="license_upload" accept="application/pdf,image/jpeg,image/jpg" class="form-control" required>
+                            <div id="license-file-error" style="color: red;"></div>
                         </div>
                         <!-- VAT Number -->
                         {{ business_profile_form.vat_number.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_number.id_for_label }}">VAT Number:</label>
-                            {{ business_profile_form.vat_number }}
+                            <input type="text" id="{{ business_profile_form.vat_number.id_for_label }}" name="vat_number" class="form-control" >
                         </div>
                         <!-- VAT Submission Date 1 -->
                         {{ business_profile_form.vat_submission_date_1.errors }}
@@ -84,32 +86,36 @@
                         <!-- Upload VAT Certificate (PDF only) -->
                         {{ business_profile_form.vat_certificate_upload.errors }}
                         <div class="form-group mt-3">
-                            <label for="{{ business_profile_form.vat_certificate_upload.id_for_label }}" class="mt-2">Upload VAT Certificate :</label>
-                            <input type="file" id="{{ business_profile_form.vat_certificate_upload.id_for_label }}" name="vat_certificate_upload" accept="image/jpg" class="form-control-file" required>
+                            <label for="vat_certificate_upload" class="mt-2">Upload VAT Certificate: <small class="text-muted">(JPEG/PDF only Allowed)</small></label>
+                            <input type="file" id="vat_certificate_upload" name="vat_certificate_upload" 
+                            style="line-height: 1.5em !important;
+                            padding-top: 12px; "
+                            accept="application/pdf,image/jpeg,image/jpg" class="form-control" required>
+                            <div id="vat-certificate-file-error" style="color: red;"></div>
                         </div>
                         <!-- VAT Percentage -->
                         {{ business_profile_form.vat_percentage.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.vat_percentage.id_for_label }}">VAT Percentage:</label>
-                            {{ business_profile_form.vat_percentage }}
+                            <input type="number" id="{{ business_profile_form.vat_percentage.id_for_label }}" name="vat_percentage" class="form-control" >
                         </div>
                         <!-- License Expiration Reminder Days -->
                         {{ business_profile_form.license_expiration_reminder_days.errors }}
                         <div class="form-group mb-1">
                             <label class="mb-2" for="{{ business_profile_form.license_expiration_reminder_days.id_for_label }}">License Expiration Reminder Days:</label>
-                            {{ business_profile_form.license_expiration_reminder_days }}
+                            <input type="number" id="{{ business_profile_form.license_expiration_reminder_days.id_for_label }}" name="license_expiration_reminder_days" class="form-control" >
                         </div>
                         <!-- VAT Submission Date Reminder Days -->
                         {{ business_profile_form.vat_submission_date_reminder_days.errors }}
                         <div class="form-group mb-2">
                             <label class="mt-1" for="{{ business_profile_form.vat_submission_date_reminder_days.id_for_label }}">VAT Submission Date Reminder Days:</label>
-                            {{ business_profile_form.vat_submission_date_reminder_days }}
+                            <input type="number" id="{{ business_profile_form.vat_submission_date_reminder_days.id_for_label }}" name="vat_submission_date_reminder_days" class="form-control" >
                         </div>
                         <!-- Employee Visa Expiration Reminder Days -->
                         {{ business_profile_form.employee_visa_expiration_reminder_days.errors }}
                         <div class="form-group mt-1">
-                            <label class="mb-2" for="{{ business_profile_form.employee_visa_expiration_reminder_days.id_for_label }}">Employee Visa Expiration Reminder Days:</label>
-                            {{ business_profile_form.employee_visa_expiration_reminder_days }}
+                            <label class="mb-2" for="{{ business_profile_form.employee_visa_expiration_reminder_days.id_for_label }}">Employee Visa (Emirates ID) Expiration Reminder Days:</label>
+                            <input type="number" id="{{ business_profile_form.employee_visa_expiration_reminder_days.id_for_label }}" name="employee_visa_expiration_reminder_days" class="form-control" >
                         </div>
                         <!-- Add other additional fields for the main business profile here -->
                     </div>
@@ -135,6 +141,41 @@
         var licenseNumberInput = document.getElementById('license_number');
         var licenseNumber = selectedOption.label.split('-')[1];
         licenseNumberInput.value = licenseNumber;
+    }
+    document.getElementById('license-upload').addEventListener('change', function() {
+        var fileInput = document.getElementById('license-upload');
+        var filePath = fileInput.value;
+        var allowedExtensions = /(\.pdf|\.jpg|\.jpeg)$/i;
+
+        if (!allowedExtensions.exec(filePath)) {
+            document.getElementById('license-file-error').innerHTML = 'Only PDF, JPG, or JPEG files are allowed!';
+            fileInput.value = '';
+            return false;
+        } else {
+            document.getElementById('license-file-error').innerHTML = '';
+        }
+    });
+
+    document.getElementById('vat-certificate-upload').addEventListener('change', function() {
+        var fileInput = document.getElementById('vat-certificate-upload');
+        var filePath = fileInput.value;
+        var allowedExtensions = /(\.pdf|\.jpg|\.jpeg)$/i;
+
+        if (!allowedExtensions.exec(filePath)) {
+            document.getElementById('vat-certificate-file-error').innerHTML = 'Only PDF, JPG, or JPEG files are allowed!';
+            fileInput.value = '';
+            return false;
+        } else {
+            document.getElementById('vat-certificate-file-error').innerHTML = '';
+        }
+    });
+    function validatePhoneNumber(input) {
+        if (!/^[0-9+\-]*$/.test(input.value)) {
+            // Display an alert if invalid characters are entered
+            alert("Invalid characters detected. Please enter only numbers, plus (+), or minus (-) signs.");
+            // Remove invalid characters from the input value
+            input.value = input.value.replace(/[^0-9+\-]/g, '');
+        }
     }
 </script>
 {% endblock %}

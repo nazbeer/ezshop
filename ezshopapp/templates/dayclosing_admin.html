@@ -35,6 +35,14 @@
                     <input type="date" name="date" id="date" class="form-control" required>
                     
                 </div>
+                <div class="form-group mt-3">
+                    <label for="employee" class="form-label">Employee</label>
+                    <select name="employee" id="employee" class="form-control" required>
+                        {% for employee in employees %}
+                            <option value="{{ employee.id }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <div class="mb-3">
                     <label for="id_total_services" class="form-label">Total Services</label>
                     <input type="number" name="total_services" id="id_total_services" class="form-control" readonly>

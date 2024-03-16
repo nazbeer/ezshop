@@ -25,7 +25,7 @@ EMAIL_HOST_PASSWORD = 'y05g7jL61VapbV2eFOrCqrd2FVNJeWrB'  # Replace with your em
 
 
 DEBUG = True
-
+USE_TZ = True
 ALLOWED_HOSTS = ['ezshopapp.onrender.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [

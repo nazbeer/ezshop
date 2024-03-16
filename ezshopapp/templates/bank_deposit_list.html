@@ -11,9 +11,11 @@
         <th scope="col">#</th>
         <th scope="col">Deposit Date</th>
         <th scope="col">Day Closing Date</th>
+        <th scope="col">Bank</th> <!-- New column for Bank -->
         <th scope="col">Amount</th>
         <th scope="col">Transaction Type</th>
         <th scope="col">Narration</th>
+        
       </tr>
     </thead>
     <tbody>
@@ -22,9 +24,11 @@
           <th scope="row">{{ forloop.counter }}</th>
           <td>{{ bank_deposit.date }}</td>
           <td>{{ bank_deposit.deposit_date }}</td>
+          <td>{{ bank_deposit.bank.name }}</td> <!-- Display Bank name -->
           <td>{{ bank_deposit.amount }}</td>
           <td>{{ bank_deposit.transaction_type }}</td>
           <td>{{ bank_deposit.narration }}</td>
+          
         </tr>
       {% endfor %}
     </tbody>

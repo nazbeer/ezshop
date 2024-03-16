@@ -10,8 +10,8 @@
         <tr>
           <th>ID</th>
           <th>Name</th>
-          <th>Module(s)</th>
-          <th>Employee</th>
+          <th style="max-width:400px;">Module(s)</th>
+          <th>Employee Status</th>
           <th>Created On</th> <!-- New column for created_on field -->
           <th>Actions</th>
           <!-- Add more headers if needed -->
@@ -22,7 +22,7 @@
           <tr>
             <td>{{ role.id }}</td>
             <td>{{ role.name }}</td>
-            <td>
+            <td style="max-width:400px;">
               {% for module in role.modules.all %}
                 {{ module.name }}
                 {% if not forloop.last %}, {% endif %}
@@ -35,10 +35,10 @@
               <!-- Edit link -->
               <a href="{% url 'update_role' role.pk %}" class="btn btn-primary btn-sm">Edit</a>&nbsp;
               <!-- Delete form -->
-              <form method="post" action="{% url 'delete_role' role.pk %}" style="display: inline;">
+              <!-- <form method="post" action="{% url 'delete_role' role.pk %}" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this role?')">Delete</button>
-              </form>
+              </form> -->
             </div>
             </td>
             <!-- Add more columns if needed -->

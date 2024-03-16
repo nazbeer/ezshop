@@ -3,6 +3,7 @@
 {% block title %}Create Role{% endblock %}
 
 {% block content %}
+
 <div class="card">
   <div class="card-header "><h2 class="mb-0 text-white">Create Role</h2></div>
   <div class="card-body">
@@ -22,6 +23,9 @@
         {% endfor %}
       </select>
     </div>
+    <!-- Hidden input field for business_profile -->
+    <input type="hidden" name="business_profile" value="{{ business_profile.id }}">
+    
     <div class="form-check  d-flex justify-content-between align-items-center mb-3">
       <input type="checkbox" class="form-check-input" id="is_employee" name="is_employee" checked readonly>
       <label class="form-check-label" for="is_employee">Is Employee?</label>
@@ -34,7 +38,7 @@
 </div>
 <div class="card-footer">
 
-  <a href="{% url 'role_list' %}" class="btn btn-warning btn-sm">Back to Role List</a>
+  <a href="{% url 'role_list' %}" class="btn btn-warning ">Back to Role List</a>
 </div>
 </div>
  

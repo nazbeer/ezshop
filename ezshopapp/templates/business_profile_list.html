@@ -24,7 +24,7 @@
           </div>
           <div class="d-flex justify-content-between align-items-center">
             <p class="card-text"><strong>VAT Percentage:</strong></p>
-            <p class="card-text">{{ profile.vat_percentage }}</p>
+            <p class="card-text">{{ profile.vat_percentage }} %</p>
           </div>
           <div class="d-flex justify-content-between align-items-center">
             <p class="card-text"><strong>VAT Number:</strong></p>
@@ -103,39 +103,52 @@
       </div>
   </div>
 </div>
-    <!-- License Modal -->
-    <div class="modal fade" id="licenseModal{{ profile.id }}" tabindex="-1" role="dialog" aria-labelledby="licenseModal{{ profile.id }}Label" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="licenseModal{{ profile.id }}Label">License</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <img src="{{ MEDIA_URL }}{{ profile.license_upload.url }}" class="img-fluid" alt="License">
+   <!-- License Modal -->
+    <div class="modal fade" id="licicenseModal{{ profile.id }}" tabindex="-1" role="dialog" aria-labelledby="licenseModal{{ profile.id }}Label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="licenseModal{{ profile.id }}Label">License</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              {% if profile.license_upload.url|lower|slice:"-3:" == "pdf" %}
+                <!-- Render PDF -->
+                <embed src="{{ MEDIA_URL }}{{ profile.license_upload.url }}" type="application/pdf" width="100%" height="600px" />
+              {% else %}
+                <!-- Render Image -->
+                <img src="{{ MEDIA_URL }}{{ profile.license_upload.url }}" class="img-fluid" alt="License">
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- VAT Certificate Modal -->
-    <div class="modal fade" id="vatCertificateModal{{ profile.id }}" tabindex="-1" role="dialog" aria-labelledby="vatCertificateModal{{ profile.id }}Label" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="vatCertificateModal{{ profile.id }}Label">VAT Certificate</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <img src="{{ MEDIA_URL }}{{ profile.vat_certificate_upload.url }}" class="img-fluid" alt="VAT Certificate">
+      <!-- VAT Certificate Modal -->
+      <div class="modal fade" id="vatCertificateModal{{ profile.id }}" tabindex="-1" role="dialog" aria-labelledby="vatCertificateModal{{ profile.id }}Label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="vatCertificateModal{{ profile.id }}Label">VAT Certificate</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              {% if profile.vat_certificate_upload.url|lower|slice:"-3:" == "pdf" %}
+                <!-- Render PDF -->
+                <embed src="{{ MEDIA_URL }}{{ profile.vat_certificate_upload.url }}" type="application/pdf" width="100%" height="600px" />
+              {% else %}
+                <!-- Render Image -->
+                <img src="{{ MEDIA_URL }}{{ profile.vat_certificate_upload.url }}" class="img-fluid" alt="VAT Certificate">
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
     {% endfor %}
   </div>
 </div>

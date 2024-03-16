@@ -100,13 +100,7 @@ class BusinessProfileForm(forms.ModelForm):
         model = BusinessProfile
         fields = '__all__'
 
-    # def clean_license_number(self):
-    #         license_number = self.cleaned_data.get('license_number')
-    #         shop_license_numbers = [choice.split('-')[1] for choice in self.fields['shop'].choices if choice[0] != '']
-    #         if license_number not in shop_license_numbers:
-    #             raise forms.ValidationError("Invalid license number selected.")
-    #         return license_number
-    
+ 
 class RoleForm(forms.ModelForm):
     class Meta:
         model = Role

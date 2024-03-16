@@ -7,6 +7,7 @@ from django.views import View
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
 import json, jwt
+from django.utils.decorators import method_decorator
 from django.core.mail.backends.smtp import EmailBackend
 from django.conf import settings
 from django.core.mail import send_mail
@@ -294,21 +295,36 @@ class ShopDeleteView(DeleteView):
     template_name = 'delete_shop.html'
     success_url = reverse_lazy('shop_list')
 
+
+@method_decorator(login_required, name='dispatch')
 class RoleListView(ListView):
     model = Role
     template_name = 'role_list.html'
+    
     def get_queryset(self):
-        # Return the queryset of DailySummary objects sorted by date in ascending order
-        return Role.objects.order_by('-created_on')
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=self.request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
+        # Filter roles by the business profile
+        return Role.objects.filter(business_profile=business_profile)
 @login_required
 def create_role(request):
     if request.method == 'POST':
-
         role_name = request.POST.get('name')
         module_names = request.POST.getlist('modules')
         is_employee = request.POST.get('is_employee') == 'on'
 
-        new_role = Role.objects.create(name=role_name, is_employee=is_employee)
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
+        print(business_profile)
+        new_role = Role.objects.create(name=role_name, is_employee=is_employee, business_profile=business_profile)
 
         for module_name in module_names:
             module = Module.objects.get(name=module_name)
@@ -321,6 +337,9 @@ def create_role(request):
         modules = Module.objects.all()
         return render(request, 'create_role.html', {'modules': modules})
 
+
+
+
 def analytics_view(request):
 
     total_employees = Employee.objects.all().count()
@@ -332,7 +351,6 @@ def analytics_view(request):
         'total_revenue': total_revenue,
 
     })
-
 class RoleUpdateView(TemplateView):
     template_name = 'update_role.html'
 
@@ -340,27 +358,18 @@ class RoleUpdateView(TemplateView):
         context = super().get_context_data(**kwargs)
         role_id = kwargs.get('pk')
         role = get_object_or_404(Role, pk=role_id)
-        modules = role.modules.all()  
+        modules = Module.objects.all()  # Fetch all modules, not just those associated with the role
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=self.request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
         context['role'] = role
         context['modules'] = modules
+        context['business_profile_name'] = business_profile.name
+        context['is_employee'] = role.is_employee  # Pass is_employee value to the context
         return context
-
-    def post(self, request, *args, **kwargs):
-        role_id = kwargs.get('pk')
-        role = get_object_or_404(Role, pk=role_id)
-
-        role_name = request.POST.get('name')
-        role.name = role_name
-
-        is_employee = request.POST.get('is_employee')
-        if is_employee:
-            role.is_employee = True
-        else:
-            role.is_employee = False
-
-        role.save()
-
-        return HttpResponseRedirect(reverse('role_list'))
 
 class RoleDeleteView(DeleteView):
     model = Role
@@ -423,13 +432,18 @@ def create_employee(request):
     except ShopAdmin.DoesNotExist:
         shop = None
 
-    # if shop:
-    #     # Check the number of users created under this shop
-    #     num_users_created = Shop.objects.filter(num_users=shop.num_users)
-
-    #     # Check if the number of users exceeds the allowed limit
-    #     if num_users_created >= shop.num_users:
-    #         return HttpResponseBadRequest("Cannot create more employees. Maximum number of users reached for this shop.")
+    if shop:
+        num_users = shop.num_users
+        # Check the number of users created under this shop
+        num_users_created = Employee.objects.filter(business_profile=shop).count()
+        
+        # Pass the maximum allowed users count to the template
+        max_users_allowed = num_users
+        context = {
+            'num_users_created': num_users_created,
+            'max_users_allowed': max_users_allowed,
+            
+        }
 
     if request.method == 'POST':
         form = EmployeeForm(request.POST)
@@ -551,9 +565,21 @@ def employee_dashboard(request):
 
     # Query the database for transactions for the last 10 days
     day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
+    
+    #Commission calculation
 
+    if employee:
+        com_per = employee.commission_percentage
+        if com_per:
+            com_cal = com_per / 100
+        else:
+            com_cal = 0
+    else:
+        com_cal = 0
+    commission = (total_services + total_sales) * com_cal
     # Prepare data for the chart
     chart_data = [{
+        
         'date': closing.date.strftime('%Y-%m-%d'),
         'total_services': float(closing.total_services),
         'total_sales': float(closing.total_sales),
@@ -562,7 +588,7 @@ def employee_dashboard(request):
 
     # Convert data to JSON format
     chart_data_json = json.dumps(chart_data)
-
+    
     context = {
         'employee': employee,
         'business_profile': business_profile,
@@ -570,6 +596,7 @@ def employee_dashboard(request):
         'total_services': total_services,
         'total_sales': total_sales,
         'total_advance': total_advance,
+        'commission':commission,
         'chart_data_json': chart_data_json,
     }
     return render(request, 'employee_dashboard.html', context)
@@ -1044,42 +1071,40 @@ def login_view(request):
         serializer = LoginSerializer()
 
     return render(request, 'login.html', {'serializer': serializer})
-
 def sales_by_admin_item(request):
-    employees = Employee.objects.all()
+    # Get the business profile associated with the logged-in user
+    try:
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
+        print(business_profile)
+        employees = Employee.objects.filter(business_profile=shop_admin.shop)
+    except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
+        employees = Employee.objects.none()
+
     products = Product.objects.all()
+    
     if request.method == 'POST':
         form = SalesByAdminItemForm(request.POST)
         if form.is_valid():
             form = form.save()
-            #return HttpResponse(f'Sale created successfully')  
+            # return HttpResponse(f'Sale created successfully')  
         else:
-
             return render(request, 'sales_report_admin.html') 
     else:
         form = SalesByAdminItemForm()
 
     return render(request, 'sales_by_admin_item.html', {'form': form, 'employees': employees, 'products': products})
-# @login_required
-# def sales_by_staff_service(request):
-#     employees = Employee.objects.all()
-#     services = Service.objects.all()
-#     SaleByStaffServiceFormSet = formset_factory(SaleByStaffServiceForm, extra=1)
 
-#     if request.method == 'POST':
-#         sales_form = SaleByStaffServiceFormSet(request.POST)
-#         if sales_form.is_valid():
-#             for sales_form in sales_form:
-#                 if sales_form.cleaned_data:
-#                     sales_form = sales_form.save(commit=False)
-#                     sales_form.save()
-#             return redirect('success')  # Make sure you redirect to the correct URL
-#     else:
-#         formset = SaleByStaffServiceFormSet()
-#     return render(request, 'sales_by_admin_service.html', {'formset': formset, 'services': services, 'employees':employees})
 
 def sale_by_admin_service(request):
-    employees = Employee.objects.all()
+    try:
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
+        print(business_profile)
+        employees = Employee.objects.filter(business_profile=shop_admin.shop)
+    except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
+        employees = Employee.objects.none()
+
     services = Service.objects.all()
 
     if request.method == 'POST':
@@ -1166,6 +1191,7 @@ def fetch_data(request, employee_id):
     # Fetch data for the selected employee
     # Example: calculate total_services, total_sales, total_collection
     current_date = timezone.now().strftime('%Y-%m-%d')
+    
     total_services = (SalesByStaffItemService.objects
                     .filter(employee_id=employee_id, date=current_date)
                     .aggregate(total_services=Sum('itemtotal'))['total_services'] or 0) + \
@@ -1188,11 +1214,21 @@ def fetch_data(request, employee_id):
     }
 
     return JsonResponse(data)
-
 @login_required
 def day_closing_admin(request):
     current_date = timezone.now().date()
-  
+
+    # Get the shop admin associated with the current user
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    
+    # Get the shop associated with the shop admin
+    shop = shop_admin.shop
+    
+    # Get the business profile associated with the shop
+    business_profile = shop
+
+    employees = Employee.objects.filter(business_profile=business_profile)
+    
     if request.method == 'POST':
         form = DayClosingAdminForm(request.POST)
         if form.is_valid():
@@ -1201,10 +1237,10 @@ def day_closing_admin(request):
     else:
         form = DayClosingAdminForm(initial={'date': current_date})  # Initialize with current date
 
-    return render(request, 'dayclosing_admin.html', {'current_date': current_date, 'form': form })
-
+    return render(request, 'dayclosing_admin.html', {'current_date': current_date, 'form': form, 'employees': employees})
 def fetch_data_admin(request, selected_date):
     # Fetch data for the selected date
+    
     total_services = SalesByAdminItem.objects.filter(date=selected_date).aggregate(total_services=Sum('total_amount'))['total_services'] or 0
     total_sales = SaleByAdminService.objects.filter(date=selected_date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
     total_collection = total_sales + total_services
@@ -1261,6 +1297,7 @@ def day_closing_report(request):
 @login_required
 def day_closing_admin_report(request):
     day_closings_list = DayClosingAdmin.objects.all()
+
     #day_closings_admin_list = DayClosingAdmin.objects.all()
     paginator = Paginator(day_closings_list, 10)
     #paginator_admin = Paginator(day_closings_admin_list, 10)
@@ -1379,70 +1416,60 @@ def create_receipt_type(request):
     else:
         form = ReceiptTypeForm()
     return render(request, 'create_receipt_type.html', {'form': form})
-
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
         if self.request.user.is_authenticated:
             # Fetch the shop details associated with the logged-in user
             try:
                 shop_admin = ShopAdmin.objects.get(user=self.request.user)
                 context['shop'] = shop_admin.shop
+                
+                # Get employees associated with the shop
+                employees = Employee.objects.filter(business_profile=context['shop'])
+                # print(employees)
+                # Total Services, Total Sales, and Total Advance Given for each month
+                today = timezone.now()
+                current_month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+                # Total Services (This Month)
+                total_services_this_month = DayClosingAdmin.objects.filter(
+                    date__gte=current_month_start, employee__in=employees
+                ).aggregate(total_services=Sum('total_services'))['total_services'] or 0
+
+                # Total Sales (This Month)
+                total_sales_this_month = DayClosingAdmin.objects.filter(
+                    date__gte=current_month_start, employee__in=employees
+                ).aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
+
+                # Total Advance Given (This Month)
+                total_advance_given_this_month = DayClosingAdmin.objects.filter(
+                    date__gte=current_month_start, employee__in=employees
+                ).aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+
+                context['total_services_this_month'] = total_services_this_month
+                context['total_sales_this_month'] = total_sales_this_month
+                context['total_advance_given_this_month'] = total_advance_given_this_month
+
             except ShopAdmin.DoesNotExist:
                 context['shop'] = None
-        total_employees = Employee.objects.all().count()
-        total_business = BusinessProfile.objects.all().count()
-        num_products = Product.objects.all().count()
+
         categories = [
-             {
+            {
                 'name': 'Shop Management',
                 'links': [
-
                     {'label': 'Create Business', 'url_name': 'create_business_profile'},
                     {'label': 'Business Profiles', 'url_name': 'business_profile_list'},
-            ]
+                ]
             },
-               {
+            {
                 'name': 'Role Management',
                 'links': [
                     {'label': 'Role List', 'url_name': 'role_list'},
                     {'label': 'Create Role', 'url_name': 'create_role'},
-                ]
-            },
-           
-            {
-                'name': 'Sales by Admin',
-                'links': [
-                     {'label': 'Sales by Admin Item', 'url_name':'sales_by_admin_item'},
-                     {'label': 'Sales by Admin Service', 'url_name':'sales_by_admin_service'},
-                ]
-            },
-            # {
-            #     'name': 'Sales by Staff',
-            #     'links': [
-            #        {'label': 'Sales by Staff - Item & Service', 'url_name':'sales_by_staff_item_service'},
-            #         {'label': 'Sales by Staff - Products', 'url_name':'sales_by_staff_item'},
-            #         {'label': 'Sales by Staff - Services', 'url_name':'sales-by-staff-service'},
-            #     ]
-            # },
-            {
-                'name': 'Closing & Reports',
-                'links': [
-                    # {'label': 'Day Closing', 'url_name':'dayclosing'},
-                    {'label': 'Day Closing by Admin', 'url_name':'dayclosing_admin'},
-                    # {'label': 'Sales Report', 'url_name':'sales_report'},
-                    {'label': 'Day Closing Admin Report', 'url_name':'day_closing_admin_report'},
-                ]
-            },
-          {
-                'name': 'Service and Product Management',
-                'links': [
-                    {'label': 'Service List', 'url_name': 'service_list'},
-                    {'label': 'Product List', 'url_name': 'product_list'},
-                    {'label': 'Create Product', 'url_name': 'create_product'},
-                    {'label': 'Create Service', 'url_name': 'create_service'},
                 ]
             },
             {
@@ -1452,50 +1479,11 @@ class HomeView(LoginRequiredMixin, TemplateView):
                     {'label': 'Create Employee', 'url_name': 'create_employee'},
                 ]
             },
-            {
-                'name': 'Expense Management',
-                'links': [
-                    {'label': 'Expense Types', 'url_name': 'expense_type_list'},
-                    {'label': 'Create Expense Type', 'url_name': 'create_expense_type'},
-                ]
-            },
-            {
-                'name': 'Transaction Management',
-                'links': [
-                    {'label': 'Create Receipt Transaction', 'url_name': 'create_receipt_type'},
-                    {'label': 'Receipt Transactions', 'url_name': 'receipt_transaction_list'},
-                    {'label': 'Create Payment Transaction', 'url_name': 'create_payment_transaction'},
-                    {'label': 'Payment Transactions', 'url_name': 'payment_transaction_list'},
-                ]
-            },
-            {
-                'name': 'Bank Management',
-                'links': [
-                    
-                    {'label': 'Create Bank', 'url_name': 'create_bank'},
-                    {'label': 'Create Bank Deposits', 'url_name': 'create_bank_deposit'},
-                    {'label': 'Banks', 'url_name': 'bank_list'},
-                    {'label': 'Bank Deposits', 'url_name': 'bank_deposit_list'},
-                ]
-            },
-            # {
-            #     'name': 'Employee Transaction Management',
-            #     'links': [
-            #         {'label': 'Employee Transactions', 'url_name': 'employee_transaction_list'},
-            #         {'label': 'Create Transactions', 'url_name': 'create_employee_transaction'},
-            #     ]
-            # },
-            {
-                'name': 'Daily Summary Management',
-                'links': [
-                    {'label': 'Daily Summaries', 'url_name': 'daily_summary_list'},
-                ]
-            },
-           
         ]
 
-        return {'categories': categories, 'total_employees': total_employees, 'total_business': total_business, 'num_products':num_products, **context }
-    
+        context['categories'] = categories
+        return context
+
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             # Redirect to login page if user is not logged in
