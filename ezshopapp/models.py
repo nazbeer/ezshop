@@ -10,6 +10,7 @@ from datetime import timedelta
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 import pytz
+from django.core.validators import MinValueValidator
 
 STATUS_CHOICES = [
     ('pending', 'Pending'),
@@ -36,6 +37,7 @@ class Modules(models.Model):
         sidebar_choices = [
           
             ('day-closing',  'Day Closing'),
+            ('day-closing-admin',  'Admin Day Closing'),
             ('sales-by-staff-item-service', 'Sales by Staff - Product/Service'),
             ('sales-by-staff-item', 'Sales by Staff - Service'),
             ('sales-by-staff-item', 'Sales by Staff - Product'),
@@ -171,6 +173,7 @@ class Service(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     max_discount_allowed = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.BooleanField(default=True)
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -183,6 +186,7 @@ class Product(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     max_discount_allowed = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.BooleanField(default=True)
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -190,21 +194,22 @@ class Product(models.Model):
 
 class Employee(models.Model):
     employee_id = models.CharField(max_length=10, unique=True)
-    username = models.CharField(max_length=50, null=True)
+    username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=50, null=True)
     business_profile = models.CharField(max_length=255, null=True)
+    business_profile_id = models.IntegerField(null=True)
     first_name = models.CharField(max_length=255)
     second_name = models.CharField(max_length=255)
     nationality = models.CharField(max_length=255)
     mobile_no = models.CharField(max_length=20, blank=True, null=True)
-    passport_no = models.CharField(max_length=20)
+    passport_no = models.CharField(max_length=20, unique=True)
     passport_expiration_date = models.DateField()
-    emirates_id = models.CharField(max_length=20)
+    emirates_id = models.CharField(max_length=20, unique=True)
     id_expiration_date = models.DateField()
     basic_pay = models.DecimalField(max_digits=10, decimal_places=2)
-    house_allowance = models.DecimalField(max_digits=10, decimal_places=2)
-    transportation_allowance = models.DecimalField(max_digits=10, decimal_places=2)
-    commission_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    house_allowance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    transportation_allowance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    commission_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     joining_date = models.DateField()
     job_role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
     is_employee = models.BooleanField(default=True)
@@ -364,7 +369,9 @@ def set_created_on_timezone(sender, instance, **kwargs):
     if hasattr(instance, 'created_on') and not instance.created_on:
         # Convert the current time to Dubai timezone
         dubai_timezone = pytz.timezone('Asia/Dubai')
+        print(dubai_timezone)
         instance.created_on = timezone.localtime(timezone.now(), dubai_timezone)
+        print(instance.created_on)
 
 # Connect the signal receiver function to the pre_save signal
 pre_save.connect(set_created_on_timezone)

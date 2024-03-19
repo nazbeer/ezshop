@@ -15,6 +15,8 @@
         <th scope="col">Amount</th>
         <th scope="col">Max Discount Allowed</th>
         <th scope="col">Status</th>
+        <th scope="col">Created On</th>
+        
       </tr>
     </thead>
     <tbody>
@@ -27,6 +29,7 @@
           <td>{{ service.amount }}</td>
           <td>{{ service.max_discount_allowed }}</td>
           <td>{{ service.status }}</td>
+          <td>{{ service.created_on }}</td>
         </tr>
       {% endfor %}
     </tbody>

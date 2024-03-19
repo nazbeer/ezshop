@@ -49,7 +49,7 @@
                                 <select id="form-0-service" name="item" class="form-control" onchange="updatePrice(this)">
                                    <option>-- Select --</option>
                                     {% for product in products %}
-                                        <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
+                                        <option value="{{ product.id }}" data-amount="{{ product.amount }}" data-max-discount="{{ product.max_discount_allowed }}">{{ product.name }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
@@ -74,8 +74,9 @@
             </div>
 
             <div class="form-group">
-                <label for="discount">Discount:</label>
-                <input type="number" id="discount" name="discount" value="0" class="form-control" onchange="calculateTotalAmount()">
+                <label for="discount">Discount: <small class="text-danger">(Max Discount Allowed: <span  id="max_discount">0</span>)</small></label>
+                <input type="hidden" id="max_discount_allowed">
+                <input type="number" id="discount" name="discount" class="form-control" onchange="calculateTotalAmount()" placeholder="Enter the Discount Amount or Enter Zero">
             </div>
 
             <div class="form-group">
@@ -124,28 +125,44 @@
         var price = selectedOption.getAttribute('data-amount');
         priceInput.value = price;
         calculateSubTotal();
+        calculateTotalAmount();
     }
 
     function calculateSubTotal() {
-        var table = document.getElementById("salesItems").getElementsByTagName("tbody")[0];
-        var subTotal = 0;
+    var table = document.getElementById("salesItems").getElementsByTagName("tbody")[0];
+    var subTotal = 0;
+    var subTotalMaxDiscount = 0;
+    for (var i = 0; i < table.rows.length; i++) {
+        var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
+        var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
+        var total = quantity * price;
+        subTotal += isNaN(total) ? 0 : total;
 
-        for (var i = 0; i < table.rows.length; i++) {
-            var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
-            var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
-            var total = quantity * price;
-            subTotal += isNaN(total) ? 0 : total;
-        }
-
-        document.getElementById("sub_total").value = subTotal.toFixed(2);
-        calculateTotalAmount();
+        // Update maxDiscountAllowed for each row
+        var maxDiscountAllowed = parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')) * quantity;
+        console.log(parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')));
+        subTotalMaxDiscount += isNaN(maxDiscountAllowed) ? 0 : maxDiscountAllowed;
     }
+
+    document.getElementById("sub_total").value = subTotal.toFixed(2);
+    document.getElementById("max_discount").innerText = subTotalMaxDiscount.toFixed(2);
+}
+
 
     function calculateTotalAmount() {
         var subTotal = parseFloat(document.getElementById("sub_total").value);
         var discount = parseFloat(document.getElementById("discount").value);
+        var maxDiscountAllowed = parseFloat(document.getElementById("max_discount").innerHTML);
         var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
-        document.getElementById("total_amount").value = totalAmount.toFixed(2);
+
+        // Check if discount exceeds max_discount_allowed
+        if (discount > maxDiscountAllowed) {
+            alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
+            document.getElementById("discount").value = maxDiscountAllowed;
+            totalAmount = subTotal - maxDiscountAllowed;
+        }
+        
+        document.getElementById("total_amount").value = totalAmount.toFixed(2) * document.getElementById("form-0-quantity").value;
     }
 
     function addItem() {
@@ -156,17 +173,19 @@
         var cell3 = newRow.insertCell(2);
 
         cell1.innerHTML = `
-            <select id="form-${rowCounter}-service" name="item" class="form-control" onchange="updatePrice(this)">
+            <select id="form-${rowCounter}-service" name="item" class="form-control" onchange="updatePrice (this)">
                 <option>-- Select --</option>
-                                    {% for product in products %}
-                                        <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
-                                    {% endfor %}
+                {% for product in products %}
+                    <option value="{{ product.id }}" data-amount="{{ product.amount }}" data-max-discount="{{ product.max_discount_allowed }}">{{ product.name }}</option>
+                {% endfor %}
             </select>
         `;
-        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal()">`;
+        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal(); calculateTotalAmount()">`;
         cell3.innerHTML = `<input type="number" id="form-${rowCounter}-price" name="price" class="form-control" readonly>`;
-        
+                
         rowCounter++;
     }
 </script>
+
 {% endblock %}
+

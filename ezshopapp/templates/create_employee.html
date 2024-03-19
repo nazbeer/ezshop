@@ -54,6 +54,7 @@
             
             {% for business_profile in business_profiles %}
             <input type="text" id="business_profile" name="business_profile" value="{{ business_profile.name }}" class="form-control" readonly>
+            <input type="hidden" id="business_profile_id" name="business_profile_id" value="{{ business_profile.id }}">
             {% endfor %}
         </div>
         

@@ -420,7 +420,6 @@ def employee_list(request):
         employees = paginator.page(paginator.num_pages)
 
     return render(request, 'employee_list.html', {'employees': employees})
-
 @login_required
 def create_employee(request):
     error_occurred = False  
@@ -442,20 +441,26 @@ def create_employee(request):
         context = {
             'num_users_created': num_users_created,
             'max_users_allowed': max_users_allowed,
-            
+            'business_profile_id': shop.id  # Pass the business_profile_id to the template context
         }
 
     if request.method == 'POST':
         form = EmployeeForm(request.POST)
         if form.is_valid():
-            try:
-                employee = form.save(commit=False)
-                employee.save()
-                return redirect('employee_list') 
-            except Exception as e:
-                print("An error occurred while saving the form:", e)
-                error_occurred = True  
-                messages.error(request, "An error occurred while saving the form.")
+            if num_users_created >= max_users_allowed:
+                # If the maximum limit is reached, display an error message
+                error_occurred = True
+                messages.error(request, "Max User Registration limit is reached.")
+            else:
+                try:
+                    employee = form.save(commit=False)
+                    employee.business_profile_id = request.POST.get('business_profile_id')  # Set business_profile_id from POST data
+                    employee.save()
+                    return redirect('employee_list') 
+                except Exception as e:
+                    # print("An error occurred while saving the form:", e)
+                    error_occurred = True  
+                    messages.error(request, "An error occurred while saving the form.")
     else:
         form = EmployeeForm()
 
@@ -740,19 +745,39 @@ class ServiceListView(ListView):
     template_name = 'service_list.html'
     def get_queryset(self):
             # Return the queryset of DailySummary objects sorted by date in ascending order
-            return Service.objects.order_by('-created_on')
+            shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+        
+            # Get the shop associated with the shop admin
+            shop = shop_admin.shop
+            
+            # Get the business profile associated with the shop
+            business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+            return Service.objects.filter(business_profile=business_profile.id).order_by('-created_on')
+
+def create_service(request):
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
     
-class ServiceCreateView(CreateView):
-    model = Service
-    form_class = ServiceForm
-    template_name = 'create_service.html'
+    # Get the shop associated with the shop admin
+    shop = shop_admin.shop
+    
+    # Get the business profile associated with the shop
+    business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+    
+    # Print business_profile to verify
+    # print(business_profile)
+    
+    if request.method == 'POST':
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            # Set the business profile for the service before saving
+            service = form.save(commit=False)
+            service.business_profile = business_profile.id
+            service.save()
+            return redirect('service_list')  
+    else:
+        form = ServiceForm()
+    return render(request, 'create_service.html', {'form': form, 'business_profile': business_profile.id})
 
-    def form_valid(self, form):
-
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('service_list') 
 
 class ServiceUpdateView(UpdateView):
     model = Service
@@ -768,19 +793,39 @@ class ServiceDeleteView(DeleteView):
 class ProductListView(ListView):
     model = Product
     template_name = 'product_list.html'
-    def get_queryset(self):
-        # Return the queryset of DailySummary objects sorted by date in ascending order
-        return Product.objects.order_by('-created_on')
     
+    def get_queryset(self):
+            # Return the queryset of DailySummary objects sorted by date in ascending order
+            shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+        
+            # Get the shop associated with the shop admin
+            shop = shop_admin.shop
+            
+            # Get the business profile associated with the shop
+            business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+            return Product.objects.filter(business_profile=business_profile.id).order_by('-created_on')
+  
 def create_product(request):
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    
+    # Get the shop associated with the shop admin
+    shop = shop_admin.shop
+    
+    # Get the business profile associated with the shop
+    business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+  
+    
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
-            form.save()
+            # Set the business profile for the product before saving
+            product = form.save(commit=False)
+            product.business_profile = business_profile.id
+            product.save()
             return redirect('product_list')  
     else:
         form = ProductForm()
-    return render(request, 'create_product.html', {'form': form})
+    return render(request, 'create_product.html', {'form': form, 'business_profile': business_profile.id})
 
 class ProductUpdateView(UpdateView):
     model = Product
@@ -1076,13 +1121,14 @@ def sales_by_admin_item(request):
     try:
         shop_admin = ShopAdmin.objects.get(user=request.user)
         business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
-        print(business_profile)
+        # print(business_profile)
         employees = Employee.objects.filter(business_profile=shop_admin.shop)
+        
+        products = Product.objects.filter(business_profile=business_profile.id)
+        # print(products)
     except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
         employees = Employee.objects.none()
 
-    products = Product.objects.all()
-    
     if request.method == 'POST':
         form = SalesByAdminItemForm(request.POST)
         if form.is_valid():
@@ -1100,12 +1146,14 @@ def sale_by_admin_service(request):
     try:
         shop_admin = ShopAdmin.objects.get(user=request.user)
         business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
-        print(business_profile)
+        # print(business_profile)
         employees = Employee.objects.filter(business_profile=shop_admin.shop)
+
+        services = Service.objects.filter(business_profile=business_profile.id)
     except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
         employees = Employee.objects.none()
 
-    services = Service.objects.all()
+    
 
     if request.method == 'POST':
         sales_form = SaleByAdminServiceForm(request.POST)
@@ -1114,7 +1162,7 @@ def sale_by_admin_service(request):
             # sales_form.itemtotal = request.POST['itemTotal']
             # sales_form.servicetotal = request.POST['serviceTotal']
             sales_form.save()
-            return redirect('sales_report')
+            return redirect('sales_report_admin')
     else:
         sales_form = SaleByAdminServiceForm()
 
@@ -1333,10 +1381,14 @@ def approve_day_closing(request, dayclosing_id):
 def sales_by_staff_item(request):
     employee_id = request.session.get('employee_id')
 
-    # Filter employees based on the retrieved employee ID
-    employees = Employee.objects.filter(id=employee_id)
-    products = Product.objects.all()
-    #services = Service.objects.all()
+    # Retrieve the employee
+    employee = Employee.objects.filter(id=employee_id).first()
+
+    # Filter products based on the retrieved employee's business profile
+    
+    products = Product.objects.filter(business_profile=employee.business_profile)
+  
+    print(products)
     if request.method == 'POST':
         sales_form = SaleByStaffItemForm(request.POST)
         if sales_form.is_valid():
@@ -1348,7 +1400,7 @@ def sales_by_staff_item(request):
     else:
         sales_form = SaleByStaffItemForm()
 
-    return render(request, 'sales_by_staff_item.html', {'sales_form': sales_form, 'products': products, 'employees': employees})
+    return render(request, 'sales_by_staff_item.html', {'sales_form': sales_form, 'products': products, 'employee': employee})
 
 
 
