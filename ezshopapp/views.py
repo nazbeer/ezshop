@@ -41,6 +41,7 @@ from django.urls.resolvers import RoutePattern
 from .serializers import *
 from datetime import datetime, timedelta
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.forms import AuthenticationForm
 
 class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
@@ -182,11 +183,15 @@ custom_user_add_view = CustomUserAddView.as_view()
 
 
 #AdminUserForm = formset_factory(AdminUserForm, extra=1)
-@method_decorator(ensure_csrf_cookie, name='dispatch')
+
 class CustomLoginView(FormView):
     template_name = 'login.html'
-    form_class = CustomLoginForm
-    success_url = '/home'  
+    form_class = AuthenticationForm
+    success_url = '/home/'
+
+    @method_decorator(ensure_csrf_cookie)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def form_valid(self, form):
         username = form.cleaned_data['username']
@@ -196,12 +201,8 @@ class CustomLoginView(FormView):
             login(self.request, user)
             return super().form_valid(form)
         else:
-            form.add_error(None, 'Invalid login credentials') 
+            form.add_error(None, 'Invalid login credentials')
             return super().form_invalid(form)
-
-    def form_invalid(self, form):
-
-        return super().form_invalid(form)
 
 class CustomLogoutView(LogoutView):
     next_page = '/login/' 
