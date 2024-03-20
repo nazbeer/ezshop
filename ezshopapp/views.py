@@ -6,7 +6,8 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
-import json, jwt
+import json
+import jwt
 from django.utils.decorators import method_decorator
 from django.core.mail.backends.smtp import EmailBackend
 from django.views.decorators.cache import cache_control
@@ -439,11 +440,11 @@ def create_employee(request):
         
         # Pass the maximum allowed users count to the template
         max_users_allowed = num_users
-        context = {
-            'num_users_created': num_users_created,
-            'max_users_allowed': max_users_allowed,
-            'business_profile_id': shop.id  # Pass the business_profile_id to the template context
-        }
+        # context = {
+        #     'num_users_created': num_users_created,
+        #     'max_users_allowed': max_users_allowed,
+        #     'business_profile_id': shop.id  # Pass the business_profile_id to the template context
+        # }
 
     if request.method == 'POST':
         form = EmployeeForm(request.POST)
@@ -469,11 +470,15 @@ def create_employee(request):
     business_profiles = BusinessProfile.objects.filter(name=shop)
 
     context = {
-        'form': form,
-        'business_profiles': business_profiles,
-        'error_occurred': error_occurred,
-        'nationalities': NATIONALITIES,  # Pass NATIONALITIES to the template context
+    'form': form,
+    'business_profiles': business_profiles,
+    'error_occurred': error_occurred,
+    'num_users_created': num_users_created,
+    'max_users_allowed': max_users_allowed,
+    'business_profile_id': shop.id,
+    'nationalities': NATIONALITIES,  # Pass NATIONALITIES to the template context
     }
+
     return render(request, 'create_employee.html', context)
 
 

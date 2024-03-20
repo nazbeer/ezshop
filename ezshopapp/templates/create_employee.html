@@ -34,7 +34,12 @@
         An error occurred while saving the form. Please try again.
     </div>
     {% endif %}
-    
+    {% if num_users_created >= max_users_allowed %}
+    <div class="alert alert-warning" role="alert">
+        Maximum number of users allowed has been reached for this shop.
+        Number of users created is  {{ num_users_created }}
+    </div>
+{% endif %}
     <!-- Display form errors if any -->
     {% if form.errors %}
     <div class="alert alert-danger" role="alert">
