@@ -8,6 +8,7 @@ from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
 import json
 import jwt
+from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.core.mail.backends.smtp import EmailBackend
 from django.views.decorators.cache import cache_control
@@ -180,14 +181,6 @@ custom_user_add_view = CustomUserAddView.as_view()
 
 
 #AdminUserForm = formset_factory(AdminUserForm, extra=1)
-@login_required(login_url='login')
-def sidebar(request):
-
-    is_superuser = request.user.is_superuser
-    is_admin = request.user.groups.filter(name='Admin').exists()
-    is_employee = not is_superuser and not is_admin
-
-    return render(request, 'sidebar.html', {'user': request.user, 'is_superuser': is_superuser, 'is_admin': is_admin, 'is_employee': is_employee})
 
 class CustomLoginView(FormView):
     template_name = 'login.html'
@@ -211,6 +204,16 @@ class CustomLoginView(FormView):
 
 class CustomLogoutView(LogoutView):
     next_page = '/login/' 
+
+@login_required(login_url='login')
+def sidebar(request):
+
+    is_superuser = request.user.is_superuser
+    is_admin = request.user.groups.filter(name='Admin').exists()
+    is_employee = not is_superuser and not is_admin
+
+    return render(request, 'sidebar.html', {'user': request.user, 'is_superuser': is_superuser, 'is_admin': is_admin, 'is_employee': is_employee})
+
 
 class ShopListView(ListView):
     model = Shop
@@ -540,6 +543,7 @@ def employee_delete(request, pk):
     return render(request, 'employee_delete.html', {'employee': employee})
 
 
+@csrf_protect
 def employee_login(request):
     error_message = None  # Initialize error_message variable
     

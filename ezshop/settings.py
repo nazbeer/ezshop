@@ -56,6 +56,14 @@ MIDDLEWARE = [
     
 ]
 
+CSRF_COOKIE_SECURE = True  # Ensure CSRF cookie is marked as secure for HTTPS
+CSRF_COOKIE_HTTPONLY = True  # Ensure CSRF cookie is marked as HTTP-only
+CSRF_COOKIE_SAMESITE = 'Strict'  # Ensure CSRF cookie is only sent with same-site requests
+
+SESSION_COOKIE_SECURE = True  # Ensure session cookie is marked as secure for HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Ensure session cookie is marked as HTTP-only
+
+
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:59917',
