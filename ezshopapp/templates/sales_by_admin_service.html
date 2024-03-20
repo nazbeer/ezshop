@@ -174,7 +174,7 @@
             var price = parseFloat(table.rows[i].cells[2].querySelector('input').value);
             var total = quantity * price;
             subTotal += isNaN(total) ? 0 : total;
-            
+
             var maxDiscountAllowed = parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')) * quantity;
             console.log(parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')));
             subTotalMaxDiscount += isNaN(maxDiscountAllowed) ? 0 : maxDiscountAllowed;
@@ -192,7 +192,7 @@
         if (discount > maxDiscountAllowed) {
             alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
             document.getElementById("discount").value = maxDiscountAllowed;
-            totalAmount = subTotal - maxDiscountAllowed;
+            totalAmount = subTotal - discount;
         }
         
         document.getElementById("total_amount").value = totalAmount.toFixed(2) * document.getElementById("form-0-quantity").value;

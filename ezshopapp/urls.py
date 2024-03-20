@@ -13,7 +13,7 @@ router.register(r'dailysummary', DailySummaryViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('api/employees/login/<str:username>/<str:password>/', EmployeeViewSet.as_view({'post': 'login'}), name='employee_login'),
+    # path('api/employees/login/<str:username>/<str:password>/', EmployeeViewSet.as_view({'post': 'loginapi'}), name='employee_login'),
     path('api/employees/employee_dashboard/', EmployeeViewSet.as_view({'get': 'employee_dashboard'}), name='employee_dashboard'),
     path('api/employees/profile/', EmployeeViewSet.as_view({'get': 'profile'}), name='profile'),
     path('api/employees/logout/', EmployeeViewSet.as_view({'post': 'logout'}), name='logout'),

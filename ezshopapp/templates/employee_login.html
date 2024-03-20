@@ -81,6 +81,11 @@
             </div>
             </div>
             <div class="card-body p-4">
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> Invalid username or password.
+                </div>
+            {% endif %}
                 <form method="post">
                     {% csrf_token %}
                 <div class="form-group mb-4">

@@ -194,7 +194,7 @@ class Product(models.Model):
 
 class Employee(models.Model):
     employee_id = models.CharField(max_length=10, unique=True)
-    username = models.CharField(max_length=50, unique=True)
+    username = models.CharField(max_length=50, null=True)
     password = models.CharField(max_length=50, null=True)
     business_profile = models.CharField(max_length=255, null=True)
     business_profile_id = models.IntegerField(null=True)

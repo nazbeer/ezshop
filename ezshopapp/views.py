@@ -49,27 +49,27 @@ class EmployeeViewSet(viewsets.ViewSet):
         serializer = EmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post', 'get'])
-    def login(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+    # @action(detail=False, methods=['post', 'get'])
+    # def loginapi(self, request):
+    #     username = request.data.get('username')
+    #     password = request.data.get('password')
         
-        try:
-            # Attempt to get an Employee instance with the provided username
-            employee = Employee.objects.get(username=username, password=password)
+    #     try:
+    #         # Attempt to get an Employee instance with the provided username
+    #         employee = Employee.objects.get(username=username, password=password)
             
-            # Validate the password
-            if check_password(password, employee.password):
-                # Password is correct, generate JWT token
-                secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
-                token = jwt.encode({'employee_id': employee.pk, 'exp': timezone.now() + timedelta(hours=20)}, secretkey, algorithm='HS256')
-                return JsonResponse({'token': token.decode('utf-8')})
-            else:
-                # Password is incorrect
-                return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
-        except Employee.DoesNotExist:
-            # Employee with the provided username does not exist
-            return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+    #         # Validate the password
+    #         if check_password(password, employee.password):
+    #             # Password is correct, generate JWT token
+    #             secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
+    #             token = jwt.encode({'employee_id': employee.pk, 'exp': timezone.now() + timedelta(hours=20)}, secretkey, algorithm='HS256')
+    #             return JsonResponse({'token': token.decode('utf-8')})
+    #         else:
+    #             # Password is incorrect
+    #             return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+    #     except Employee.DoesNotExist:
+    #         # Employee with the provided username does not exist
+    #         return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
         
     @action(detail=False, methods=['post'])
     def logout(self, request):
@@ -504,31 +504,28 @@ def employee_delete(request, pk):
 
 
 def employee_login(request):
+    error_message = None  # Initialize error_message variable
+    
     if request.method == 'POST':
         form = EmployeeLoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             
-            # Query the Employee model to check if the username and password match
             try:
                 employee = Employee.objects.get(username=username)
             except Employee.DoesNotExist:
                 employee = None
             
-            # Check if the employee exists and if the password matches
             if employee is not None and employee.password == password:
-                # If authentication is successful, create a session for the employee and redirect to the dashboard
                 request.session['employee_id'] = employee.pk
                 return redirect('employee_dashboard')
             else:
-                # If authentication fails, display error message and reload login page
-                messages.error(request, "Invalid username or password.")
-                return redirect('employee_login')
+                error_message = "Invalid username or password."  # Set error message
     else:
         form = EmployeeLoginForm()
-    return render(request, 'employee_login.html', {'form': form})
-
+    
+    return render(request, 'employee_login.html', {'form': form, 'error_message': error_message})
 
 def employee_logout(request):
     # Remove employee_id from the session if it exists

@@ -159,7 +159,7 @@
         if (discount > maxDiscountAllowed) {
             alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
             document.getElementById("discount").value = maxDiscountAllowed;
-            totalAmount = subTotal - maxDiscountAllowed;
+            totalAmount = subTotal - discount;
         }
         
         document.getElementById("total_amount").value = totalAmount.toFixed(2) * document.getElementById("form-0-quantity").value;
