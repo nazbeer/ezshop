@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpRespon
 import json, jwt
 from django.utils.decorators import method_decorator
 from django.core.mail.backends.smtp import EmailBackend
+from django.views.decorators.cache import cache_control
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -1097,6 +1098,7 @@ def profile_created(request):
 def success_view(request):
     return render(request, 'success.html')
 
+@cache_control(max_age=18000)  # 5 hours in seconds
 def login_view(request):
     if request.method == 'POST':
         serializer = LoginSerializer(data=request.POST)
@@ -1108,12 +1110,13 @@ def login_view(request):
                 login(request, user)
                 return redirect('home')
             else:
-
-                pass
+                # Invalid login credentials, display error message
+                messages.error(request, 'Invalid username or password. Please try again.')
     else:
         serializer = LoginSerializer()
 
     return render(request, 'login.html', {'serializer': serializer})
+
 def sales_by_admin_item(request):
     # Get the business profile associated with the logged-in user
     try:
