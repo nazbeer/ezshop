@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpRespon
 import json
 import jwt
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.core.mail.backends.smtp import EmailBackend
 from django.views.decorators.cache import cache_control
@@ -181,7 +182,7 @@ custom_user_add_view = CustomUserAddView.as_view()
 
 
 #AdminUserForm = formset_factory(AdminUserForm, extra=1)
-
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class CustomLoginView(FormView):
     template_name = 'login.html'
     form_class = CustomLoginForm
