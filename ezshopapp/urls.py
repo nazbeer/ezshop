@@ -20,6 +20,7 @@ urlpatterns = [
     path('', CustomLoginView.as_view(), name='login'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
+    path('reset_session_timeout/', reset_session_timeout, name='reset_session_timeout'),
     path('sidebar/', sidebar, name='sidebar'),
     path('home/', HomeView.as_view(), name='home'),
     path('admin/auth/user/add/', custom_user_add_view, name='custom_user_add'),

@@ -207,6 +207,10 @@ class CustomLoginView(FormView):
 class CustomLogoutView(LogoutView):
     next_page = '/login/' 
 
+def reset_session_timeout(request):
+    request.session.modified = True  # Update the session modification time
+    return JsonResponse({'message': 'Session timeout reset successfully'})
+
 @login_required(login_url='login')
 def sidebar(request):
 

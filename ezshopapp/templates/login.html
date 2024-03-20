@@ -108,7 +108,23 @@
 
        
     </div>
-    
+    <script>
+        function resetSessionTimeout() {
+            // Send an AJAX request to the server to update the session
+            fetch('/reset_session_timeout/')
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Failed to reset session timeout');
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to reset session timeout:', error);
+                });
+        }
+
+        // Call resetSessionTimeout function when the login page is loaded
+        window.addEventListener('load', resetSessionTimeout);
+    </script>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
