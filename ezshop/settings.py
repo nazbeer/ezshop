@@ -29,6 +29,7 @@ USE_TZ = True
 ALLOWED_HOSTS = ['ezshopapp.onrender.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
+    'clearcache',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

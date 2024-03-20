@@ -40,7 +40,7 @@ class Modules(models.Model):
             ('day-closing-admin',  'Admin Day Closing'),
             ('sales-by-staff-item-service', 'Sales by Staff - Product/Service'),
             ('sales-by-staff-item', 'Sales by Staff - Service'),
-            ('sales-by-staff-item', 'Sales by Staff - Product'),
+            ('sale-by-staff-item', 'Sales by Staff - Product'),
             ('day-closing-report',  'Day Closing Report'),
             ('sales-report',  'Sales Report'),
         ]

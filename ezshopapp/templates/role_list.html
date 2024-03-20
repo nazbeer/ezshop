@@ -10,38 +10,28 @@
         <tr>
           <th>ID</th>
           <th>Name</th>
-          <th style="max-width:400px;">Module(s)</th>
+          <th>Module(s)</th>
           <th>Employee Status</th>
-          <th>Created On</th> <!-- New column for created_on field -->
+          <th>Created On</th>
           <th>Actions</th>
-          <!-- Add more headers if needed -->
         </tr>
       </thead>
       <tbody>
-        {% for role in object_list %}
+        {% for role in roles %}
           <tr>
             <td>{{ role.id }}</td>
             <td>{{ role.name }}</td>
-            <td style="max-width:400px;">
+            <td>
               {% for module in role.modules.all %}
                 {{ module.name }}
                 {% if not forloop.last %}, {% endif %}
               {% endfor %}
             </td>
             <td>{{ role.is_employee }}</td>
-            <td>{{ role.created_on }}</td> <!-- Display the created_on field -->
+            <td>{{ role.created_on }}</td>
             <td>
-              <div class="d-flex justify-content-between align-items-center">
-              <!-- Edit link -->
-              <a href="{% url 'update_role' role.pk %}" class="btn btn-primary btn-sm">Edit</a>&nbsp;
-              <!-- Delete form -->
-              <!-- <form method="post" action="{% url 'delete_role' role.pk %}" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this role?')">Delete</button>
-              </form> -->
-            </div>
+              <a href="{% url 'update_role' role.pk %}" class="btn btn-primary btn-sm">Edit</a>
             </td>
-            <!-- Add more columns if needed -->
           </tr>
         {% endfor %}
       </tbody>

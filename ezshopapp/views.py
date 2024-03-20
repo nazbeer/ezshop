@@ -298,20 +298,29 @@ class ShopDeleteView(DeleteView):
     success_url = reverse_lazy('shop_list')
 
 
-@method_decorator(login_required, name='dispatch')
+
+# @method_decorator(login_required, name='dispatch')
 class RoleListView(ListView):
     model = Role
     template_name = 'role_list.html'
-    
+    context_object_name = 'roles'  # Rename object_list to roles in the template
+
     def get_queryset(self):
-        # Get the current shop admin
-        shop_admin = ShopAdmin.objects.get(user=self.request.user)
-        # Get the associated shop
-        shop = shop_admin.shop
-        # Get the business profile associated with the shop
-        business_profile = BusinessProfile.objects.get(name=shop.name)
-        # Filter roles by the business profile
+        business_profile = self.get_business_profile()
         return Role.objects.filter(business_profile=business_profile)
+
+    def get_business_profile(self):
+        try:
+            # Get the current shop admin
+            shop_admin = ShopAdmin.objects.get(user=self.request.user)
+            # Get the associated shop
+            shop = shop_admin.shop
+            # Get the business profile associated with the shop
+            business_profile = BusinessProfile.objects.get(name=shop.name)
+            return business_profile
+        except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
+            return None
+        
 @login_required
 def create_role(request):
     if request.method == 'POST':
@@ -356,13 +365,13 @@ def analytics_view(request):
 
 class RoleUpdateView(UpdateView):
     model = Role
-    fields = ['name', 'modules', 'is_employee']
+    fields = "__all__"
     template_name = 'update_role.html'
 
     def form_valid(self, form):
         role = form.save(commit=False)
         role.business_profile = self.get_business_profile()
-        role.save()
+        role.save()  # Save the role after setting the business profile
         messages.success(self.request, 'Role updated successfully.')
         return super().form_valid(form)
 
@@ -380,7 +389,7 @@ class RoleUpdateView(UpdateView):
         return context
 
     def get_success_url(self):
-        return reverse_lazy('update_role', kwargs={'pk': self.kwargs['pk']})
+        return reverse_lazy('role_list')  # Redirect to the role_list page
     
     def get_business_profile(self):
         # Get the current shop admin
@@ -1520,19 +1529,19 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 today = timezone.now()
                 current_month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-                # Total Services (This Month)
+                # Total Services (This Month) employee__in=employees
                 total_services_this_month = DayClosingAdmin.objects.filter(
-                    date__gte=current_month_start, employee__in=employees
+                    date__gte=current_month_start
                 ).aggregate(total_services=Sum('total_services'))['total_services'] or 0
 
-                # Total Sales (This Month)
+                # Total Sales (This Month) employee__in=employees
                 total_sales_this_month = DayClosingAdmin.objects.filter(
-                    date__gte=current_month_start, employee__in=employees
+                    date__gte=current_month_start, 
                 ).aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
 
-                # Total Advance Given (This Month)
+                # Total Advance Given (This Month) employee__in=employees
                 total_advance_given_this_month = DayClosingAdmin.objects.filter(
-                    date__gte=current_month_start, employee__in=employees
+                    date__gte=current_month_start, 
                 ).aggregate(total_advance=Sum('advance'))['total_advance'] or 0
 
                 context['total_services_this_month'] = total_services_this_month
