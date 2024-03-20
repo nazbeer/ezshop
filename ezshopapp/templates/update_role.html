@@ -11,8 +11,6 @@
   </div>
   <div class="card-body">
     
- 
-  
     {% csrf_token %}
     <div class="form-group">
       <label for="name">Role Name:</label>
@@ -22,26 +20,23 @@
       <label for="modules">Module List:</label>
       <select id="modules" name="modules" class="form-control text-capitalize " style="height:200px" multiple>
         {% for module in modules %}
-            <option value="{{ module.name }}">{{ module.name }}</option>
+            <option value="{{ module.name }}" {% if module in role.modules.all %}selected{% endif %}>{{ module.name }}</option>
         {% endfor %}
       </select>
     </div>
     <input type="hidden" name="business_profile" value="{{ business_profile.id }}">
     <div class="form-group form-check">
-      <input type="checkbox" class="form-check-input" id="is_employee" name="is_employee" {% if is_employee %}checked{% endif %} >
+      <input type="checkbox" class="form-check-input" id="is_employee" name="is_employee" checked >
       <label class="form-check-label" for="is_employee" >Employee</label>
     </div>
     
+  </div>
+  <div class="card-footer ">
+    <div class="d-flex justify-content-between align-items-center">
+      <button type="submit" class="btn btn-success ">Update</button>
+      <a href="{% url 'role_list' %}" class="btn btn-secondary">Back to Role List</a>
+    </div>
+  </div>
+  </form>
 </div>
-<div class="card-footer ">
-<div class="d-flex justify-content-between align-items-center">
-  <button type="submit" class="btn btn-success ">Update</button>
-  
-
-  <a href="{% url 'role_list' %}" class="btn btn-secondary">Back to Role List</a>
-</div>
-</div>
-</form>
-</div>
-
 {% endblock %}

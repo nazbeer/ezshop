@@ -353,26 +353,43 @@ def analytics_view(request):
         'total_revenue': total_revenue,
 
     })
-class RoleUpdateView(TemplateView):
+
+class RoleUpdateView(UpdateView):
+    model = Role
+    fields = ['name', 'modules', 'is_employee']
     template_name = 'update_role.html'
+
+    def form_valid(self, form):
+        role = form.save(commit=False)
+        role.business_profile = self.get_business_profile()
+        role.save()
+        messages.success(self.request, 'Role updated successfully.')
+        return super().form_valid(form)
+
+    def get_object(self, queryset=None):
+        role_id = self.kwargs.get('pk')
+        return get_object_or_404(Role, pk=role_id)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        role_id = kwargs.get('pk')
+        role_id = self.kwargs.get('pk')
         role = get_object_or_404(Role, pk=role_id)
-        modules = Module.objects.all()  # Fetch all modules, not just those associated with the role
+        context['role'] = role
+        context['modules'] = role.modules.all()
+        context['business_profile'] = self.get_business_profile()
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('update_role', kwargs={'pk': self.kwargs['pk']})
+    
+    def get_business_profile(self):
         # Get the current shop admin
         shop_admin = ShopAdmin.objects.get(user=self.request.user)
         # Get the associated shop
         shop = shop_admin.shop
         # Get the business profile associated with the shop
-        business_profile = BusinessProfile.objects.get(name=shop.name)
-        context['role'] = role
-        context['modules'] = modules
-        context['business_profile_name'] = business_profile.name
-        context['is_employee'] = role.is_employee  # Pass is_employee value to the context
-        return context
-
+        return BusinessProfile.objects.get(name=shop.name)
+    
 class RoleDeleteView(DeleteView):
     model = Role
     template_name = 'delete_role.html'
@@ -445,7 +462,11 @@ def create_employee(request):
         #     'max_users_allowed': max_users_allowed,
         #     'business_profile_id': shop.id  # Pass the business_profile_id to the template context
         # }
-
+    business_profiles = BusinessProfile.objects.filter(name=shop)
+    business_profile = get_object_or_404(BusinessProfile, name=shop)
+        
+        # Filter roles based on the business profile
+    roles = Role.objects.filter(business_profile=business_profile)
     if request.method == 'POST':
         form = EmployeeForm(request.POST)
         if form.is_valid():
@@ -467,10 +488,11 @@ def create_employee(request):
         form = EmployeeForm()
 
     # Filter Business Profiles based on the shop associated with the logged-in user
-    business_profiles = BusinessProfile.objects.filter(name=shop)
+    
 
     context = {
     'form': form,
+    'roles':roles,
     'business_profiles': business_profiles,
     'error_occurred': error_occurred,
     'num_users_created': num_users_created,
@@ -550,7 +572,6 @@ def employee_logout(request):
     """
     
     return response
-
 def employee_dashboard(request):
     # Get the employee_id from the session
     employee_id = request.session.get('employee_id')
@@ -584,10 +605,15 @@ def employee_dashboard(request):
             com_cal = 0
     else:
         com_cal = 0
-    commission = (total_services + total_sales) * com_cal
+
+    # Check if total_services and total_sales are not None
+    if total_services is not None and total_sales is not None:
+        commission = (total_services + total_sales) * com_cal
+    else:
+        commission = 0  # Set commission to 0 if total_services or total_sales is None
+
     # Prepare data for the chart
     chart_data = [{
-        
         'date': closing.date.strftime('%Y-%m-%d'),
         'total_services': float(closing.total_services),
         'total_sales': float(closing.total_sales),
@@ -604,7 +630,7 @@ def employee_dashboard(request):
         'total_services': total_services,
         'total_sales': total_sales,
         'total_advance': total_advance,
-        'commission':commission,
+        'commission': commission,
         'chart_data_json': chart_data_json,
     }
     return render(request, 'employee_dashboard.html', context)

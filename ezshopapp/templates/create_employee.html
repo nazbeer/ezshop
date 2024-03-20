@@ -151,7 +151,12 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="job_role">Job Role:</label>
-                    {{ form.job_role }}
+                    <select id="job_role" name="job_role" class="form-control">
+                        <option value="">Select Job Role</option>
+                        {% for role in roles %}
+                            <option value="{{ role.id }}">{{ role.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
             
