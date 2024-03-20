@@ -1027,6 +1027,7 @@ def create_business_profile(request):
     return render(request, 'create_business_profile.html', context)
 
 
+
 def edit_business_profile(request, pk):
     business_profile = get_object_or_404(BusinessProfile, pk=pk)
     if request.method == 'POST':
@@ -1037,7 +1038,7 @@ def edit_business_profile(request, pk):
             return redirect('business_profile_list')
     else:
         form = BusinessProfileForm(instance=business_profile)
-    return render(request, 'edit_business_profile.html', {'form': form})
+    return render(request, 'edit_business_profile.html', {'form': form, 'business_profile': business_profile})
 
 def delete_business_profile(request, pk):
     business_profile = get_object_or_404(BusinessProfile, pk=pk)
@@ -1379,7 +1380,8 @@ def sales_by_staff_item(request):
     employee_id = request.session.get('employee_id')
 
     # Retrieve the employee
-    employee = Employee.objects.filter(id=employee_id).first()
+    employee = Employee.objects.filter(id=employee_id)
+    
 
     # Filter products based on the retrieved employee's business profile
     
