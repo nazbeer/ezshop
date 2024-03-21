@@ -5,95 +5,220 @@
 {% endblock %}
 
 {% block content %}
+    
     <div class="card">
-        
-
-     <div class="card-header">
-    <h5 class="mb-0">Sales Report by Admin - Item</h5>
-</div>   
-<div class="card-body">
-    <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Employee Details</th>
-                    <th>Product</th>
-                    <th>Product Quantity</th>
-                    <th>Product Price</th>
-                    
-                    
-                    <th>Discount</th>
-                    <th>Total Amount</th>
-                    <th>Payment Method</th>
-                    
-                    
-                </tr>
-            </thead>
-            <tbody>
-                {% for sale in sales %}
-                <tr>
-                    <td>{{ sale.date }}</td>
-                    <td>{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
-                    <td>{{ sale.item }}</td>
-                    <td>{{ sale.quantity }}</td>
-                    <td>{{ sale.price }}</td>
-                    
-                    <td>{{ sale.discount }}</td>
-                    <td>{{ sale.total_amount }}</td>
-                    <td>{{ sale.payment_method }}</td>
-                    
-                    
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="card-header">
+            <h5 class="mb-0">Sales Report by Admin - Item</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{% url 'sales_report_admin' %}" id="item-filter-form" class="mb-1">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="date_range_item">Date Range:</label>
+                        <input type="text" id="date_range_item" name="date_range_item">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="submit">Filter by Date</label><br/>
+                        <button type="submit" class="btn btn-primary filter-btn">Filter</button>
+                    </div>
+                </div>
+            </form>
+            <div class="table-responsive">
+                <table id="item-sales-table" class="table table-bordered datatable display">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Employee Details</th>
+                            <th>Product</th>
+                            <th>Product Quantity</th>
+                            <th>Product Price</th>
+                            <th>Discount</th>
+                            <th>Total Amount</th>
+                            <th>Payment Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in sales %}
+                        <tr>
+                            <td>{{ sale.date }}</td>
+                            <td>{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                            <td>{{ sale.item }}</td>
+                            <td>{{ sale.quantity }}</td>
+                            <td>{{ sale.price }}</td>
+                            <td>{{ sale.discount }}</td>
+                            <td>{{ sale.total_amount }}</td>
+                            <td>{{ sale.payment_method }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-right mt-3">
+                <button id="export-item-pdf-btn" class="btn btn-primary btn-sm">Export to PDF</button>
+            </div>
+        </div>
     </div>
-</div>
-</div>
-<div class="card mt-2">
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Sales Report by Admin - Service</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{% url 'sales_report_admin' %}" id="service-filter-form" class="mb-1">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="date_range_service">Date Range:</label>
+                        <input type="text" id="date_range_service" name="date_range_service">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="submit">Filter by Date</label><br/>
+                        <button type="submit" class="btn btn-primary filter-btn">Filter</button>
+                    </div>
+                </div>
+            </form>
+            <div class="table-responsive">
+                <table id="service-sales-table" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Employee Details</th>
+                            <th>Service</th>
+                            <th>Service Quantity</th>
+                            <th>Service Price</th>
+                            <th>Discount</th>
+                            <th>Total Amount</th>
+                            <th>Payment Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sales_admin in service_sales %}
+                        <tr>
+                            <td>{{ sales_admin.date }}</td>
+                            <td>{{ sales_admin.employee.employee_id }} ({{ sales_admin.employee.id}}) - {{ sales_admin.employee.first_name }} {{ sale.employee.second_name }}</td>
+                            <td>{{ sales_admin.service.name }}</td>
+                            <td>{{ sales_admin.quantity }}</td>
+                            <td>{{ sales_admin.price }}</td>
+                            <td>{{ sales_admin.discount }}</td>
+                            <td>{{ sales_admin.total_amount }}</td>
+                            <td>{{ sales_admin.payment_method }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-right mt-3">
+                <button id="export-service-pdf-btn" class="btn btn-primary btn-sm">Export to PDF</button>
+            </div>
+        </div>
+    </div>
     
-<div class="card-header">
+
+    <script>
+        // sales_report.js
+        $.noConflict();
+        jQuery(document).ready(function($) {
+            // Initialize date range picker
+            $('#date_range_item').daterangepicker({
+                opens: 'left'
+            }, function(start, end, label) {
+                console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+                // Update item sales table data
+                updateItemSalesTable(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+            });
     
-<h5 class="mb-0">Sales Report by Admin - Service</h5>
-</div>
-<div class="card-body">
-<div class="table-responsive">
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Employee Details</th>
-                <th>Service</th>
-                <th>Service Quantity</th>
-                <th>Service Price</th>
-                <th>Discount</th>
-                <th>Total Amount</th>
-                <th>Payment Method</th>
-                
-                
-            </tr>
-        </thead>
-        <tbody>
-            {% for sales_admin in sales_admin_service %}
-            <tr>
-                <td>{{ sales_admin.date }}</td>
-                <td>{{ sales_admin.employee.employee_id }} ({{ sales_admin.employee.id}}) - {{ sales_admin.employee.first_name }} {{ sale.employee.second_name }}</td>
-                
-                <td>{{ sales_admin.service.name }}</td>
-                <td>{{ sales_admin.quantity }}</td>
-                <td>{{ sales_admin.price }}</td>
-                
-                <td>{{ sales_admin.discount }}</td>
-                <td>{{ sales_admin.total_amount }}</td>
-                <td>{{ sales_admin.payment_method }}</td>
-                
-                
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-</div>
-</div>
+            $('#date_range_service').daterangepicker({
+                opens: 'left'
+            }, function(start, end, label) {
+                console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+                // Update service sales table data
+                updateServiceSalesTable(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+            });
+    
+            // Initialize DataTables
+            // $('#item-sales-table').DataTable();
+            // $('#service-sales-table').DataTable();
+    
+            // Export PDF button click event
+            $('#export-item-pdf-btn').click(function() {
+                var startDate = $('#date_range_item').val().split(' - ')[0];
+                var endDate = $('#date_range_item').val().split(' - ')[1];
+                window.location.href = '{% url "export_sales_report_admin_pdf" %}?report_type=item&start_date=' + startDate + '&end_date=' + endDate;
+            });
+    
+            $('#export-service-pdf-btn').click(function() {
+                var startDate = $('#date_range_service').val().split(' - ')[0];
+                var endDate = $('#date_range_service').val().split(' - ')[1];
+                window.location.href = '{% url "export_sales_report_admin_pdf" %}?report_type=service&start_date=' + startDate + '&end_date=' + endDate;
+            });
+    
+            // Function to update item sales table data via AJAX
+            function updateItemSalesTable(startDate, endDate) {
+                $.ajax({
+                    url: '{% url "update_item_sales_data" %}',
+                    type: 'GET',
+                    data: {
+                        start_date: startDate,
+                        end_date: endDate
+                    },
+
+                    success: function(data) {
+                        $('#item-sales-table tbody').empty();
+
+                        $.each(data, function(index, item) {
+                            var tableRow = '<tr>' +
+                                '<td>' + item.date + '</td>' +
+                                '<td>' + item.employee__first_name + ' ' + item.employee__second_name + ' (' + item.employee__id+') - '+ item.employee__employee_id+'</td>' +
+                                '<td>' + item.item__name + '</td>' +
+                                '<td>' + item.quantity + '</td>' +
+                                '<td>' + item.price + '</td>' +
+                                '<td>' + item.discount + '</td>' +
+                                '<td>' + item.total_amount + '</td>' +
+                                '<td>' + item.payment_method + '</td>' +
+                                '</tr>';
+
+                             $('#item-sales-table tbody').append(tableRow);
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+    
+            // Function to update service sales table data via AJAX
+            function updateServiceSalesTable(startDate, endDate) {
+                $.ajax({
+                    url: '{% url "update_service_sales_data" %}',
+                    type: 'GET',
+                    data: {
+                        start_date: startDate,
+                        end_date: endDate
+                    },
+                    success: function(data) {
+                        $('#service-sales-table tbody').empty();
+
+                        $.each(data, function(index, item) {
+                            var tableRow = '<tr>' +
+                                '<td>' + item.date + '</td>' +
+                                '<td>' + item.employee__first_name + ' ' + item.employee__second_name + ' (' + item.employee__id+') - '+ item.employee__employee_id+'</td>' +
+                                '<td>' + item.service__name + '</td>' +
+                                '<td>' + item.quantity + '</td>' +
+                                '<td>' + item.price + '</td>' +
+                                '<td>' + item.discount + '</td>' +
+                                '<td>' + item.total_amount + '</td>' +
+                                '<td>' + item.payment_method + '</td>' +
+                                '</tr>';
+
+                             $('#service-sales-table tbody').append(tableRow);
+                        });
+                    },
+                   
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+    </script>
+    
 {% endblock %}

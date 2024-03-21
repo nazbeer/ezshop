@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'ezshopapp',
     'corsheaders',
+    "bootstrap_daterangepicker",
 ]
 
 MIDDLEWARE = [
@@ -53,13 +54,14 @@ MIDDLEWARE = [
     "django.middleware.cache.UpdateCacheMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.cache.FetchFromCacheMiddleware",
+    'ezshopapp.middleware.DisableClientSideCacheMiddleware',
     
 ]
 
 CSRF_COOKIE_SECURE = True  # Ensure CSRF cookie is marked as secure for HTTPS
 CSRF_COOKIE_HTTPONLY = True  # Ensure CSRF cookie is marked as HTTP-only
 CSRF_COOKIE_SAMESITE = 'Strict'  # Ensure CSRF cookie is only sent with same-site requests
-SESSION_COOKIE_AGE = 1800
+SESSION_COOKIE_AGE = 9800
 SESSION_COOKIE_SECURE = True  # Ensure session cookie is marked as secure for HTTPS
 SESSION_COOKIE_HTTPONLY = True  # Ensure session cookie is marked as HTTP-only
 

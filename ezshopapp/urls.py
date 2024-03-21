@@ -1,7 +1,9 @@
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from . import views
 from .views import *
+
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -17,6 +19,7 @@ urlpatterns = [
     path('api/employees/employee_dashboard/', EmployeeViewSet.as_view({'get': 'employee_dashboard'}), name='employee_dashboard'),
     path('api/employees/profile/', EmployeeViewSet.as_view({'get': 'profile'}), name='profile'),
     path('api/employees/logout/', EmployeeViewSet.as_view({'post': 'logout'}), name='logout'),
+    path('clearcache/', views.clear_cache_admin, name='clearcache_admin'),
     path('', CustomLoginView.as_view(), name='login'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
@@ -50,6 +53,10 @@ urlpatterns = [
     path('sale/success/', success_view, name='success'),
     path('sale/sales-by-admin-service/', sale_by_admin_service, name='sales_by_admin_service'),
     path('sale/sales-report-admin/', sales_report_admin, name='sales_report_admin'),
+    path('update_item_sales_data/', update_item_sales_data, name='update_item_sales_data'),
+    path('update_service_sales_data/', update_service_sales_data, name='update_service_sales_data'),
+   
+    path('export_sales_report_admin_pdf/', ExportSalesReportAdminPDF.as_view(), name='export_sales_report_admin_pdf'),
     path('role/', RoleListView.as_view(), name='role_list'),
     path('role/create/', create_role, name='create_role'),
     path('role/update/<int:pk>/', RoleUpdateView.as_view(), name='update_role'),

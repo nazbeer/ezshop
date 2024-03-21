@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +7,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="Nasbeer Ahammed | CTO | Mite Solutions LLC | www.nasbeer.com">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <!-- Bootstrap CSS -->
     <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
@@ -78,7 +82,7 @@
         <div class="card  border-0 rounded-10 mb-4" style="background-color: #ffffff96;box-shadow: 0px 0px 16px 8px #184c7c19;">
             <div class="card-header bg-light" style="border-bottom:0px;">
                 <div class="row text-center align-items-center m-auto justify-content-center mb-3">
-                    <img src="https://mitesolutions.com/images/logo.png" style="max-width: 300px;">
+                    <img src="{% static 'assets/logo.png' %}"  style="max-width: 300px;">
             </div>
             </div>
             <div class="card-body p-4">

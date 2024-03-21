@@ -1,4 +1,3 @@
-<!-- service_list.html -->
 {% extends 'base.html' %}
 
 {% block title %}Service List{% endblock %}
@@ -16,7 +15,6 @@
         <th scope="col">Max Discount Allowed</th>
         <th scope="col">Status</th>
         <th scope="col">Created On</th>
-        
       </tr>
     </thead>
     <tbody>
@@ -25,11 +23,11 @@
           <th scope="row">{{ forloop.counter }}</th>
           <td>{{ service.name }}</td>
           <td>{{ service.duration }}</td>
-          <td>{{ service.vat }}</td>
-          <td>{{ service.amount }}</td>
-          <td>{{ service.max_discount_allowed }}</td>
-          <td>{{ service.status }}</td>
-          <td>{{ service.created_on }}</td>
+          <td>{% if service.vat %}Yes{% else %}No{% endif %}</td>
+          <td>{{ service.amount|floatformat:2 }}</td>
+          <td>{{ service.max_discount_allowed|floatformat:2 }}</td>
+          <td>{% if service.status %}Active{% else %}Inactive{% endif %}</td>
+          <td>{{ service.created_on|date:"D, d M Y H:i:s" }}</td>
         </tr>
       {% endfor %}
     </tbody>

@@ -67,21 +67,23 @@
             <div class="form-group">
                 <button type="button" onclick="addItem()" class="btn btn-primary">Add Item</button>
             </div>
-
+            <div class="row">
+            <div class="col-md-6">
             <div class="form-group">
                 <label for="sub_total">Sub Total:</label>
                 <input type="text" id="sub_total" name="sub_total" readonly class="form-control">
             </div>
-
+            <div class="form-group">
+                <label for="total_amount">Total Amount:</label>
+                <input type="text" id="total_amount" name="total_amount" readonly class="form-control" required>
+            </div>
+            
+        </div>
+        <div class="col-md-6">
             <div class="form-group">
                 <label for="discount">Discount: <small class="text-danger">(Max Discount Allowed: <span  id="max_discount">0</span>)</small></label>
                 <input type="hidden" id="max_discount_allowed">
-                <input type="number" id="discount" name="discount" class="form-control" onchange="calculateTotalAmount()" placeholder="Enter the Discount Amount or Enter Zero">
-            </div>
-
-            <div class="form-group">
-                <label for="total_amount">Total Amount:</label>
-                <input type="text" id="total_amount" name="total_amount" readonly class="form-control">
+                <input type="number" id="discount" name="discount" value="0" class="form-control" onchange="calculateTotalAmount()" placeholder="Enter the Discount Amount or Enter Zero" required>
             </div>
 
             <div class="form-group">
@@ -91,7 +93,8 @@
                     <option value="card">Card</option>
                 </select>
             </div>
-
+        </div>
+    </div>
             <div class="form-group">
                 <button type="submit" class="btn btn-success">Submit</button>
             </div>
@@ -140,7 +143,7 @@
 
         // Update maxDiscountAllowed for each row
         var maxDiscountAllowed = parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')) * quantity;
-        console.log(parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')));
+      //  console.log(parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')));
         subTotalMaxDiscount += isNaN(maxDiscountAllowed) ? 0 : maxDiscountAllowed;
     }
 
@@ -149,21 +152,22 @@
 }
 
 
-    function calculateTotalAmount() {
-        var subTotal = parseFloat(document.getElementById("sub_total").value);
-        var discount = parseFloat(document.getElementById("discount").value);
-        var maxDiscountAllowed = parseFloat(document.getElementById("max_discount").innerHTML);
-        var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
-
-        // Check if discount exceeds max_discount_allowed
-        if (discount > maxDiscountAllowed) {
-            alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
-            document.getElementById("discount").value = maxDiscountAllowed;
-            totalAmount = subTotal - discount;
-        }
-        
-        document.getElementById("total_amount").value = totalAmount.toFixed(2) * document.getElementById("form-0-quantity").value;
+function calculateTotalAmount() {
+    var subTotal = parseFloat(document.getElementById("sub_total").value);
+    var discount = parseFloat(document.getElementById("discount").value);
+    var maxDiscountAllowed = parseFloat(document.getElementById("max_discount").innerHTML);
+    var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
+    
+    // Check if discount exceeds max_discount_allowed
+    if (discount > maxDiscountAllowed) {
+        alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
+        document.getElementById("discount").value = maxDiscountAllowed;
+        totalAmount = subTotal - maxDiscountAllowed;
     }
+    
+    // Update the total amount
+    document.getElementById("total_amount").value = totalAmount.toFixed(2);
+}
 
     function addItem() {
         var table = document.getElementById("itemRows");
@@ -185,6 +189,12 @@
                 
         rowCounter++;
     }
+    document.getElementById('discount').addEventListener('change', function() {
+        var discountInput = document.getElementById('discount').value;
+        if (discountInput.trim() === '') {
+            alert('Discount cannot be empty. Please enter a valid discount amount or zero.');
+        }
+    });
 </script>
 
 {% endblock %}
