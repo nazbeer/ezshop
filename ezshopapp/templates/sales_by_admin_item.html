@@ -41,6 +41,7 @@
                             <th>Particular</th>
                             <th>Qty</th>
                             <th>Amount</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="itemRows">
@@ -54,10 +55,13 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="number" id="form-0-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal()">
+                                <input type="number" id="form-0-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal(); calculateTotalAmount()">
                             </td>
                             <td>
                                 <input type="number" id="form-0-price" name="price" class="form-control" readonly>
+                            </td>
+                            <td class="text-center"> <!-- Add Action cell -->
+                                <button class="btn btn-danger" type="button" onclick="removeItemRow(this)"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     </tbody>
@@ -175,6 +179,7 @@ function calculateTotalAmount() {
         var cell1 = newRow.insertCell(0);
         var cell2 = newRow.insertCell(1);
         var cell3 = newRow.insertCell(2);
+        var cell4 = newRow.insertCell(3);
 
         cell1.innerHTML = `
             <select id="form-${rowCounter}-service" name="item" class="form-control" onchange="updatePrice (this)">
@@ -186,8 +191,14 @@ function calculateTotalAmount() {
         `;
         cell2.innerHTML = `<input type="number" id="form-${rowCounter}-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal(); calculateTotalAmount()">`;
         cell3.innerHTML = `<input type="number" id="form-${rowCounter}-price" name="price" class="form-control" readonly>`;
+        cell4.innerHTML = `<button class="btn btn-danger" type="button" onclick="removeItemRow(this)"><i class="fas fa-trash"></i></button>`; // Add delete button
                 
         rowCounter++;
+    }
+    function removeItemRow(button) {
+        var row = button.closest('tr');
+        row.parentNode.removeChild(row);
+        calculateSubTotal(); // Recalculate subtotal after removing row
     }
     document.getElementById('discount').addEventListener('change', function() {
         var discountInput = document.getElementById('discount').value;
