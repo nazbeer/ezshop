@@ -1400,18 +1400,24 @@ def day_closing_admin(request):
     
     # Get the business profile associated with the shop
     business_profile = shop
+    all_employees = Employee.objects.filter(business_profile=business_profile)
 
-    employees = Employee.objects.filter(business_profile=business_profile)
-    
+    # Get the list of employees who have completed day closing for the selected date
+    employees_with_day_closing = all_employees.filter(dayclosing__date=current_date)
+
+    # Exclude employees who have completed day closing for the selected date
+    remaining_employees = all_employees.exclude(id__in=employees_with_day_closing.values_list('id', flat=True))
+
     if request.method == 'POST':
         form = DayClosingAdminForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('day_closing_admin_report')
     else:
-        form = DayClosingAdminForm(initial={'date': current_date})  # Initialize with current date
+        form = DayClosingAdminForm(initial={'date': current_date.strftime('%Y-%m-%d')})  # Initialize with current date
+    print(current_date.strftime('%Y-%m-%d'))
+    return render(request, 'dayclosing_admin.html', {'current_date': current_date, 'remaining_employees':remaining_employees,'form': form})
 
-    return render(request, 'dayclosing_admin.html', {'current_date': current_date, 'form': form, 'employees': employees})
 def fetch_data_admin(request, selected_date):
     # Fetch data for the selected date
     
@@ -1430,6 +1436,38 @@ def fetch_data_admin(request, selected_date):
 
     # Return the data as a JSON response
     return JsonResponse(data)
+
+def fetch_remaining_employees(request, selected_date):
+    # Get the shop admin associated with the current user
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    
+    # Get the shop associated with the shop admin
+    shop = shop_admin.shop
+    
+    # Get the business profile associated with the shop
+    business_profile = shop
+
+    # Get all employees associated with the business profile
+    all_employees = Employee.objects.filter(business_profile=business_profile)
+
+    # Get the list of employees who have completed day closing for the selected date
+    employees_with_day_closing = DayClosingAdmin.objects.filter(date=selected_date).values_list('employee', flat=True)
+
+    # Filter employees who haven't done day closing on the selected date
+    remaining_employees = all_employees.exclude(id__in=employees_with_day_closing)
+    
+    print(remaining_employees)
+    # Serialize remaining employees data
+    
+    if not remaining_employees:
+        # If there are no remaining employees, return a custom message
+        return JsonResponse({'message': 'Day Closing for all employees is completed'})
+
+    # Serialize remaining employees data
+    serialized_data = [{'id': emp.id, 'first_name': emp.first_name, 'second_name': emp.second_name} for emp in remaining_employees]
+
+    # Return the serialized data as a JSON response
+    return JsonResponse({'remaining_employees': serialized_data})
 
 
 def edit_day_closing(request, pk):
@@ -1470,26 +1508,37 @@ def day_closing_report(request):
 
 
 def day_closing_admin_report(request):
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    
+    # Get the shop associated with the shop admin
+    shop = shop_admin.shop
+    
+    # Get the business profile associated with the shop
+    business_profile = shop
+
+    # Get all employees associated with the business profile
+    all_employees = Employee.objects.filter(business_profile=business_profile)
+    print(all_employees)
     day_closings_list = DayClosingAdmin.objects.all()
 
-    #day_closings_admin_list = DayClosingAdmin.objects.all()
-    paginator = Paginator(day_closings_list, 10)
-    #paginator_admin = Paginator(day_closings_admin_list, 10)
+    # #day_closings_admin_list = DayClosingAdmin.objects.all()
+    # paginator = Paginator(day_closings_list, 10)
+    # #paginator_admin = Paginator(day_closings_admin_list, 10)
 
-    page = request.GET.get('page')
-    #page_admin = request.GET.get('page_admin')
+    # page = request.GET.get('page')
+    # #page_admin = request.GET.get('page_admin')
 
-    try:
-        day_closings = paginator.page(page)
-        #day_closings_admin = paginator_admin.page(page_admin)
-    except PageNotAnInteger:
-        day_closings = paginator.page(1)
-        #day_closings_admin = paginator_admin.page(1)
-    except EmptyPage:
-        day_closings = paginator.page(paginator.num_pages)
-        #day_closings_admin = paginator_admin.page(paginator_admin.num_pages)
+    # try:
+    #     day_closings = paginator.page(page)
+    #     #day_closings_admin = paginator_admin.page(page_admin)
+    # except PageNotAnInteger:
+    #     day_closings = paginator.page(1)
+    #     #day_closings_admin = paginator_admin.page(1)
+    # except EmptyPage:
+    #     day_closings = paginator.page(paginator.num_pages)
+    #     #day_closings_admin = paginator_admin.page(paginator_admin.num_pages)
 
-    return render(request, 'day_closing_admin_report.html', {'day_closings': day_closings})
+    return render(request, 'day_closing_admin_report.html', {'day_closings': day_closings_list})
 
 
 

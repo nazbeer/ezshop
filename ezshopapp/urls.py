@@ -45,7 +45,8 @@ urlpatterns = [
     path('dayclosing/admin/', day_closing_admin, name='dayclosing_admin'),
 
     path('fetch-data-admin/<str:selected_date>/', fetch_data_admin, name='fetch_data_admin'),
-  
+    path('fetch-remaining-employees/<str:selected_date>/', views.fetch_remaining_employees, name='fetch_remaining_employees'),
+
     path('sale/dayclosing/<int:pk>/edit/', edit_day_closing, name='edit_day_closing'),
     path('sale/day-closing-report/<int:dayclosing_id>/approve/', approve_day_closing, name='approve_day_closing'),
     path('sale/day-closing-admin-report/', day_closing_admin_report, name='day_closing_admin_report'),
