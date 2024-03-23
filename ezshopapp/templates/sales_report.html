@@ -14,7 +14,7 @@
 </div>   
 <div class="card-body">
     <div class="table-responsive">
-        <table class="table table-bordered">
+        <table class="table table-bordered table-striped nowrap" id="ssis">
             <thead>
                 <tr>
                     <th>Date</th>
@@ -39,7 +39,7 @@
                 {% for sale in sales %}
                 <tr>
                     <td>{{ sale.date }}</td>
-                    <td>{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                    <td class="text-capitalize">{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
                     <td>{{ sale.product.name }}</td>
                     <td>{{ sale.pquantity }}</td>
                     <td>{{ sale.pprice }}</td>
@@ -52,7 +52,7 @@
                     <td>{{ sale.sub_total }}</td>
                     <td>{{ sale.discount }}</td>
                     <td>{{ sale.total_amount }}</td>
-                    <td>{{ sale.payment_method }}</td>
+                    <td class="text-capitalize">{{ sale.payment_method }}</td>
                     
                     
                 </tr>
@@ -72,14 +72,14 @@
 </div>
 <div class="card-body">
 <div class="table-responsive">
-    <table class="table table-bordered">
+    <table class="table table-bordered table-striped nowrap" id="sss">
         <thead class="text-white">
             <tr>
                 <th>Date</th>
                 <th>Employee Details</th>
                 <th>Service</th>
-                <th>Service Quantity</th>
-                <th>Service Price</th>
+                <th>Quantity</th>
+                <th>Price</th>
                 <th>Discount</th>
                 <th>Total Amount</th>
                 <th>Payment Method</th>
@@ -91,7 +91,7 @@
             {% for sales_admin in sales_staff_service %}
             <tr>
                 <td>{{ sales_admin.date }}</td>
-                <td>{{ sales_admin.employee.employee_id }} ({{ sales_admin.employee.id}}) - {{ sales_admin.employee.first_name }} {{ sales_admin.employee.second_name }}</td>
+                <td class="text-capitalize">{{ sales_admin.employee.employee_id }} ({{ sales_admin.employee.id}}) - {{ sales_admin.employee.first_name }} {{ sales_admin.employee.second_name }}</td>
                 
                 <td>{{ sales_admin.service.name }}</td>
                 <td>{{ sales_admin.quantity }}</td>
@@ -99,7 +99,7 @@
                 
                 <td>{{ sales_admin.discount }}</td>
                 <td>{{ sales_admin.total_amount }}</td>
-                <td>{{ sales_admin.payment_method }}</td>
+                <td class="text-capitalize">{{ sales_admin.payment_method }}</td>
                 
                 
             </tr>
@@ -109,8 +109,8 @@
 </div>
 </div>
 </div>
-<div class="">
-<div class="card mt-2">
+<div class="mb-5">
+<div class="card mt-2 mb-3">
     
     <div class="card-header">
         
@@ -118,14 +118,14 @@
     </div>
     <div class="card-body">
     <div class="table-responsive">
-        <table class="table table-bordered">
+        <table class="table table-bordered table-striped nowrap" id="ssi">
             <thead>
                 <tr>
                     <th>Date</th>
                     <th>Employee Details</th>
                     <th>Product</th>
-                    <th>Product Quantity</th>
-                    <th>Product Price</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
                     <th>Discount</th>
                     <th>Total Amount</th>
                     <th>Payment Method</th>
@@ -137,7 +137,7 @@
                 {% for sales_item in sales_staff_item %}
                 <tr>
                     <td>{{ sales_item.date }}</td>
-                    <td>{{ sales_item.employee.employee_id }} ({{ sales_item.employee.id}}) - {{ sales_item.employee.first_name }} {{ sales_item.employee.second_name }}</td>
+                    <td class="text-capitalize">{{ sales_item.employee.employee_id }} ({{ sales_item.employee.id}}) - {{ sales_item.employee.first_name }} {{ sales_item.employee.second_name }}</td>
                     
                     <td>{{ sales_item.item.name }}</td>
                     <td>{{ sales_item.quantity }}</td>
@@ -145,7 +145,7 @@
                     
                     <td>{{ sales_item.discount }}</td>
                     <td>{{ sales_item.total_amount }}</td>
-                    <td>{{ sales_item.payment_method }}</td>
+                    <td class="text-capitalize">{{ sales_item.payment_method }}</td>
                     
                     
                 </tr>
@@ -156,6 +156,87 @@
     </div>
 </div>
 </div>
+
+<script>
+    new DataTable('#ssi', {
+              responsive: true,
+              dom: 'lBfrtip',
+              
+              buttons: [
+                  {
+                      text: 'Print',
+                      extend: 'print',
+                      exportOptions: {
+                          stripHtml: false,
+                         
+                      }
+                  },
+                  {
+                      text: 'Export PDF',
+                      extend: 'pdf',
+                      orientation:'landscape',
+                      exportOptions: {
+                          stripHtml: true,
+                         
+                      },
+            
+                  }
+              ],
+              
+          });
+          new DataTable('#sss', {
+              responsive: true,
+              dom: 'lBfrtip',
+              
+              buttons: [
+                  {
+                      text: 'Print',
+                      extend: 'print',
+                      exportOptions: {
+                          stripHtml: false,
+                         
+                      }
+                  },
+                  {
+                      text: 'Export PDF',
+                      extend: 'pdf',
+                      orientation:'landscape',
+                      exportOptions: {
+                          stripHtml: true,
+                         
+                      },
+            
+                  }
+              ],
+              
+          });
+          new DataTable('#ssis', {
+              responsive: true,
+              dom: 'lBfrtip',
+              
+              buttons: [
+                  {
+                      text: 'Print',
+                      extend: 'print',
+                      exportOptions: {
+                          stripHtml: false,
+                        
+                      }
+                  },
+                  {
+                      text: 'Export PDF',
+                      extend: 'pdf',
+                      orientation:'landscape',
+                      exportOptions: {
+                          stripHtml: true,
+                         
+                      },
+            
+                  }
+              ],
+              
+          });
+   </script>
 <script>
     // Store employee_id in local session storage
     localStorage.setItem('employee_id', '{{ request.session.employee_id }}');
