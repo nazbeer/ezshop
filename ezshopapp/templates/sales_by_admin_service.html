@@ -173,7 +173,7 @@
         `;
         cell2.innerHTML = `<input type="number" id="form-${rowCounter}-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal(); calculateTotalAmount()">`;
         cell3.innerHTML = `<input type="number" id="form-${rowCounter}-price" name="price" class="form-control" readonly>`;
-        cell4.innerHTML = `<button class="btn btn-danger" type="button" onclick="removeItemRow(this)"><i class="fas fa-trash"></i></button>`; // Add delete button
+        cell4.innerHTML = `<button class="btn btn-danger" type="button" onclick="removeItemRow(this); calculateTotalAmount()"><i class="fas fa-trash"></i></button>`; // Add delete button
         rowCounter++;
     }
     function removeItemRow(button) {
