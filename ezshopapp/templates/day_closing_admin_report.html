@@ -10,7 +10,7 @@
             <h5 class="mb-0">Day Closing Admin Report</h5>
         </div>
         <div class="card-body">
-            <div class="pagination mb-3" style="float:right;">
+            <!-- <div class="pagination mb-3" style="float:right;">
                 <span class="step-links">
                     {% if day_closings.has_previous %}
                         <a href="?page=1">&laquo; First</a>
@@ -24,7 +24,7 @@
                         <a href="?page={{ day_closings.paginator.num_pages }}">Last &raquo;</a>
                     {% endif %}
                 </span>
-            </div>
+            </div> -->
             <table id="dayclosingadmin" class="table table-responsive-sm table-striped" style="width: 100%;">
                 <thead>
                     <tr>
@@ -73,6 +73,25 @@
 
 </div>
 <script>
-    new DataTable('#dayclosingadmin');
+    new DataTable('#dayclosingadmin', {
+            responsive: true,
+            dom: 'lBfrti',
+            buttons: [
+                {
+                    extend: 'print',
+                    exportOptions: {
+                        stripHtml: false,
+                      
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    exportOptions: {
+                        stripHtml: true,
+                       
+                    }
+                }
+            ]
+        });
 </script>
 {% endblock %}
