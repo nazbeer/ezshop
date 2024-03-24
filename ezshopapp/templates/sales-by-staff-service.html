@@ -55,19 +55,19 @@
                                 <select id="form-0-service" class="form-control" name="service" onchange="updatePrice(this)">
                                     <option value="">-- Select --</option>   
                                     {% for service in services %}
-                                        <option value="{{ service.id }}" data-amount="{{ service.amount }}">{{ service.name }}</option>
+                                        <option value="{{ service.id }}" data-amount="{{ service.amount }}" data-max-discount="{{ service.max_discount_allowed }}">{{ service.name }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td>
-                                <input type="number" id="form-0-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal()">
+                                <input type="number" id="form-0-quantity" name="quantity" class="form-control" value="1" onchange="calculateSubTotal(); calculateTotalAmount()">
                             </td>
                             <td>
                                 <input type="number" id="form-0-price" name="price"  class="form-control" readonly>
                             </td>
                             <td class=" text-center">
                                 <div class="mt-2 justify-content-center align-items-center"  id="form-0-delete">
-                                    <button class="btn btn-danger" type="button" onclick="removeServiceRow(this)"><i class="fas fa-trash"></i></button>
+                                    <button class="btn btn-danger" type="button" onclick="removeServiceRow(this); calculateSubTotal();  calculateTotalAmount()" disabled><i class="fas fa-trash"></i></button>
                                 </div>
                             </td>
                         </tr>
@@ -85,17 +85,18 @@
                 <label for="sub_total">Sub Total:</label>
                 <input type="text" id="sub_total" name="sub_total" readonly class="form-control">
             </div>
-
-            <div class="form-group">
-                <label for="discount">Discount:</label>
-                <input type="number" id="discount" name="discount"  value="0" class="form-control" onchange="calculateTotalAmount()">
-            </div>
-            </div><div class="col-md-6">
             <div class="form-group">
                 <label for="total_amount">Total Amount:</label>
                 <input type="text" id="total_amount" name="total_amount" readonly class="form-control">
             </div>
-
+            
+            </div><div class="col-md-6">
+            
+                <div class="form-group">
+                    <label for="discount">Discount: <small class="text-danger">(Max Discount Allowed: <span  id="max_discount">0</span>)</small></label>
+                    <input type="hidden" id="max_discount_allowed">
+                    <input type="number" id="discount" name="discount"  value="0" class="form-control" onchange="calculateTotalAmount()" placeholder="Enter the Discount Amount or Enter Zero" required>
+                </div>
             <div class="form-group">
                 <label for="payment_method">Payment Method:</label>
                 <select id="payment_method" name="payment_method" class="form-control">
@@ -152,22 +153,33 @@
     function calculateSubTotal() {
         var table = document.getElementById("salesService").getElementsByTagName("tbody")[0];
         var subTotal = 0;
-
+        var subTotalMaxDiscount = 0;
         for (var i = 0; i < table.rows.length; i++) {
             var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
             var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
             var total = quantity * price;
             subTotal += isNaN(total) ? 0 : total;
+            var maxDiscountAllowed = parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')) * quantity;
+            console.log(parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')));
+            subTotalMaxDiscount += isNaN(maxDiscountAllowed) ? 0 : maxDiscountAllowed;
         }
 
         document.getElementById("sub_total").value = subTotal.toFixed(2);
+        document.getElementById("max_discount").innerText = subTotalMaxDiscount.toFixed(2);
         calculateTotalAmount();
     }
 
     function calculateTotalAmount() {
         var subTotal = parseFloat(document.getElementById("sub_total").value);
         var discount = parseFloat(document.getElementById("discount").value);
+        var maxDiscountAllowed = parseFloat(document.getElementById("max_discount").innerHTML);
         var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
+        if (discount > maxDiscountAllowed) {
+            alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
+            document.getElementById("discount").value = maxDiscountAllowed;
+            totalAmount = subTotal - discount;
+        }
+        
         document.getElementById("total_amount").value = totalAmount.toFixed(2);
     }
 
@@ -184,13 +196,13 @@
             <select id="form-${rowCounter}-service" name="services" class="form-control" onchange="updatePrice(this)">
                 <option value="" selected disabled>Select Service</option>
                 {% for service in services %}
-                    <option value="{{ service.id }}-{{ service.amount }}" data-amount="{{ service.amount }}">{{ service.name }}</option>
+                    <option value="{{ service.id }}-{{ service.amount }}" data-amount="{{ service.amount }}" data-max-discount="{{ service.max_discount_allowed }}">{{ service.name }}</option>
                 {% endfor %}
             </select>
         `;
-        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-quantity" name="quantity" class="form-control" min="1" onchange="calculateSubTotal()">`;
+        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-quantity" name="quantity" class="form-control" value="1" onchange="calculateSubTotal()">`;
         cell3.innerHTML = `<input type="number" id="form-${rowCounter}-price" name="price" class="form-control" readonly>`;
-        cell4.innerHTML = `<div class="mt-2 justify-content-center align-items-center"  id="form-${rowCounter}-delete"><button class="btn btn-danger" type="button" onclick="removeServiceRow(this)"><i class="fas fa-trash"></i></button>`;
+        cell4.innerHTML = `<div class="mt-2 justify-content-center align-items-center"  id="form-${rowCounter}-delete"><button class="btn btn-danger" type="button" onclick="removeServiceRow(this); calculateSubTotal(); calculateTotalAmount()"><i class="fas fa-trash"></i></button>`;
         rowCounter++;
     }
 

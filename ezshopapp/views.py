@@ -1817,6 +1817,63 @@ def create_receipt_type(request):
     else:
         form = ReceiptTypeForm()
     return render(request, 'create_receipt_type.html', {'form': form})
+
+def license_expiration_reminder_due(license_expiration, reminder_days):
+    return (license_expiration - timezone.now().date()).days <= reminder_days
+
+def vat_submission_date_reminder_due(submission_dates, reminder_days):
+    today = timezone.now().date()
+    return any((date and (date - today).days <= reminder_days) for date in submission_dates)
+
+def notification_view(request):
+    notifications = []
+
+    # Fetch the shop associated with the current user
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    shop = shop_admin.shop
+    print(shop.license_number)
+    # Check if all reminder flags are True for the shop
+    if shop.vat_remainder and shop.employee_transaction_window \
+            and shop.license_expiration_reminder \
+            and shop.employee_visa_expiration_reminder \
+            and shop.employee_passport_expiration_reminder:
+        
+        # Get the associated BusinessProfile
+            business_profile = BusinessProfile.objects.get(license_number=shop.license_number)
+            print(business_profile)
+            # Get employees associated with the business profile
+            employees = Employee.objects.filter(business_profile=business_profile)
+
+            # Check which reminder has the earliest due date
+            earliest_due_date = None
+            earliest_due_reminder = None
+
+            if business_profile.vat_submission_date_reminder_due():
+                earliest_due_date = business_profile.vat_submission_date_1
+                earliest_due_reminder = 'VAT submission date'
+            if business_profile.license_expiration_reminder_due():
+                if earliest_due_date is None or earliest_due_date > business_profile.license_expiration:
+                    earliest_due_date = business_profile.license_expiration
+                    earliest_due_reminder = 'License expiration'
+            if any(employee.id_expiration_due() for employee in employees):
+                earliest_id_due_date = min([employee.id_expiration_date for employee in employees if employee.id_expiration_due()])
+                if earliest_due_date is None or earliest_due_date > earliest_id_due_date:
+                    earliest_due_date = earliest_id_due_date
+                    earliest_due_reminder = 'Employee ID expiration'
+            if any(employee.passport_expiration_due() for employee in employees):
+                earliest_passport_due_date = min([employee.passport_expiration_date for employee in employees if employee.passport_expiration_due()])
+                if earliest_due_date is None or earliest_due_date > earliest_passport_due_date:
+                    earliest_due_date = earliest_passport_due_date
+                    earliest_due_reminder = 'Employee passport expiration'
+
+        # If there's a due reminder, add it to the notifications
+            if earliest_due_reminder:
+                days_until_reminder = (earliest_due_date - timezone.now().date()).days
+                notifications.append(f'{earliest_due_reminder} reminder: {days_until_reminder} days left')
+
+    # Render the template with the notifications
+    return render(request, 'notification_list.html', {'notifications': notifications})
+
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home.html'
 
@@ -1831,39 +1888,41 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 
                 # Get employees associated with the shop
                 employees = Employee.objects.filter(business_profile=context['shop'])
-                # print(employees)
-                # Total Services, Total Sales, and Total Advance Given for each month
+                
                 today = timezone.now()
-                # current_month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-                # End of the month
                 next_month = start_of_month.replace(month=start_of_month.month + 1, day=1)
                 end_of_month = next_month - timezone.timedelta(days=1)
 
-                # Total Services (This Month) employee__in=employees
-                total_services_this_month = DayClosingAdmin.objects.filter(
-                    date__range=[start_of_month, end_of_month],
-                    employee__in=employees
-                ).aggregate(total_services=Sum('total_services'))['total_services'] or 0
+                # Fetch day closings for the current month
+                day_closings = DayClosingAdmin.objects.filter(date__range=[start_of_month, end_of_month], employee__in=employees)
+                
+                # Calculate totals for services, sales, and advances for the current month
+                total_services_this_month = day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or 0
+                total_sales_this_month = day_closings.aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
+                total_advance_given_this_month = day_closings.aggregate(total_advance=Sum('advance'))['total_advance'] or 0
 
-                # Total Sales (This Month) employee__in=employees
-                total_sales_this_month = DayClosingAdmin.objects.filter(
-                    date__range=[start_of_month, end_of_month], employee__in=employees,
-                ).aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
+                # Prepare chart data
+                chart_data_json = [{
+                    'date': closing.date.strftime('%Y-%m-%d'),
+                    'total_services': float(closing.total_services),
+                    'total_sales': float(closing.total_sales),
+                    'advance': float(closing.advance),
+                } for closing in day_closings]
 
-                # Total Advance Given (This Month) employee__in=employees
-                total_advance_given_this_month = DayClosingAdmin.objects.filter(
-                    date__range=[start_of_month, end_of_month], employee__in=employees,
-                ).aggregate(total_advance=Sum('advance'))['total_advance'] or 0
-
+                # Add totals to the context
                 context['total_services_this_month'] = total_services_this_month
                 context['total_sales_this_month'] = total_sales_this_month
                 context['total_advance_given_this_month'] = total_advance_given_this_month
+                context['chart_data_json'] = json.dumps(chart_data_json)
 
             except ShopAdmin.DoesNotExist:
                 context['shop'] = None
-
+                context['total_services_this_month'] = 0
+                context['total_sales_this_month'] = 0
+                context['total_advance_given_this_month'] = 0
+                context['chart_data_json'] = '[]'
+                
         categories = [
             {
                 'name': 'Shop Management',

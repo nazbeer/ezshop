@@ -57,17 +57,19 @@ class Shop(models.Model):
     name = models.CharField(max_length=255, verbose_name='Shop Name')
     license_number = models.CharField(max_length=50, unique=True)
     num_users = models.PositiveIntegerField(verbose_name='Number of Users')
-    vat_remainder = models.BooleanField(default=False, verbose_name='VAT Reminder')
-    employee_transaction_window = models.BooleanField(default=False)
-    license_expiration_reminder = models.BooleanField(default=False, verbose_name='License Expiration Reminder')
-    employee_visa_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Visa Expiration Reminder')
-    employee_passport_expiration_reminder = models.BooleanField(default=False, verbose_name='Employee Passport Expiration Reminder')
+    vat_remainder = models.BooleanField(default=True, verbose_name='VAT Reminder')
+    employee_transaction_window = models.BooleanField(default=True)
+    license_expiration_reminder = models.BooleanField(default=True, verbose_name='License Expiration Reminder')
+    employee_visa_expiration_reminder = models.BooleanField(default=True, verbose_name='Employee Visa Expiration Reminder')
+    employee_passport_expiration_reminder = models.BooleanField(default=True, verbose_name='Employee Passport Expiration Reminder')
     admin_email = models.EmailField(max_length=100, default='')
     
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
+    
+    
 
 class ShopAdmin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True, null=True, verbose_name="Mite Admin User")
@@ -101,6 +103,19 @@ class BusinessProfile(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+    
+    def license_expiration_reminder_due(self):
+        return (self.license_expiration - timezone.now().date()).days <= self.license_expiration_reminder_days
+
+    def vat_submission_date_reminder_due(self):
+        today = timezone.now().date()
+        return (
+            (self.vat_submission_date_1 and (self.vat_submission_date_1 - today).days <= self.vat_submission_date_reminder_days) or
+            (self.vat_submission_date_2 and (self.vat_submission_date_2 - today).days <= self.vat_submission_date_reminder_days) or
+            (self.vat_submission_date_3 and (self.vat_submission_date_3 - today).days <= self.vat_submission_date_reminder_days)
+        )
 
 class Role(models.Model):
     name = models.CharField(max_length=255)
@@ -218,8 +233,23 @@ class Employee(models.Model):
     def __str__(self):
         return f"{self.employee_id} - {self.first_name} {self.second_name}"
     
-    
+    def passport_expiration_due(self):
+        """
+        Check if the passport expiration date is within the reminder days.
+        Returns True if it's due, False otherwise.
+        """
+        reminder_days = self.business_profile.passport_expiration_reminder_days
+        expiration_due_date = self.passport_expiration_date - timedelta(days=reminder_days)
+        return expiration_due_date <= timezone.now().date()
 
+    def id_expiration_due(self):
+        """
+        Check if the ID expiration date is within the reminder days.
+        Returns True if it's due, False otherwise.
+        """
+        reminder_days = self.business_profile.id_expiration_reminder_days
+        expiration_due_date = self.id_expiration_date - timedelta(days=reminder_days)
+        return expiration_due_date <= timezone.now().date()
 class EmployeeTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ('service', 'Service Transaction'),

@@ -119,6 +119,7 @@ urlpatterns = [
     path('fetch-data/<int:employee_id>/', fetch_data, name='fetch_data'),
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
     path('profile/', employee_profile, name='employee_profile'),
+    path('notifications/', notification_view, name='notifications'),
 ]
 handler404 = 'ezshopapp.views.handler404'
 if settings.DEBUG:

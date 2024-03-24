@@ -77,7 +77,7 @@
                                 <input type="number" id="form-0-price" name="price" class="form-control" readonly>
                             </td>
                             <td class="text-center"> <!-- Add Action cell -->
-                                <button class="btn btn-danger" type="button" onclick="removeItemRow(this)" disabled><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-danger" type="button" onclick="removeItemRow(this); calculateSubTotal();  calculateTotalAmount()" disabled><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     </tbody>

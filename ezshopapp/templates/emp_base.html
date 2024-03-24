@@ -51,12 +51,31 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css">
-
+<script src="../../static/js/localStorageManager.js"></script>
     <title>{% block title %}EZShop{% endblock %}</title>
 
     <style>
     body, p, h1, h2, h3, h4, h5, h6, a, li, label, input, div, span, small{
         font-family: "Open Sans", sans-serif !important;
+    }
+    .bg-red{
+        background-color: #ff6372;
+        border-bottom-right-radius:5px;
+        border-bottom-left-radius:5px;
+        font-weight: 600;
+        color:#fff;
+    }
+    .bg-warning, .bg-success{
+        border-bottom-right-radius:5px;
+        border-bottom-left-radius:5px;
+        font-weight: 600;
+        color:#fff;
+    }
+    .bg-light{
+        border-bottom-right-radius:5px;
+        border-bottom-left-radius:5px;
+        font-weight: 600;
+        color:#000;
     }
     #font-c>li>a{
         font-size:14px !important;
@@ -402,13 +421,16 @@
         .dtr-data{
             text-transform: capitalize !important;
         }
+        .text-muted{
+            color:#777 !important;
+        }
     </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <a class="navbar-brand text-left" href="/employee-dashboard/">
         <!-- <img src="{% static '/ezshopapp/mite.png' %}" alt="Mite Solutions" width="5%"> -->
-         <img src="{{ STATIC_URL }}assets/logo.png" alt="Mite Solutions"  style="filter: brightness(0) invert(1);" width="5%"> 
+         <img src="../../static/assets/logo.png" alt="Mite Solutions"  style="filter: brightness(0) invert(1);" width="5%"> 
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -463,12 +485,13 @@
 
 <div id="content">
     {% block content %}{% endblock %}
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted">&copy; 2024 Mite Solutions LLC</span>
+        </div>
+    </footer>
 </div>
-<footer class="footer mt-auto py-3 bg-light">
-    <div class="container text-center">
-        <span class="text-muted">&copy; 2024 Mite Solutions LLC</span>
-    </div>
-</footer>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
