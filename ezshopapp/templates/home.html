@@ -124,7 +124,7 @@
                             <h5 class="mb-0 text-white">Employee Statistics</h5>
                         </div>
                         <div class="col-md-5">
-                            <select name="employee" class="mt-0 mb-0" style="font-size:16px;padding-bottom:2px;padding-top:1px;" id="employee-select">
+                            <select name="employee" class="mt-0 mb-0" style="font-size:16px;padding-bottom:2px;padding-top:1px;padding-left:0px !important;" id="employee-select">
                                 
                                 {% for employee in employees %}
                                 <option value="{{ employee.id }}">{{ employee.first_name }} {{ employee.second_name }}</option>
