@@ -120,6 +120,7 @@ urlpatterns = [
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
     path('profile/', employee_profile, name='employee_profile'),
     path('notifications/', notification_view, name='notifications'),
+    path('update_chart_data/', HomeView.as_view(), name='update_chart_data'),
 ]
 handler404 = 'ezshopapp.views.handler404'
 if settings.DEBUG:

@@ -11,6 +11,7 @@ import jwt
 import calendar
 from django.template.loader import get_template
 from xhtml2pdf import pisa
+from decimal import Decimal
 from django.http import HttpResponseNotFound
 from django.contrib.auth import logout as auth_logout
 from django.views.decorators.csrf import csrf_protect
@@ -1537,7 +1538,8 @@ def day_closing_admin_report(request):
     # Get all employees associated with the business profile
     all_employees = Employee.objects.filter(business_profile=business_profile)
     print(all_employees)
-    day_closings_list = DayClosingAdmin.objects.all()
+    day_closings_list = DayClosingAdmin.objects.filter(employee__in=all_employees)
+
 
     # #day_closings_admin_list = DayClosingAdmin.objects.all()
     # paginator = Paginator(day_closings_list, 10)
@@ -1874,6 +1876,7 @@ def notification_view(request):
     # Render the template with the notifications
     return render(request, 'notification_list.html', {'notifications': notifications})
 
+
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home.html'
 
@@ -1901,6 +1904,23 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 total_services_this_month = day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or 0
                 total_sales_this_month = day_closings.aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
                 total_advance_given_this_month = day_closings.aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+                employee_totals = []
+                for employee in employees:
+                    employee_day_closings = DayClosingAdmin.objects.filter(date__range=[start_of_month, end_of_month], employee=employee)
+                    employee_total_services = employee_day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or Decimal(0)
+                    employee_total_sales = employee_day_closings.aggregate(total_sales=Sum('total_sales'))['total_sales'] or Decimal(0)
+                    employee_total_advance = employee_day_closings.aggregate(total_advance=Sum('advance'))['total_advance'] or Decimal(0)
+
+                    # Fetching the first closing date of the employee
+                    first_closing_date = employee_day_closings.order_by('date').first().date.strftime('%Y-%m-%d') if employee_day_closings.exists() else None
+
+                    employee_totals.append({
+                        'date': first_closing_date,
+                        'employee': employee.id,
+                        'employee_total_services': float(employee_total_services),
+                        'employee_total_sales': float(employee_total_sales),
+                        'employee_total_advance': float(employee_total_advance)
+                    })
 
                 # Prepare chart data
                 chart_data_json = [{
@@ -1915,13 +1935,16 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 context['total_sales_this_month'] = total_sales_this_month
                 context['total_advance_given_this_month'] = total_advance_given_this_month
                 context['chart_data_json'] = json.dumps(chart_data_json)
-
+                context['employee_json'] = json.dumps(employee_totals)
+                context['employees'] = employees
+                print(json.dumps(employee_totals))
             except ShopAdmin.DoesNotExist:
                 context['shop'] = None
                 context['total_services_this_month'] = 0
                 context['total_sales_this_month'] = 0
                 context['total_advance_given_this_month'] = 0
                 context['chart_data_json'] = '[]'
+                context['employee_json'] = '[]'
                 
         categories = [
             {
