@@ -8,8 +8,10 @@ from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
 import json
 import jwt
+import calendar
 from django.template.loader import get_template
 from xhtml2pdf import pisa
+from django.http import HttpResponseNotFound
 from django.contrib.auth import logout as auth_logout
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -626,6 +628,7 @@ def employee_logout(request):
     """
     
     return response
+
 def employee_dashboard(request):
     # Get the employee_id from the session
     employee_id = request.session.get('employee_id')
@@ -639,24 +642,24 @@ def employee_dashboard(request):
     # Fetch the associated Shop for the employee
     shop = Shop.objects.filter(name=business_profile.name).first()
     
-    # Aggregate total services, total sales, and total advance
-    total_services = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('total_services'))['total_services']
-    total_sales = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('total_sales'))['total_sales']
-    total_advance = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_advance=Sum('advance'))['total_advance']
+    # Get the current month and year
+    current_month = timezone.now().month
+    current_year = timezone.now().year
 
-    ten_days_ago = datetime.now() - timedelta(days=10)
+    # Get the first and last day of the current month
+    first_day_of_month = timezone.datetime(current_year, current_month, 1)
+    last_day_of_month = timezone.datetime(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
 
-    # Query the database for transactions for the last 10 days
-    day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
-    
-    #Commission calculation
+    # Aggregate total services, total sales, and total advance for the current month
+    day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month) or 0
+    total_services = day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or 0
+    total_sales = day_closings.aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
+    print(total_sales)
+    total_advance = day_closings.aggregate(total_advance=Sum('advance'))['total_advance'] or 0
 
-    if employee:
-        com_per = employee.commission_percentage
-        if com_per:
-            com_cal = com_per / 100
-        else:
-            com_cal = 0
+    # Commission calculation
+    if employee and employee.commission_percentage:
+        com_cal = employee.commission_percentage / 100
     else:
         com_cal = 0
 
@@ -671,7 +674,8 @@ def employee_dashboard(request):
         'date': closing.date.strftime('%Y-%m-%d'),
         'total_services': float(closing.total_services),
         'total_sales': float(closing.total_sales),
-        'advance': float(closing.advance)
+        'advance': float(closing.advance),
+        
     } for closing in day_closings]
 
     # Convert data to JSON format
@@ -1566,8 +1570,15 @@ def approve_day_closing(request, dayclosing_id):
     return redirect('day_closing_report')
 
 def error_view(request):
-    return render(request, 'error.html')
+    # Your condition to choose between base.html and emp_base.html
+    use_emp_base = True  # Example condition, replace it with your actual condition
 
+    # Render the error.html template with the chosen base template
+    return render(request, 'error.html', {'use_emp_base': use_emp_base})
+
+def handler404(request, exception):
+    # Call error_view with 404 condition
+    return error_view(request)
 def sales_by_staff_item(request):
     employee_id = request.session.get('employee_id')
     

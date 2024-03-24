@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error</title>
-</head>
-<body>
+{% extends use_emp_base ? 'emp_base.html' : 'base.html' %}
+
+{% block title %}
+    Error
+{% endblock %}
+
+{% block content %}
     <h1>Error</h1>
     <p>There was an error processing your request.</p>
-</body>
-</html>
+{% endblock %}

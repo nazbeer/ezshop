@@ -21,7 +21,7 @@
         <div class="col-md-6">
             <div class="card mb-3">
                 <div class="card-header">
-                    Employee Details
+                    <h5 class="mb-0 text-white">Employee Details</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -44,7 +44,7 @@
             {% if shop %}
                 <div class="card mb-3">
                     <div class="card-header">
-                        Shop Details
+                       <h5 class="mb-0 text-white">Shop Details</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -58,10 +58,10 @@
             {% else %}
                 <div class="card mb-3">
                     <div class="card-header">
-                        No Shop Associated
+                       <h5 class="mb-0 text-white">No Business Profile Associated</h5> 
                     </div>
                     <div class="card-body">
-                        <p>No shop associated with the current user.</p>
+                        <p>No Business Profile associated with the current employee.</p>
                     </div>
                 </div>
             {% endif %}
@@ -71,47 +71,57 @@
     <!-- End of Analytics Section -->
 
     <!-- Total Amounts Section -->
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card mb-3">
-                <div class="card-header">
-                    Total Services
+    <div class="">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0 text-white">
+                    Monthly Totals
+                </h5>
+            </div>
+            <div class="card-body d-flex flex-wrap  justify-content-between align-items-center">
+                <div class="col-md-3">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Total Services
+                        </div>
+                        <div class="card-body " style="background-color: #ee6182;">
+                            <p>{{ total_services }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <p>{{ total_services }}</p>
+                <div class="col-md-3">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Total Sales
+                        </div>
+                        <div class="card-body bg-light">
+                            <p>{{ total_sales }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card mb-3">
+                        <div class="card-header ">
+                            Total Advance
+                        </div>
+                        <div class="card-body bg-warning">
+                            <p>{{ total_advance }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            Commission Received
+                        </div>
+                        <div class="card-body bg-success">
+                            <p>{{ commission }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card mb-3">
-                <div class="card-header">
-                    Total Sales
-                </div>
-                <div class="card-body">
-                    <p>{{ total_sales }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card mb-3">
-                <div class="card-header">
-                    Total Advance
-                </div>
-                <div class="card-body">
-                    <p>{{ total_advance }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card mb-3">
-                <div class="card-header">
-                    Commission Received
-                </div>
-                <div class="card-body">
-                    <p>{{ commission }}</p>
-                </div>
-            </div>
-        </div>
+       
     </div>
     <!-- End of Total Amounts Section -->
 
@@ -119,7 +129,7 @@
     <div class=" mt-2 mb-4">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0 text-white">Last 10 days Statistics</h4>
+                <h5 class="mb-0 text-white">Last 10 days Statistics</h5>
             </div>
         
         <div class="card-body">
@@ -144,6 +154,7 @@ var chart_labels = [];
 var total_services_data = [];
 var total_sales_data = [];
 var total_advance_data = [];
+
 
 // Extracting data for chart
 chart_data.forEach(function(item) {

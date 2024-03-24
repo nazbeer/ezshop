@@ -120,6 +120,6 @@ urlpatterns = [
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
     path('profile/', employee_profile, name='employee_profile'),
 ]
-
+handler404 = 'ezshopapp.views.handler404'
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
