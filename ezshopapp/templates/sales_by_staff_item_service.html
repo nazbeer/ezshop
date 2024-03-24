@@ -64,12 +64,12 @@
                                 <select id="form-0-product" name="product" class="form-control" onchange="updatePrice(this)">
                                     <option value="">-- Select --</option>
                                     {% for product in products %}
-                                        <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
+                                        <option value="{{ product.id }}" data-amount="{{ product.amount }}" data-max-discount="{{ product.max_discount_allowed }}">{{ product.name }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td>
-                                <input type="number" id="form-0-pquantity" name="pquantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">
+                                <input type="number" id="form-0-pquantity" name="pquantity" class="form-control" value="1" onchange="calculateTotalSubtotal();  calculateTotalAmount()">
                             </td>
                             <td>
                                 <input type="number" id="form-0-pprice" name="pprice" class="form-control" readonly>
@@ -104,12 +104,12 @@
                                 <select id="form-0-service" class="form-control" name="service" onchange="updatePrice1(this)">
                                     <option value="">-- Select --</option>   
                                     {% for service in services %}
-                                        <option value="{{ service.id }}" data-amount="{{ service.amount }}">{{ service.name }}</option>
+                                        <option value="{{ service.id }}" data-amount="{{ service.amount }}" data-max-discount="{{ service.max_discount_allowed }}">{{ service.name }}</option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td>
-                                <input type="number" id="form-0-squantity" name="squantity" class="form-control" min="1" onchange="calculateTotalSubtotal1()">
+                                <input type="number" id="form-0-squantity" name="squantity" class="form-control" value="1" onchange="calculateTotalSubtotal1()">
                             </td>
                             <td>
                                 <input type="number" id="form-0-sprice" name="sprice" class="form-control" readonly>
@@ -151,9 +151,11 @@
             </div>
 
             <div class="form-group">
-                <label for="discount">Discount:</label>
-                <input type="number" id="discount" name="discount" value="0" class="form-control" onchange="calculateTotalAmount()">
+                <label for="discount">Discount: <small class="text-danger">(Max Discount Allowed: <span  id="max_discount">0</span>)</small></label>
+                <input type="hidden" id="max_discount_allowed">
+                <input type="number" id="discount" name="discount" value="0" class="form-control" onchange="calculateTotalAmount()" placeholder="Enter the Discount Amount or Enter Zero" required>
             </div>
+
             
             <div class="form-group">
                 <label for="payment_method">Payment Method:</label>
@@ -180,6 +182,7 @@
         var price = selectedOption.getAttribute('data-amount');
         priceInput.value = price;
         calculateTotalSubtotal();
+        calculateTotalAmount();
     }
 
     // Function to update price for services
@@ -189,6 +192,7 @@
         var sprice = selectedOption.getAttribute('data-amount');
         priceInput.value = sprice;
         calculateTotalSubtotal1();
+        calculateTotalAmount();
     }
 
     // Function to add a new item row
@@ -204,13 +208,13 @@
             <select id="form-${rowCounter}-product" name="product" class="form-control" onchange="updatePrice(this)">
                 <option value="">-- Select --</option>
                 {% for product in products %}
-                    <option value="{{ product.id }}" data-amount="{{ product.amount }}">{{ product.name }}</option>
+                    <option value="{{ product.id }}" data-amount="{{ product.amount }}" data-max-discount="{{ product.max_discount_allowed }}">{{ product.name }}</option>
                 {% endfor %}
             </select>
         `;
-        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-pquantity" name="pquantity" class="form-control" min="1" onchange="calculateTotalSubtotal()">`;
+        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-pquantity" name="pquantity" class="form-control" value="1" onchange="calculateTotalSubtotal(); calculateTotalAmount()">`;
         cell3.innerHTML = `<input type="number" id="form-${rowCounter}-pprice" name="pprice" class="form-control" readonly>`;
-        cell4.innerHTML = `<div class="mt-2 justify-content-center align-items-center"  id="form-${rowCounter}-delete"><button class="btn btn-danger" type="button" onclick="removeRow(this, 'itemRows')"><i class="fas fa-trash"></i></button>`;
+        cell4.innerHTML = `<div class="mt-2 justify-content-center align-items-center"  id="form-${rowCounter}-delete"><button class="btn btn-danger" type="button" onclick="removeRow(this, 'itemRows'); calculateTotalAmount()"><i class="fas fa-trash"></i></button>`;
 
         rowCounter++;
     }
@@ -228,13 +232,13 @@
             <select id="form-${rowCounter}-service" name="service" class="form-control" onchange="updatePrice1(this)">
                 <option value="">-- Select --</option>
                 {% for service in services %}
-                    <option value="{{ service.id }}" data-amount="{{ service.amount }}">{{ service.name }}</option>
+                    <option value="{{ service.id }}" data-amount="{{ service.amount }}" data-max-discount="{{ service.max_discount_allowed }}">{{ service.name }}</option>
                 {% endfor %}
             </select>
         `;
-        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-squantity" name="squantity" class="form-control" min="1" onchange="calculateTotalSubtotal1()">`;
+        cell2.innerHTML = `<input type="number" id="form-${rowCounter}-squantity" name="squantity" class="form-control" value="1" onchange="calculateTotalSubtotal1(); calculateTotalAmount() ">`;
         cell3.innerHTML = `<input type="number" id="form-${rowCounter}-sprice" name="sprice" class="form-control" readonly>`;
-        cell4.innerHTML = `<div class="mt-2 justify-content-center align-items-center"  id="form-${rowCounter}-delete"><button class="btn btn-danger" type="button" onclick="removeRow(this, 'serviceRows')"><i class="fas fa-trash"></i></button>`;
+        cell4.innerHTML = `<div class="mt-2 justify-content-center align-items-center"  id="form-${rowCounter}-delete"><button class="btn btn-danger" type="button" onclick="removeRow(this, 'serviceRows'); calculateTotalAmount()"><i class="fas fa-trash"></i></button>`;
 
         rowCounter++;
     }
@@ -283,16 +287,51 @@
     }
 
     // Function to calculate total amount
+
+    // Function to calculate total amount
     function calculateTotalAmount() {
         var itemSubtotal = parseFloat(document.getElementById("itemtotal").value);
         var serviceSubtotal = parseFloat(document.getElementById("servicetotal").value);
         var subtotal = itemSubtotal + serviceSubtotal;
         var discount = parseFloat(document.getElementById("discount").value);
+        var maxDiscountAllowed = 0; // Initialize maxDiscountAllowed
+
+        // Calculate the maximum discount allowed by summing up the max_discount_allowed values of selected products and services
+        var selectedProductOptions = document.querySelectorAll('#itemRows select[name="product"] option:checked');
+        var selectedServiceOptions = document.querySelectorAll('#serviceRows select[name="service"] option:checked');
+
+        // Iterate over selected product options
+        selectedProductOptions.forEach(function(option) {
+            var maxDiscount = parseFloat(option.getAttribute('data-max-discount'));
+            if (!isNaN(maxDiscount)) {
+                maxDiscountAllowed += maxDiscount;
+               
+            }
+        });
+
+        // Iterate over selected service options
+        selectedServiceOptions.forEach(function(option) {
+            var maxDiscount = parseFloat(option.getAttribute('data-max-discount'));
+            if (!isNaN(maxDiscount)) {
+                maxDiscountAllowed += maxDiscount;
+            }
+        });
+        document.getElementById("max_discount").innerText = maxDiscountAllowed;
+        
+        // Check if discount exceeds maxDiscountAllowed
+        if (discount > maxDiscountAllowed) {
+            alert("Discount exceeds maximum allowed limit. Max Discount allowed is: " + maxDiscountAllowed);
+            document.getElementById("discount").value = maxDiscountAllowed;
+            discount = maxDiscountAllowed; // Set discount to maxDiscountAllowed
+        }
+
         var totalAmount = subtotal - (isNaN(discount) ? 0 : discount);
 
         document.getElementById("sub_total").value = subtotal.toFixed(2);
         document.getElementById("total_amount").value = totalAmount.toFixed(2);
     }
+
+
 
     // Add event listener to form submission
     document.querySelector('#salesForm').addEventListener('submit', function() {
@@ -326,6 +365,12 @@
 
     // Counter for row IDs
     var rowCounter = 1;
+    document.getElementById('discount').addEventListener('change', function() {
+        var discountInput = document.getElementById('discount').value;
+        if (discountInput.trim() === '') {
+            alert('Discount cannot be empty. Please enter a valid discount amount or zero.');
+        }
+    });
 </script>
 
 {% endblock %}

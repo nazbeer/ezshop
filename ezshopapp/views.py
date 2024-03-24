@@ -1300,10 +1300,24 @@ class SaleListCreateView(generics.ListCreateAPIView):
 
 def submit_sale(request):
     employee_id = request.session.get('employee_id')
+    employees = Employee.objects.get(id=employee_id)
+    print(employees.id)
+    
+        # business_profile = employee.business_profile_id.businessprofile_set.first()
+    business_profile = BusinessProfile.objects.get(id=employees.id)
+    print("BP: ", business_profile)
+    # except Employee.DoesNotExist:
+    #     # Handle the case where the employee does not exist
+    #     # You might want to redirect the user or show an error message
+    #     return render(request, 'error.html')
 
-    # Filter employees based on the retrieved employee ID
-    employees = Employee.objects.filter(id=employee_id)
-    services = Service.objects.all()
+    # Retrieve products based on the employee's business profile
+    if business_profile:
+        services = Service.objects.filter(business_profile=business_profile)
+    else:
+        # Handle the case where there's no business profile associated with the employee
+        # You might want to redirect the user or show an error message
+        return render(request, 'error.html')
     
 
     if request.method == 'POST':
@@ -1551,19 +1565,32 @@ def approve_day_closing(request, dayclosing_id):
     dayclosingadmin.save()
     return redirect('day_closing_report')
 
-
+def error_view(request):
+    return render(request, 'error.html')
 
 def sales_by_staff_item(request):
     employee_id = request.session.get('employee_id')
-
+    
     # Retrieve the employee
-    employee = Employee.objects.filter(id=employee_id)
+    # try:
+    employee = Employee.objects.get(id=employee_id)
+    print(employee.id)
     
+        # business_profile = employee.business_profile_id.businessprofile_set.first()
+    business_profile = BusinessProfile.objects.get(id=employee.id)
+    print("BP: ", business_profile)
+    # except Employee.DoesNotExist:
+    #     # Handle the case where the employee does not exist
+    #     # You might want to redirect the user or show an error message
+    #     return render(request, 'error.html')
 
-    # Filter products based on the retrieved employee's business profile
-    
-    products = Product.objects.filter(business_profile=employee.business_profile)
-  
+    # Retrieve products based on the employee's business profile
+    if business_profile:
+        products = Product.objects.filter(business_profile=business_profile)
+    else:
+        # Handle the case where there's no business profile associated with the employee
+        # You might want to redirect the user or show an error message
+        return render(request, 'error.html')
     print(products)
     if request.method == 'POST':
         sales_form = SaleByStaffItemForm(request.POST)
@@ -1584,9 +1611,17 @@ def sales_by_staff_item_service(request):
     employee_id = request.session.get('employee_id')
 
     # Filter employees based on the retrieved employee ID
-    employees = Employee.objects.filter(id=employee_id)
-    products = Product.objects.all()
-    services = Service.objects.all()
+    employees = Employee.objects.get(id=employee_id)
+    print(employees.id)
+    
+    business_profile = BusinessProfile.objects.get(id=employees.id)
+    
+    if business_profile:
+        products = Product.objects.filter(business_profile=business_profile)
+        services = Service.objects.filter(business_profile=business_profile)
+    else:
+       return render(request, 'error.html')
+   
     if request.method == 'POST':
         sales_form = SalesByStaffItemServiceForm(request.POST)
         if sales_form.is_valid():
