@@ -78,13 +78,13 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="number" id="form-0-quantity" name="quantity" class="form-control" value="1" onchange="calculateSubTotal(); calculateTotalAmount()">
+                                <input type="number" id="form-0-quantity" name="quantity" class="form-control" value="1" onchange="calculateSubTotal();calculateTotalAmount()">
                             </td>
                             <td>
                                 <input type="number" id="form-0-price" name="price" class="form-control" readonly>
                             </td>
                             <td class="text-center"> <!-- Add Action cell -->
-                                <button class="btn btn-danger" type="button" onclick="removeItemRow(this); calculateSubTotal();  calculateTotalAmount()" disabled><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-danger" type="button" onclick="removeItemRow(this); calculateSubTotal();  " disabled><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     </tbody>
@@ -156,8 +156,7 @@
 </div>
 </div>
 <script>
-     var currentDate = new Date();
-    // Format the current date as YYYY-MM-DD
+    var currentDate = new Date();
     var formattedDate = currentDate.toISOString().split('T')[0];
     document.getElementById("date").value = formattedDate;
     var rowCounter = 1;
@@ -168,10 +167,11 @@
         var price = selectedOption.getAttribute('data-amount');
         priceInput.value = price;
         calculateSubTotal();
+        calculateTotalAmount();
     }
+
     function calculateSubTotal() {
-        
-        var table = document.getElementById("serviceRows").getElementsByTagName("tbody")[0];
+        var table = document.getElementById("serviceRows");
         var subTotal = 0;
         var subTotalMaxDiscount = 0;
         for (var i = 0; i < table.rows.length; i++) {
@@ -181,7 +181,6 @@
             subTotal += isNaN(total) ? 0 : total;
 
             var maxDiscountAllowed = parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')) * quantity;
-            //console.log(parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')));
             subTotalMaxDiscount += isNaN(maxDiscountAllowed) ? 0 : maxDiscountAllowed;
         }
 
@@ -190,16 +189,17 @@
     }
 
     function calculateTotalAmount() {
-        var sub_total = parseFloat(document.getElementById("sub_total").value);
+        var subTotal = parseFloat(document.getElementById("sub_total").value);
         var discount = parseFloat(document.getElementById("discount").value);
         var maxDiscountAllowed = parseFloat(document.getElementById("max_discount").innerHTML);
-        var totalAmount = sub_total - (isNaN(discount) ? 0 : discount);
+        var totalAmount = subTotal - (isNaN(discount) ? 0 : discount);
+
         if (discount > maxDiscountAllowed) {
             alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
             document.getElementById("discount").value = maxDiscountAllowed;
-            totalAmount = subTotal - discount;
+            totalAmount = subTotal - maxDiscountAllowed;
         }
-        
+
         document.getElementById("total_amount").value = totalAmount.toFixed(2);
     }
 
@@ -210,6 +210,7 @@
         var cell2 = row.insertCell(1);
         var cell3 = row.insertCell(2);
         var cell4 = row.insertCell(3);
+
         cell1.innerHTML = `
             <select id="form-${rowCounter}-service" class="form-control" name="service" onchange="updatePrice(this)">
                 <option value="">-- Select --</option>
@@ -220,22 +221,29 @@
         `;
         cell2.innerHTML = `<input type="number" id="form-${rowCounter}-quantity" name="quantity" class="form-control" value="1" onchange="calculateSubTotal(); calculateTotalAmount()">`;
         cell3.innerHTML = `<input type="number" id="form-${rowCounter}-price" name="price" class="form-control" readonly>`;
-        cell4.innerHTML = `<button class="btn btn-danger" type="button" onclick="removeItemRow(this); calculateTotalAmount()"><i class="fas fa-trash"></i></button>`; // Add delete button
+        cell4.innerHTML = `<button class="btn btn-danger" type="button" onclick="removeRow(this);  calculateSubTotal();calculateTotalAmount()"><i class="fas fa-trash"></i></button>`; // Add delete button
         rowCounter++;
     }
-    function removeItemRow(button) {
+
+    function removeRow(button) {
         var row = button.closest('tr');
         row.parentNode.removeChild(row);
         calculateSubTotal(); // Recalculate subtotal after removing row
     }
+
     document.getElementById('discount').addEventListener('change', function() {
         var discountInput = document.getElementById('discount').value;
         if (discountInput.trim() === '') {
             alert('Discount cannot be empty. Please enter a valid discount amount or zero.');
         }
+        calculateTotalAmount(); // Update total amount whenever discount changes
     });
 
+    // Initialize the calculations
+    calculateSubTotal();
+    calculateTotalAmount();
 </script>
+
 
 
 {% endblock %}
