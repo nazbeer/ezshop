@@ -114,6 +114,7 @@
        
     </div>
     <script>
+        localStorage.removeItem('employee_id');
         // Check if employee_id is available in local session storage
         if (localStorage.getItem('employee_id')) {
           // Redirect to the employee dashboard if employee_id is available
@@ -131,4 +132,5 @@
         crossorigin="anonymous"></script>
 
 </body>
+
 </html>
