@@ -21,7 +21,7 @@
                 </div>
             </form>
             <div class="row">
-                <table id="item-sales-table" class="table table-bordered table-striped nowrap">
+                <table id="item-sales-table" class="table table-bordered table-striped nowrap ">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -38,7 +38,7 @@
                         {% for sale in sales %}
                         <tr>
                             <td>{{ sale.date }}</td>
-                            <td>{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                            <td>{{ sale.employee.employee_id }} - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
                             <td>{{ sale.item }}</td>
                             <td>{{ sale.quantity }}</td>
                             <td>{{ sale.price }}</td>
@@ -86,7 +86,7 @@
                         {% for sales_admin in service_sales %}
                         <tr>
                             <td>{{ sales_admin.date }}</td>
-                            <td>{{ sales_admin.employee.employee_id }} ({{ sales_admin.employee.id}}) - {{ sales_admin.employee.first_name }} {{ sale.employee.second_name }}</td>
+                            <td>{{ sales_admin.employee.employee_id }} - {{ sales_admin.employee.first_name }} {{ sale.employee.second_name }}</td>
                             <td>{{ sales_admin.service.name }}</td>
                             <td>{{ sales_admin.quantity }}</td>
                             <td>{{ sales_admin.price }}</td>
@@ -116,7 +116,7 @@
                     extend: 'print',
                     exportOptions: {
                         stripHtml: false,
-                        columns: [0, 1, 2, 3, 4]
+                       
                     }
                 },
                 {
@@ -137,7 +137,7 @@
                     extend: 'print',
                     exportOptions: {
                         stripHtml: false,
-                        columns: [0, 1, 2, 3, 4]
+                      
                     }
                 },
                 {
