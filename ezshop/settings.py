@@ -21,7 +21,7 @@ EMAIL_HOST_PASSWORD = 'y05g7jL61VapbV2eFOrCqrd2FVNJeWrB'  # Replace with your em
 # EMPLOYEE_LOGIN_URL = 'employee_login'  # Define the URL for employee login
 
 # # Set the LOGIN_URL for the Employee model
-# LOGIN_URL = EMPLOYEE_LOGIN_URL
+LOGIN_URL = '/login/'
 
 
 DEBUG = True

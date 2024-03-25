@@ -169,6 +169,39 @@
         priceInput.value = price;
         calculateSubTotal();
     }
+    function calculateSubTotal() {
+        
+        var table = document.getElementById("serviceRows").getElementsByTagName("tbody")[0];
+        var subTotal = 0;
+        var subTotalMaxDiscount = 0;
+        for (var i = 0; i < table.rows.length; i++) {
+            var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
+            var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
+            var total = quantity * price;
+            subTotal += isNaN(total) ? 0 : total;
+
+            var maxDiscountAllowed = parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')) * quantity;
+            //console.log(parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')));
+            subTotalMaxDiscount += isNaN(maxDiscountAllowed) ? 0 : maxDiscountAllowed;
+        }
+
+        document.getElementById("sub_total").value = subTotal.toFixed(2);
+        document.getElementById("max_discount").innerText = subTotalMaxDiscount.toFixed(2);
+    }
+
+    function calculateTotalAmount() {
+        var sub_total = parseFloat(document.getElementById("sub_total").value);
+        var discount = parseFloat(document.getElementById("discount").value);
+        var maxDiscountAllowed = parseFloat(document.getElementById("max_discount").innerHTML);
+        var totalAmount = sub_total - (isNaN(discount) ? 0 : discount);
+        if (discount > maxDiscountAllowed) {
+            alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
+            document.getElementById("discount").value = maxDiscountAllowed;
+            totalAmount = subTotal - discount;
+        }
+        
+        document.getElementById("total_amount").value = totalAmount.toFixed(2);
+    }
 
     function addService() {
         var table = document.getElementById("serviceRows");
@@ -195,39 +228,12 @@
         row.parentNode.removeChild(row);
         calculateSubTotal(); // Recalculate subtotal after removing row
     }
-    function calculateSubTotal() {
-        var table = document.getElementById("serviceRows");
-        var subTotal = 0;
-        var subTotalMaxDiscount = 0;
-        for (var i = 0; i < table.rows.length; i++) {
-            var quantity = parseFloat(table.rows[i].cells[1].getElementsByTagName("input")[0].value);
-            var price = parseFloat(table.rows[i].cells[2].getElementsByTagName("input")[0].value);
-            var total = quantity * price;
-            subTotal += isNaN(total) ? 0 : total;
-
-            var maxDiscountAllowed = parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')) * quantity;
-            console.log(parseFloat(table.rows[i].cells[0].getElementsByTagName("select")[0].selectedOptions[0].getAttribute('data-max-discount')));
-            subTotalMaxDiscount += isNaN(maxDiscountAllowed) ? 0 : maxDiscountAllowed;
+    document.getElementById('discount').addEventListener('change', function() {
+        var discountInput = document.getElementById('discount').value;
+        if (discountInput.trim() === '') {
+            alert('Discount cannot be empty. Please enter a valid discount amount or zero.');
         }
-
-        document.getElementById("sub_total").value = subTotal.toFixed(2);
-        document.getElementById("max_discount").innerText = subTotalMaxDiscount.toFixed(2);
-    }
-
-    function calculateTotalAmount() {
-        var sub_total = parseFloat(document.getElementById("sub_total").value);
-        var discount = parseFloat(document.getElementById("discount").value);
-        var maxDiscountAllowed = parseFloat(document.getElementById("max_discount").innerHTML);
-        var totalAmount = sub_total - (isNaN(discount) ? 0 : discount);
-        if (discount > maxDiscountAllowed) {
-            alert("Discount exceeds maximum allowed limit. Max Discount allowed is :  " + maxDiscountAllowed);
-            document.getElementById("discount").value = maxDiscountAllowed;
-            totalAmount = subTotal - discount;
-        }
-        
-        document.getElementById("total_amount").value = totalAmount.toFixed(2);
-    }
-
+    });
 
 </script>
 
