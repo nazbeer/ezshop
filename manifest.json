@@ -1,0 +1,15 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "ezshopapp.onrender",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "ezshopapp.onrender",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "categories": [
+    "business",
+    "productivity"
+  ]
+}

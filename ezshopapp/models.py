@@ -233,23 +233,26 @@ class Employee(models.Model):
     def __str__(self):
         return f"{self.employee_id} - {self.first_name} {self.second_name}"
     
-    def passport_expiration_due(self):
-        """
-        Check if the passport expiration date is within the reminder days.
-        Returns True if it's due, False otherwise.
-        """
-        reminder_days = self.business_profile.passport_expiration_reminder_days
-        expiration_due_date = self.passport_expiration_date - timedelta(days=reminder_days)
-        return expiration_due_date <= timezone.now().date()
+    # def passport_expiration_due(self):
+    #     """
+    #     Check if the passport expiration date is within the reminder days.
+    #     Returns True if it's due, False otherwise.
+    #     """
+    #     business_profile = BusinessProfile.objects.get(license_number=self.business_profile)
+    #     reminder_days = business_profile.passport_expiration_reminder_days
+    #     expiration_due_date = self.passport_expiration_date - timedelta(days=reminder_days)
+    #     return expiration_due_date <= timezone.now().date()
 
     def id_expiration_due(self):
         """
         Check if the ID expiration date is within the reminder days.
         Returns True if it's due, False otherwise.
         """
-        reminder_days = self.business_profile.id_expiration_reminder_days
+        business_profile = BusinessProfile.objects.get(id=self.business_profile_id)
+        reminder_days = business_profile.employee_visa_expiration_reminder_days
         expiration_due_date = self.id_expiration_date - timedelta(days=reminder_days)
         return expiration_due_date <= timezone.now().date()
+
 class EmployeeTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
         ('service', 'Service Transaction'),

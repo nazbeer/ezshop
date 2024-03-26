@@ -7,19 +7,25 @@
 {% block content %}
 <div class="container">
     <div class="card">
-        <div class="card-header">
+        <div class="card-header bg-primary text-white">
             <h4 class="mb-0 text-white">Notifications</h4>
         </div>
         <div class="card-body">
-            <ul>
-                {% if notifications %}
+            {% if notifications %}
+                <div class="list-group">
                     {% for notification in notifications %}
-                        <li>{{ notification }}</li>
+                        <div class="list-group-item">
+                            <h5 class="mb-1">{{ notification.reminder_type }}</h5>
+                          <div class="d-flex flex-wrap justify-content-between align-items-center">  <p class="mb-1">Expiration date: {{ notification.expiration_date }}</p>
+                            <p class="mb-1">Expiring: {{ notification.reminder_days }} days left</p>
+                            <p class="mb-0">Employee ID Expiration Reminder: {{ notification.employee_visa_reminder_days }} days</p>
+                            </div>
+                        </div>
                     {% endfor %}
-                {% else %}
-                    <li>No notifications available</li>
-                {% endif %}
-            </ul>
+                </div>
+            {% else %}
+                <p class="text-muted">No notifications available</p>
+            {% endif %}
         </div>
     </div>
 </div>

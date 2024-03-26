@@ -1826,52 +1826,57 @@ def license_expiration_reminder_due(license_expiration, reminder_days):
 def vat_submission_date_reminder_due(submission_dates, reminder_days):
     today = timezone.now().date()
     return any((date and (date - today).days <= reminder_days) for date in submission_dates)
-
+# Notification view
 def notification_view(request):
     notifications = []
 
     # Fetch the shop associated with the current user
     shop_admin = get_object_or_404(ShopAdmin, user=request.user)
     shop = shop_admin.shop
-    print(shop.license_number)
+
+    # Get the associated BusinessProfile
+    business_profile = BusinessProfile.objects.get(license_number=shop.license_number)
+    business_profileID=business_profile.id
     # Check if all reminder flags are True for the shop
     if shop.vat_remainder and shop.employee_transaction_window \
             and shop.license_expiration_reminder \
-            and shop.employee_visa_expiration_reminder \
-            and shop.employee_passport_expiration_reminder:
-        
-        # Get the associated BusinessProfile
-            business_profile = BusinessProfile.objects.get(license_number=shop.license_number)
-            print(business_profile)
-            # Get employees associated with the business profile
-            employees = Employee.objects.filter(business_profile=business_profile)
+            and shop.employee_visa_expiration_reminder :
+            # and shop.employee_passport_expiration_reminder:
 
-            # Check which reminder has the earliest due date
-            earliest_due_date = None
-            earliest_due_reminder = None
+        # Get employees associated with the business profile
+        employees = Employee.objects.filter(business_profile_id=business_profileID)
 
-            if business_profile.vat_submission_date_reminder_due():
-                earliest_due_date = business_profile.vat_submission_date_1
-                earliest_due_reminder = 'VAT submission date'
-            if business_profile.license_expiration_reminder_due():
-                if earliest_due_date is None or earliest_due_date > business_profile.license_expiration:
-                    earliest_due_date = business_profile.license_expiration
-                    earliest_due_reminder = 'License expiration'
-            if any(employee.id_expiration_due() for employee in employees):
-                earliest_id_due_date = min([employee.id_expiration_date for employee in employees if employee.id_expiration_due()])
-                if earliest_due_date is None or earliest_due_date > earliest_id_due_date:
-                    earliest_due_date = earliest_id_due_date
-                    earliest_due_reminder = 'Employee ID expiration'
-            if any(employee.passport_expiration_due() for employee in employees):
-                earliest_passport_due_date = min([employee.passport_expiration_date for employee in employees if employee.passport_expiration_due()])
-                if earliest_due_date is None or earliest_due_date > earliest_passport_due_date:
-                    earliest_due_date = earliest_passport_due_date
-                    earliest_due_reminder = 'Employee passport expiration'
+        # Check which reminder has the earliest due date
+        earliest_due_date = None
+        earliest_due_reminder = None
+
+        if business_profile.vat_submission_date_reminder_due():
+            earliest_due_date = business_profile.vat_submission_date_1
+            earliest_due_reminder = 'VAT submission date'
+        if business_profile.license_expiration_reminder_due():
+            if earliest_due_date is None or earliest_due_date > business_profile.license_expiration:
+                earliest_due_date = business_profile.license_expiration
+                earliest_due_reminder = 'License expiration'
+        if any(employee.id_expiration_due() for employee in employees):
+            earliest_id_due_date = min([employee.id_expiration_date for employee in employees if employee.id_expiration_due()])
+            if earliest_due_date is None or earliest_due_date > earliest_id_due_date:
+                earliest_due_date = earliest_id_due_date
+                earliest_due_reminder = 'Employee ID expiration'
+        # if any(employee.passport_expiration_due() for employee in employees):
+        #     earliest_passport_due_date = min([employee.passport_expiration_date for employee in employees if employee.passport_expiration_due()])
+        #     if earliest_due_date is None or earliest_due_date > earliest_passport_due_date:
+        #         earliest_due_date = earliest_passport_due_date
+        #         earliest_due_reminder = 'Employee passport expiration'
 
         # If there's a due reminder, add it to the notifications
-            if earliest_due_reminder:
-                days_until_reminder = (earliest_due_date - timezone.now().date()).days
-                notifications.append(f'{earliest_due_reminder} reminder: {days_until_reminder} days left')
+        if earliest_due_reminder:
+            days_until_reminder = (earliest_due_date - timezone.now().date()).days
+            notifications.append({
+                'reminder_type': earliest_due_reminder,
+                'expiration_date': earliest_due_date,
+                'reminder_days': days_until_reminder,
+                'employee_visa_reminder_days': business_profile.employee_visa_expiration_reminder_days
+            })
 
     # Render the template with the notifications
     return render(request, 'notification_list.html', {'notifications': notifications})
