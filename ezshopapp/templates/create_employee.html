@@ -164,6 +164,7 @@
         <div class="form-group">
             <label for="username">Username:</label>
             {{ form.username }}
+            <div id="usernameAvailability" class="text-success"></div>
         </div>
         <div class="form-group">
             <label for="password">Password:</label>
@@ -197,5 +198,24 @@
             input.value = input.value.replace(/[^0-9+\-]/g, '');
         }
     }
+    function checkUsernameAvailability() {
+        var username = document.getElementById('id_username').value;
+        if (username.trim() !== '') {
+            // Make an AJAX request to check username availability
+            fetch('/check-username-availability/?username=' + username)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available) {
+                        document.getElementById('usernameAvailability').textContent = 'Username is available';
+                    } else {
+                        document.getElementById('usernameAvailability').textContent = 'Username already exists';
+                    }
+                });
+        }
+    }
+
+    // Attach the function to the input event of the username field
+    document.getElementById('id_username').addEventListener('input', checkUsernameAvailability);
+
 </script>
 {% endblock %}

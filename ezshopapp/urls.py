@@ -65,6 +65,7 @@ urlpatterns = [
     path('role/delete/<int:pk>/', RoleDeleteView.as_view(), name='delete_role'),
     path('employee/', employee_list, name='employee_list'),
     path('employee/create/', create_employee, name='create_employee'),
+    path('check-username-availability/', check_username_availability, name='check_username_availability'),
     path('employees/<int:pk>/edit/', employee_edit, name='employee_edit'),
     path('employees/<int:pk>/delete/', employee_delete, name='employee_delete'),
     path('expense-type/', ExpenseTypeListView.as_view(), name='expense_type_list'),

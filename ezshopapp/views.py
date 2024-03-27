@@ -560,6 +560,14 @@ def create_employee(request):
     return render(request, 'create_employee.html', context)
 
 
+def check_username_availability(request):
+    username = request.GET.get('username')
+    if Employee.objects.filter(username=username).exists():
+        available = False
+    else:
+        available = True
+    return JsonResponse({'available': available})
+
 def get_employee_data(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
     data = {
@@ -1321,16 +1329,16 @@ def submit_sale(request):
     print(employees.id)
     
         # business_profile = employee.business_profile_id.businessprofile_set.first()
-    business_profile = BusinessProfile.objects.get(id=employees.id)
-    print("BP: ", business_profile)
+    # business_profile = BusinessProfile.objects.get(id=employees.id)
+    # print("BP: ", business_profile)
     # except Employee.DoesNotExist:
     #     # Handle the case where the employee does not exist
     #     # You might want to redirect the user or show an error message
     #     return render(request, 'error.html')
 
     # Retrieve products based on the employee's business profile
-    if business_profile:
-        services = Service.objects.filter(business_profile=business_profile)
+    if employees:
+        services = Service.objects.filter(business_profile=employees.business_profile_id)
     else:
         # Handle the case where there's no business profile associated with the employee
         # You might want to redirect the user or show an error message
@@ -1599,19 +1607,10 @@ def sales_by_staff_item(request):
     # Retrieve the employee
     # try:
     employee = Employee.objects.get(id=employee_id)
-    print(employee.id)
-    
-        # business_profile = employee.business_profile_id.businessprofile_set.first()
-    business_profile = BusinessProfile.objects.get(id=employee.id)
-    print("BP: ", business_profile)
-    # except Employee.DoesNotExist:
-    #     # Handle the case where the employee does not exist
-    #     # You might want to redirect the user or show an error message
-    #     return render(request, 'error.html')
 
     # Retrieve products based on the employee's business profile
-    if business_profile:
-        products = Product.objects.filter(business_profile=business_profile)
+    if employee:
+        products = Product.objects.filter(business_profile=employee.business_profile_id)
     else:
         # Handle the case where there's no business profile associated with the employee
         # You might want to redirect the user or show an error message
@@ -1639,11 +1638,11 @@ def sales_by_staff_item_service(request):
     employees = Employee.objects.get(id=employee_id)
     print(employees.id)
     
-    business_profile = BusinessProfile.objects.get(id=employees.id)
+
     
-    if business_profile:
-        products = Product.objects.filter(business_profile=business_profile)
-        services = Service.objects.filter(business_profile=business_profile)
+    if employees:
+        products = Product.objects.filter(business_profile=employees.business_profile_id)
+        services = Service.objects.filter(business_profile=employees.business_profile_id)
     else:
        return render(request, 'error.html')
    
