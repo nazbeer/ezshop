@@ -22,7 +22,20 @@
 }
 </style>
   <div class="container">
-    <h2>Edit Employee</h2>
+    <div class="card">
+      <div class="card-header">
+        <h4 class="text-white mb-0">Edit Employee</h4>
+      </div>
+      <div class="card-body">
+         <!-- Display form errors if any -->
+    {% if form.errors %}
+    <div class="alert alert-danger" role="alert">
+        {% for field, error in form.errors.items %}
+            <strong>{{ field|title }}:</strong> {{ error|join:", " }}<br>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
     <form method="post">
       {% csrf_token %}
       <div class="row">
@@ -71,6 +84,7 @@
       <div class="form-group">
         <label for="business_profile">Business Profile:</label>
         <input type="text" id="business_profile" name="business_profile" value="{{ form.business_profile.value }}" class="form-control" readonly>
+        <input type="hidden" id="business_profile_id" name="business_profile_id" value="{{ form.business_profile_id.value }}">
       </div>
       <div class="form-group">
         <label for="id_expiration_date">ID Expiration Date:</label>
@@ -112,6 +126,10 @@
   </div>
       <button type="submit" class="btn btn-primary">Update</button>
     </form>
+
+
+  </div>
+</div>
   </div>
   <script>
      function validatePhoneNumber(input) {
