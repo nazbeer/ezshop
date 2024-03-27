@@ -652,12 +652,18 @@ def employee_dashboard(request):
     last_day_of_month = timezone.datetime(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
 
     # Aggregate total services, total sales, and total advance for the current month
-    day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month) or 0
-    total_services = day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or 0
-    total_sales = day_closings.aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
-    print(total_sales)
-    total_advance = day_closings.aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+    day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month)
 
+    # Check if day_closings is not empty
+    if day_closings.exists():
+        total_services = day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or 0
+        total_sales = day_closings.aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
+        total_advance = day_closings.aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+    else:
+        # If day_closings is empty, set totals to 0
+        total_services = 0
+        total_sales = 0
+        total_advance = 0
     # Commission calculation
     if employee and employee.commission_percentage:
         com_cal = employee.commission_percentage / 100
