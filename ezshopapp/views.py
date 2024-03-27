@@ -1024,7 +1024,13 @@ def DailySummaryCreate(request):
             send_daily_summary_email(request, daily_summary)
             return redirect('daily_summary_list')
     else:
-        last_daily_summary_date = DailySummary.objects.order_by('-date').first().date
+        last_daily_summary = DailySummary.objects.order_by('-date').first()
+        if last_daily_summary:
+            last_daily_summary_date = last_daily_summary.date
+        else:
+            # If no daily summaries exist, set last_daily_summary_date to a default value
+            last_daily_summary_date = datetime.now().date() - timedelta(days=1)
+
         # Calculate the minimum date as last_daily_summary_date + 1 day
         min_date = last_daily_summary_date + timedelta(days=1)
         # Pass the minimum date to the form
