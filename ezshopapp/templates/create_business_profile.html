@@ -36,7 +36,7 @@
                         {{ business_profile_form.shop_phone_number.errors }}
                         <div class="form-group">
                             <label for="{{ business_profile_form.shop_phone_number.id_for_label }}">Shop Phone Number:</label>
-                            <input type="text" id="{{ business_profile_form.shop_phone_number.id_for_label }}" name="shop_phone_number" class="form-control" oninput="validatePhoneNumber(this)" >
+                            <input type="tel" id="{{ business_profile_form.shop_phone_number.id_for_label }}" name="shop_phone_number" class="form-control"  maxlength="12" placeholder="971xxxxxxxxx" oninput="validatePhoneNumber(this)" >
                         </div>
                         <!-- Upload License (PDF only) -->
                         {{ business_profile_form.license_upload.errors }}
@@ -170,12 +170,35 @@
         }
     });
     function validatePhoneNumber(input) {
-        if (!/^[0-9+\-]*$/.test(input.value)) {
-            // Display an alert if invalid characters are entered
-            alert("Invalid characters detected. Please enter only numbers, plus (+), or minus (-) signs.");
-            // Remove invalid characters from the input value
-            input.value = input.value.replace(/[^0-9+\-]/g, '');
-        }
+    const inputValue = input.value.trim();
+    
+    // Check if the first three digits match the expected prefix "971"
+    if (inputValue.length >= 3 && inputValue.substring(0, 3) !== "971") {
+        alert("Phone number must start with '971'.");
+        // Clear the input field
+        input.value = '';
+        return;
     }
+
+    // Define the regular expression pattern for the expected phone number format
+    const phoneNumberPattern = /^971\d{0,9}$/;
+
+    // Check if the entered phone number matches the expected format
+    if (inputValue.length >= 3 && !phoneNumberPattern.test(inputValue)) {
+        // Display an alert if the entered phone number does not match the expected format
+        alert("Invalid phone number format. Please enter a valid phone number starting with '971' followed by up to 9 digits.");
+        // Remove invalid characters from the input value
+        input.value = inputValue.replace(/[^0-9]/g, '');
+    }
+
+    // Prevent further input if the length exceeds 12 characters
+    if (inputValue.length >= 12) {
+        // Truncate the input value to 12 characters
+        input.value = inputValue.slice(0, 12);
+    }
+}
+
+
+
 </script>
 {% endblock %}
