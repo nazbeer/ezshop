@@ -11,56 +11,56 @@
 
      <div class="card-header">
     <h5 class="mb-0 text-white">Sales Report - Sales By Staff Item Service</h5>
-</div>   
-<div class="card-body">
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped nowrap" style="width: 100%;" id="ssis">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Employee Details</th>
-                    <th>Product</th>
-                    <th>Product Quantity</th>
-                    <th>Product Price</th>
-                    <th>Product Total</th>
-                    <th>Service</th>
-                    <th>Service Quantity</th>
-                    <th>Service Price</th>
-                    <th>Service Total</th>
-                    <th>Sub Total</th>
-                    <th>Discount</th>
-                    <th>Total Amount</th>
-                    <th>Payment Method</th>
-                    
-                    
-                </tr>
-            </thead>
-            <tbody>
-                {% for sale in sales %}
-                <tr>
-                    <td>{{ sale.date }}</td>
-                    <td class="text-capitalize">{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
-                    <td>{{ sale.product.name }}</td>
-                    <td>{{ sale.pquantity }}</td>
-                    <td>{{ sale.pprice }}</td>
-                    <td>{{ sale.itemtotal }}</td>
-                    <td>{{ sale.service.name }}</td>
-                    <td>{{ sale.squantity }}</td>
-                    
-                    <td>{{ sale.sprice }}</td>
-                    <td>{{ sale.servicetotal }}</td>
-                    <td>{{ sale.sub_total }}</td>
-                    <td>{{ sale.discount }}</td>
-                    <td>{{ sale.total_amount }}</td>
-                    <td class="text-capitalize">{{ sale.payment_method }}</td>
-                    
-                    
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    </div>   
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped nowrap" style="width: 100%;" id="ssis">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee Details</th>
+                        <th>Product</th>
+                        <th>Product Quantity</th>
+                        <th>Product Price</th>
+                        <th>Product Total</th>
+                        <th>Service</th>
+                        <th>Service Quantity</th>
+                        <th>Service Price</th>
+                        <th>Service Total</th>
+                        <th>Sub Total</th>
+                        <th>Discount</th>
+                        <th>Total Amount</th>
+                        <th>Payment Method</th>
+                        
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales %}
+                    <tr>
+                        <td>{{ sale.date }}</td>
+                        <td class="text-capitalize">{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                        <td>{{ sale.product.name }}</td>
+                        <td>{{ sale.pquantity }}</td>
+                        <td>{{ sale.pprice }}</td>
+                        <td>{{ sale.itemtotal }}</td>
+                        <td>{{ sale.service.name }}</td>
+                        <td>{{ sale.squantity }}</td>
+                        
+                        <td>{{ sale.sprice }}</td>
+                        <td>{{ sale.servicetotal }}</td>
+                        <td>{{ sale.sub_total }}</td>
+                        <td>{{ sale.discount }}</td>
+                        <td>{{ sale.total_amount }}</td>
+                        <td class="text-capitalize">{{ sale.payment_method }}</td>
+                        
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 </div>
 </div>
 <div class="">

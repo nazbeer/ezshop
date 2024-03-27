@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpRespon
 import json
 import jwt
 import calendar
+from itertools import chain
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from decimal import Decimal
@@ -1557,28 +1558,15 @@ def day_closing_admin_report(request):
 
     # Get all employees associated with the business profile
     all_employees = Employee.objects.filter(business_profile=business_profile)
-    print(all_employees)
-    day_closings_list = DayClosingAdmin.objects.filter(employee__in=all_employees)
+    
+    # Get all day closings from DayClosing and DayClosingAdmin
+    day_closings_list = DayClosing.objects.filter(employee__in=all_employees)
+    day_closings_admin_list = DayClosingAdmin.objects.filter(employee__in=all_employees)
 
+    # Combine the querysets
+    day_closings = list(chain(day_closings_list, day_closings_admin_list))
 
-    # #day_closings_admin_list = DayClosingAdmin.objects.all()
-    # paginator = Paginator(day_closings_list, 10)
-    # #paginator_admin = Paginator(day_closings_admin_list, 10)
-
-    # page = request.GET.get('page')
-    # #page_admin = request.GET.get('page_admin')
-
-    # try:
-    #     day_closings = paginator.page(page)
-    #     #day_closings_admin = paginator_admin.page(page_admin)
-    # except PageNotAnInteger:
-    #     day_closings = paginator.page(1)
-    #     #day_closings_admin = paginator_admin.page(1)
-    # except EmptyPage:
-    #     day_closings = paginator.page(paginator.num_pages)
-    #     #day_closings_admin = paginator_admin.page(paginator_admin.num_pages)
-
-    return render(request, 'day_closing_admin_report.html', {'day_closings': day_closings_list})
+    return render(request, 'day_closing_admin_report.html', {'day_closings': day_closings})
 
 
 
@@ -1679,45 +1667,29 @@ def sales_report_admin(request):
         shop = shop_admin.shop
         business = BusinessProfile.objects.get(license_number=shop.license_number)
         employees = Employee.objects.filter(business_profile=business)
-        sales = SalesByAdminItem.objects.filter(employee__in=employees).select_related('employee')
-        service_sales = SaleByAdminService.objects.filter(employee__in=employees).select_related('employee')
-        # print("shop license:", shop.license_number)
-        # print("business id:", business.id)
-        # print("business license:", business.license_number)
-        # print("sales", sales)
-        # print("service_sales", service_sales)
+
+        # Get all types of sales data
+        sales_by_staff_item = SaleByStaffItem.objects.filter(employee__in=employees).select_related('employee', 'item')
+        sales_by_staff_item_service = SalesByStaffItemService.objects.filter(employee__in=employees).select_related('employee')
+        sales_by_staff_service = SaleByStaffService.objects.filter(employee__in=employees).select_related('employee', 'service')
+        sales_by_admin_item = SalesByAdminItem.objects.filter(employee__in=employees).select_related('employee', 'item')
+        sales_by_admin_service = SaleByAdminService.objects.filter(employee__in=employees).select_related('employee', 'service')
+
+        # Combine sales data
+        service_sales = [(sale, 'Staff') for sale in sales_by_staff_service] + [(sale, 'Admin') for sale in sales_by_admin_service]
+        sales = [(sale, 'Admin') for sale in sales_by_admin_item] + [(sale, 'Staff') for sale in sales_by_staff_item]
+        salesa = sales_by_staff_item_service
+        
     except AttributeError:
         business = None
         employees = None
+        service_sales = []
+        sales = []
+        salesa = []
 
-    # if employees:
-        # Filter sales by item
-        start_date_item = request.GET.get('start_date_item')
-        end_date_item = request.GET.get('end_date_item')
-        
-        if start_date_item and end_date_item:
-            start_date_item = datetime.strptime(start_date_item, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
-            end_date_item = datetime.strptime(end_date_item, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
-            sales = SalesByAdminItem.objects.filter(employee__in=employees, date__range=(start_date_item, end_date_item)).select_related('employee')
-            
-            print(sales)
-        else:
-            sales = SalesByAdminItem.objects.filter(employee__in=employees).select_related('employee')
-            print(sales)
-        # Filter sales by service
-        start_date_service = request.GET.get('start_date_service')
-        end_date_service = request.GET.get('end_date_service')
-        
-        if start_date_service and end_date_service:
-            start_date_service = datetime.strptime(start_date_service, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
-            end_date_service = datetime.strptime(end_date_service, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
-            service_sales = service_sales.filter(date__range=(start_date_service, end_date_service))
-        else:
-            service_sales = SaleByAdminService.objects.filter(employee__in=employees).select_related('employee')
-
-    
     context = {
         'sales': sales,
+        'salesa': salesa,
         'service_sales': service_sales,
     }
     return render(request, 'sales_report_admin.html', context)
