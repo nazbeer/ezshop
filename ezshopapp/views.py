@@ -696,12 +696,10 @@ def employee_dashboard(request):
     
     # If job_role exists, filter roles based on it
     role = Role.objects.filter(name=employee.job_role).first()
-    print("Role:", role)
-            
+      
     # Get active modules based on the filtered role
     active_modules = role.modules.all()
-    print("Active Modules:", active_modules)
-           
+  
     # Check if day_closings is not empty
     if day_closings.exists():
         total_services = day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or 0
@@ -756,9 +754,15 @@ def employee_profile(request):
     
     # Fetch employee details
     employee = get_object_or_404(Employee, id=employee_id)
-    
+     # If job_role exists, filter roles based on it
+    role = Role.objects.filter(name=employee.job_role).first()
+      
+    # Get active modules based on the filtered role
+    active_modules = role.modules.all()
+  
     context = {
-        'employee': employee
+        'employee': employee,
+        'active_modules': active_modules,
     }
     return render(request, 'employee_profile.html', context)
 
@@ -1567,14 +1571,46 @@ def day_closing_admin(request):
         form = DayClosingAdminForm(initial={'date': current_date.strftime('%Y-%m-%d')})  # Initialize with current date
     print(current_date.strftime('%Y-%m-%d'))
     return render(request, 'dayclosing_admin.html', {'current_date': current_date, 'remaining_employees':remaining_employees,'form': form})
+def fetch_data_admin(request, selected_date, employee_id):
+    # Convert the employee_id to an integer
+    employee_id = int(employee_id)
 
-def fetch_data_admin(request, selected_date):
-    # Fetch data for the selected date
-    
-    total_services = SaleByAdminService.objects.filter(date=selected_date).aggregate(total_services=Sum('total_amount'))['total_services'] or 0
-    total_sales = SalesByAdminItem.objects.filter(date=selected_date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+    # Fetch total services for the selected date and employee
+    total_services = (
+        SaleByAdminService.objects.filter(date=selected_date, employee_id=employee_id)
+        .aggregate(total_services=Sum('total_amount'))['total_services'] or 0
+    )
+    total_services += (
+        SalesByStaffItemService.objects.filter(date=selected_date, employee_id=employee_id)
+        .aggregate(total_services=Sum('servicetotal'))['total_services'] or 0
+    )
+    total_services += (
+        SaleByStaffService.objects.filter(date=selected_date, employee_id=employee_id)
+        .aggregate(total_services=Sum('total_amount'))['total_services'] or 0
+    )
+
+    # Fetch total sales for the selected date and employee
+    total_sales = (
+        SalesByAdminItem.objects.filter(date=selected_date, employee_id=employee_id)
+        .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+    )
+    total_sales += (
+        SalesByStaffItemService.objects.filter(date=selected_date, employee_id=employee_id)
+        .aggregate(total_sales=Sum('itemtotal'))['total_sales'] or 0
+    )
+    total_sales += (
+        SaleByStaffItem.objects.filter(date=selected_date, employee_id=employee_id)
+        .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+    )
+
+    # Calculate total collection
     total_collection = total_sales + total_services
-    advance = DayClosing.objects.filter(date=selected_date).aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+
+    # Fetch advance for the selected date
+    advance = (
+        DayClosing.objects.filter(date=selected_date)
+        .aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+    )
 
     # Create a dictionary containing the fetched data
     data = {
@@ -1606,7 +1642,7 @@ def fetch_remaining_employees(request, selected_date):
     # Filter employees who haven't done day closing on the selected date
     remaining_employees = all_employees.exclude(id__in=employees_with_day_closing)
     
-    print(remaining_employees)
+    print('remaing:', remaining_employees)
     # Serialize remaining employees data
     
     if not remaining_employees:

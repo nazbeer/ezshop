@@ -438,6 +438,7 @@
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto pl-3">
             <li class="d-n"><a href="/employee-dashboard/">Home</a></li>
+            <li class="d-n"><a href="/profile/">Profile</a></li>
             {% for module in active_modules %}
             <li class="d-n">
                 <a href="{{ module.url }}">{{ module.name }}</a>
@@ -478,6 +479,7 @@
     <!-- sidebar_emp.html -->
 <ul id="font-c" style="max-height: 400px; overflow-y: scroll;">
     <li><a href="/employee-dashboard/">Home</a></li>
+    <li><a href="/profile/">Profile</a></li>
    
     {% for module in active_modules %}
         <li>

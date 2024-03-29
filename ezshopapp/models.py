@@ -40,7 +40,6 @@ class Modules(models.Model):
             ('/sale/sales-report/',  'Sales Report'),
         ]
         return sidebar_choices
-
 class Module(models.Model):
     URL_CHOICES = [
         ('/sale/dayclosing/', 'Day Closing'),
@@ -51,12 +50,22 @@ class Module(models.Model):
         ('/sale/day-closing-report/', 'Day Closing Report'),
         ('/sale/sales-report/', 'Sales Report'),
     ]
-    url = models.CharField(max_length=150, choices=URL_CHOICES, null=True)
-    name = models.CharField(max_length=50, choices=URL_CHOICES, null=True)
+    URL_NAMES = [
+        ('Day Closing', '/sale/dayclosing/'),
+        ('Admin Day Closing', '/dayclosing/admin/'),
+        ('Sales by Staff - Product/Service', '/sale/sales-by-staff-item-service/'),
+        ('Sales by Staff - Service', '/sale/sales-by-staff-service/'),
+        ('Sales by Staff - Product', '/sale/sales-by-staff-item/'),
+        ('Day Closing Report', '/sale/day-closing-report/'),
+        ('Sales Report', '/sale/sales-report/'),
+    ]
+    url = models.CharField(max_length=150, choices=URL_CHOICES, null=True, verbose_name='Page Name')
+    name = models.CharField(max_length=50, choices=URL_NAMES, null=True, verbose_name='Page URL')
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
+
 
 
 class Shop(models.Model):

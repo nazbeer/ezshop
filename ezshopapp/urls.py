@@ -45,7 +45,7 @@ urlpatterns = [
     path('get_employee_data/<int:employee_id>/', get_employee_data, name='get_employee_data'),
     path('dayclosing/admin/', day_closing_admin, name='dayclosing_admin'),
 
-    path('fetch-data-admin/<str:selected_date>/', fetch_data_admin, name='fetch_data_admin'),
+    path('fetch-data-admin/<str:selected_date>/<int:employee_id>/', fetch_data_admin, name='fetch_data_admin'),
     path('fetch-remaining-employees/<str:selected_date>/', views.fetch_remaining_employees, name='fetch_remaining_employees'),
 
     path('sale/dayclosing/<int:pk>/edit/', edit_day_closing, name='edit_day_closing'),
@@ -115,7 +115,7 @@ urlpatterns = [
     path('employee-logout/', employee_logout, name='employee_logout'),
     path('employee-dashboard/', employee_dashboard, name='employee_dashboard'),
     path('sale/sales-by-staff-item-service/', sales_by_staff_item_service, name='sales_by_staff_item_service'),
-    path('sale/sales-by-staff-service', submit_sale, name='sales-by-staff-service'),
+    path('sale/sales-by-staff-service/', submit_sale, name='sales-by-staff-service'),
     path('sale/sales-by-staff-item/', sales_by_staff_item, name='sales_by_staff_item'),
     path('sale/sales-report/', sales_report, name='sales_report'),
     path('sale/dayclosing/', DayClosingCreate, name='dayclosing'),

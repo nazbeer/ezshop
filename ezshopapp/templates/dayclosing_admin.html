@@ -68,28 +68,9 @@
         </div>
     </div>
 </div>
-
 <script>
     // Get today's date
-var today = new Date();
-// var dd = today.getDate();
-// var mm = today.getMonth() + 1; // January is 0!
-// var yyyy = today.getFullYear();
-
-// // Pad single-digit days and months with a leading zero
-// if (dd < 10){
-//     dd='0'+dd
-// } 
-// if (mm < 10){
-//     mm='0'+mm
-// } 
-
-// // Construct the date string in the format yyyy-mm-dd
-// today = yyyy + '-' + mm + '-' + dd;
-
-// // Set the max attribute of the date input element to today's date
-document.getElementById("date").setAttribute("max", today);
-
+    var today = new Date();
 
     // Function to fetch data, remaining employees, and validate date when changed
     document.getElementById("date").addEventListener("change", function() {
@@ -98,66 +79,93 @@ document.getElementById("date").setAttribute("max", today);
         var yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
         var yesterdayFormatted = yesterday.toISOString().split('T')[0];
-        
+
         if (this.value !== todayFormatted && this.value !== yesterdayFormatted) {
             alert("You can only select today's date or yesterday's date.");
             this.value = ""; // Clear the selected date
 
             // Reset all input fields
-            document.getElementById("id_total_services").value = "";
-            document.getElementById("id_total_sales").value = "";
-            document.getElementById("id_total_collection").value = "";
-            document.getElementById("id_advance").value = "";
-            document.getElementById("id_net_collection").value = "";
+            resetInputFields();
 
             // Disable the submit button
-            document.getElementById("submitBtn").disabled = true;
+            disableSubmitButton();
 
             // Set employee select to default message
-            var employeeSelect = document.getElementById("employee");
-            employeeSelect.innerHTML = "<option disabled selected>Day Closing for all employees is completed</option>";
+            setDefaultEmployeeMessage();
         } else {
-            // Fetch data for the selected date
-            fetch('/fetch-data-admin/' + selectedDate + '/')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("id_total_services").value = data.total_services;
-                    document.getElementById("id_total_sales").value = data.total_sales;
-                    document.getElementById("id_total_collection").value = data.total_collection;
-                    document.getElementById("id_advance").value = data.advance;
-                    var totalCollection = parseFloat(data.total_collection);
-                    var advance = parseFloat(data.advance);
-                    var netCollection = totalCollection - advance;
-                    document.getElementById("id_net_collection").value = netCollection.toFixed(2);
-                })
-                .catch(error => console.error('Error:', error));
-
             // Fetch list of remaining employees for the selected date
-            fetch('/fetch-remaining-employees/' + selectedDate + '/')
-                .then(response => response.json())
-                .then(data => {
-                    var employeeSelect = document.getElementById("employee");
-
-                    if (data.message) {
-                        // If there is a message indicating that day closing is completed for all employees
-                        employeeSelect.innerHTML = "<option disabled selected>Day Closing for all employees is completed</option>";
-                        // Disable the submit button
-                        document.getElementById("submitBtn").disabled = true;
-                    } else {
-                        // If there are remaining employees for day closing
-                        employeeSelect.innerHTML = ""; // Clear existing options
-                        data.remaining_employees.forEach(employee => {
-                            var option = document.createElement("option");
-                            option.value = employee.id;
-                            option.text = employee.first_name + " " + employee.second_name;
-                            employeeSelect.appendChild(option);
-                        });
-                        // Enable the submit button
-                        document.getElementById("submitBtn").disabled = false;
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+            fetchRemainingEmployees(selectedDate);
         }
     });
+
+    // Function to reset input fields
+    function resetInputFields() {
+        document.getElementById("id_total_services").value = "";
+        document.getElementById("id_total_sales").value = "";
+        document.getElementById("id_total_collection").value = "";
+        document.getElementById("id_advance").value = "";
+        document.getElementById("id_net_collection").value = "";
+    }
+
+    // Function to disable submit button
+    function disableSubmitButton() {
+        document.getElementById("submitBtn").disabled = true;
+    }
+
+    // Function to set default employee message
+    function setDefaultEmployeeMessage() {
+        var employeeSelect = document.getElementById("employee");
+        employeeSelect.innerHTML = "<option disabled selected>Day Closing for all employees is completed</option>";
+    }
+
+    // Function to fetch remaining employees
+    function fetchRemainingEmployees(selectedDate) {
+        fetch('/fetch-remaining-employees/' + selectedDate + '/')
+            .then(response => response.json())
+            .then(data => {
+                var employeeSelect = document.getElementById("employee");
+
+                if (data.message) {
+                    // If there is a message indicating that day closing is completed for all employees
+                    employeeSelect.innerHTML = "<option disabled selected>Day Closing for all employees is completed</option>";
+                    // Disable the submit button
+                    disableSubmitButton();
+                } else {
+                    // If there are remaining employees for day closing
+                    employeeSelect.innerHTML = ""; // Clear existing options
+                    data.remaining_employees.forEach(employee => {
+                        var option = document.createElement("option");
+                        option.value = employee.id;
+                        option.text = employee.first_name + " " + employee.second_name;
+                        employeeSelect.appendChild(option);
+                    });
+                    // Enable the submit button
+                    document.getElementById("submitBtn").disabled = false;
+
+                    // Fetch data for the selected date and employee
+                    var employeeId = document.getElementById("employee").value;
+                    fetchAdminData(selectedDate, employeeId);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Function to fetch admin data
+    function fetchAdminData(selectedDate, employeeId) {
+        fetch('/fetch-data-admin/' + selectedDate + '/' + employeeId + '/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("id_total_services").value = data.total_services;
+                document.getElementById("id_total_sales").value = data.total_sales;
+                document.getElementById("id_total_collection").value = data.total_collection;
+                document.getElementById("id_advance").value = data.advance;
+                var totalCollection = parseFloat(data.total_collection);
+                var advance = parseFloat(data.advance);
+                var netCollection = totalCollection - advance;
+                document.getElementById("id_net_collection").value = netCollection.toFixed(2);
+            })
+            .catch(error => console.error('Error:', error));
+    }
 </script>
+
 {% endblock %}

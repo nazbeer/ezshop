@@ -10,7 +10,7 @@
         
 
      <div class="card-header">
-    <h5 class="mb-0 text-white">Sales Report - Sales By Staff Item Service</h5>
+    <h5 class="mb-0 text-white">Sales Report - Sales By Staff Product &amp; Service</h5>
     </div>   
     <div class="card-body">
         <div class="table-responsive">
@@ -19,13 +19,9 @@
                     <tr>
                         <th>Date</th>
                         <th>Employee Details</th>
-                        <th>Product</th>
-                        <th>Product Quantity</th>
-                        <th>Product Price</th>
+                       
                         <th>Product Total</th>
-                        <th>Service</th>
-                        <th>Service Quantity</th>
-                        <th>Service Price</th>
+                      
                         <th>Service Total</th>
                         <th>Sub Total</th>
                         <th>Discount</th>
@@ -39,15 +35,10 @@
                     {% for sale in sales %}
                     <tr>
                         <td>{{ sale.date }}</td>
-                        <td class="text-capitalize">{{ sale.employee.employee_id }} ({{ sale.employee.id}}) - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
-                        <td>{{ sale.product.name }}</td>
-                        <td>{{ sale.pquantity }}</td>
-                        <td>{{ sale.pprice }}</td>
+                        <td class="text-capitalize">{{ sale.employee.employee_id }} - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                       
                         <td>{{ sale.itemtotal }}</td>
-                        <td>{{ sale.service.name }}</td>
-                        <td>{{ sale.squantity }}</td>
                         
-                        <td>{{ sale.sprice }}</td>
                         <td>{{ sale.servicetotal }}</td>
                         <td>{{ sale.sub_total }}</td>
                         <td>{{ sale.discount }}</td>
@@ -91,7 +82,7 @@
             {% for sales_admin in sales_staff_service %}
             <tr>
                 <td>{{ sales_admin.date }}</td>
-                <td class="text-capitalize">{{ sales_admin.employee.employee_id }} ({{ sales_admin.employee.id}}) - {{ sales_admin.employee.first_name }} {{ sales_admin.employee.second_name }}</td>
+                <td class="text-capitalize">{{ sales_admin.employee.employee_id }} - {{ sales_admin.employee.first_name }} {{ sales_admin.employee.second_name }}</td>
                 
                 <td>{{ sales_admin.service.name }}</td>
                 <td>{{ sales_admin.quantity }}</td>
@@ -114,7 +105,7 @@
     
     <div class="card-header">
         
-    <h5 class="mb-0 text-white">Sales Report - Sales By Staff Item</h5>
+    <h5 class="mb-0 text-white">Sales Report - Sales By Staff Product</h5>
     </div>
     <div class="card-body">
     <div class="table-responsive">
@@ -137,7 +128,7 @@
                 {% for sales_item in sales_staff_item %}
                 <tr>
                     <td>{{ sales_item.date }}</td>
-                    <td class="text-capitalize">{{ sales_item.employee.employee_id }} ({{ sales_item.employee.id}}) - {{ sales_item.employee.first_name }} {{ sales_item.employee.second_name }}</td>
+                    <td class="text-capitalize">{{ sales_item.employee.employee_id }} - {{ sales_item.employee.first_name }} {{ sales_item.employee.second_name }}</td>
                     
                     <td>{{ sales_item.item.name }}</td>
                     <td>{{ sales_item.quantity }}</td>
