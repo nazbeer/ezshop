@@ -67,8 +67,7 @@
             </form>
         </div>
     </div>
-</div>
-<script>
+</div><script>
     // Get today's date
     var today = new Date();
 
@@ -96,6 +95,13 @@
             // Fetch list of remaining employees for the selected date
             fetchRemainingEmployees(selectedDate);
         }
+    });
+
+    // Add event listener for employee selection change
+    document.getElementById("employee").addEventListener("change", function() {
+        var selectedDate = document.getElementById("date").value;
+        var selectedEmployeeId = this.value;
+        fetchAdminData(selectedDate, selectedEmployeeId);
     });
 
     // Function to reset input fields
@@ -167,5 +173,6 @@
             .catch(error => console.error('Error:', error));
     }
 </script>
+
 
 {% endblock %}

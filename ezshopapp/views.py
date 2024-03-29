@@ -1574,7 +1574,7 @@ def day_closing_admin(request):
 def fetch_data_admin(request, selected_date, employee_id):
     # Convert the employee_id to an integer
     employee_id = int(employee_id)
-
+    print("emp id", employee_id)
     # Fetch total services for the selected date and employee
     total_services = (
         SaleByAdminService.objects.filter(date=selected_date, employee_id=employee_id)
@@ -1588,7 +1588,7 @@ def fetch_data_admin(request, selected_date, employee_id):
         SaleByStaffService.objects.filter(date=selected_date, employee_id=employee_id)
         .aggregate(total_services=Sum('total_amount'))['total_services'] or 0
     )
-
+    print(total_services)
     # Fetch total sales for the selected date and employee
     total_sales = (
         SalesByAdminItem.objects.filter(date=selected_date, employee_id=employee_id)
@@ -1642,7 +1642,7 @@ def fetch_remaining_employees(request, selected_date):
     # Filter employees who haven't done day closing on the selected date
     remaining_employees = all_employees.exclude(id__in=employees_with_day_closing)
     
-    print('remaing:', remaining_employees)
+    # print('remaing:', remaining_employees)
     # Serialize remaining employees data
     
     if not remaining_employees:
