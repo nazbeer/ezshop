@@ -6,20 +6,10 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-#from django import forms
+
 admin.site.site_header = "Ezshop Admin"
 admin.site.site_title = "Ezshop Admin Portal"
 admin.site.index_title = "Welcome to Ezshop Mite Solution App"
-
-
-# class CustomUserAdmin(BaseUserAdmin):
-#     add_form = CustomUserCreationForm
-#     add_fieldsets = (
-#         (None, {
-#             'classes': ('wide',),
-#             'fields': ('username', 'password1', 'password2', 'shop'),
-#         }),
-#     )
 
 class CustomUserAdmin(BaseUserAdmin):
     add_form = CustomUserCreationForm
@@ -29,14 +19,6 @@ class CustomUserAdmin(BaseUserAdmin):
             'fields': ('username', 'password1', 'password2', 'shop'),
         }),
     )
-    # list_display = ('username', 'email',)  # Add 'get_shop' to list_display
-    # search_fields = ['username', 'email']
-
-    # def get_shop(self, obj):
-    #     return obj.shop.name if obj.shop else None  # Return shop name if exists, else None
-
-    # get_shop.short_description = 'Shop'  # Set the column header name
-
 
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
@@ -59,104 +41,92 @@ class CustomShopAdminAdmin(admin.ModelAdmin):
     get_admin_username.short_description = 'Admin Username'
 
 admin.site.register(ShopAdmin, CustomShopAdminAdmin)
-
-# class CustomShopAdminAdmin(admin.ModelAdmin):
-#     form = CustomShopAdminForm
-#     list_display = ('name', 'admin_email')
-#     search_fields = ['shop__name', 'admin_user__email']
-#     list_filter = ['name']  # Update list_filter to use the 'name' field instead of 'shop'
+@admin.register(Shop)
+class ShopAdmin(admin.ModelAdmin):
+    list_display = ['name', 'license_number', 'num_users', 'vat_remainder', 'employee_transaction_window', 'license_expiration_reminder', 'employee_visa_expiration_reminder', 'employee_passport_expiration_reminder', 'admin_email', 'created_on']
 
 
-#     def shop_name(self, obj):
-#         return obj.shop.name
+# @admin.register(Modules)
+# class ModulesAdmin(admin.ModelAdmin):
+#     list_display = ['name', 'created_on']
 
-#     def admin_email(self, obj):
-#         return obj.admin_user.email
-
-#     def get_queryset(self, request):
-#         qs = super().get_queryset(request)
-#         if request.user.is_superuser:
-#             return qs
-#         return qs.filter(admin_user=request.user)
-
-#     def form_valid(self, form):
-#         instance = form.save(commit=False)
-#         existing_shop_count = ShopAdmin.objects.filter(admin_user=instance.admin_user).count()
-#         if existing_shop_count >= 1:
-#             self.message_user(
-#                 self.request,
-#                 "Only one shop can be created under each user.",
-#                 level=admin.messages.ERROR
-#             )
-#             return super().form_invalid(form)
-#         else:
-#             return super().form_valid(form)
-
-#     shop_name.short_description = 'Shop Name'
-#     admin_email.short_description = 'Admin Email'
+@admin.register(Module)
+class ModuleAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_on']
 
 
+@admin.register(BusinessProfile)
+class BusinessProfileAdmin(admin.ModelAdmin):
+    list_display = ['name', 'license_number', 'license_expiration', 'shop_phone_number', 'vat_percentage', 'vat_number', 'vat_submission_date_1', 'vat_submission_date_2', 'vat_submission_date_3', 'address', 'license_expiration_reminder_days', 'vat_submission_date_reminder_days', 'employee_visa_expiration_reminder_days', 'created_on', 'license_expiration_reminder_due', 'vat_submission_date_reminder_due']
 
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ['name', 'business_profile', 'is_employee', 'created_on']
 
-# class CustomUserAdmin(UserAdmin):
-#     def form_valid(self, form):
-#         user = form.save(commit=False)
-#         existing_shop_count = ShopAdmin.objects.filter(admin_user=user).count()
-#         if existing_shop_count >= 1:
-#             self.message_user(
-#                 self.request,
-#                 "Only one shop can be created under each user.",
-#                 level=admin.messages.ERROR
-#             )
-#             return super().form_invalid(form)
-#         else:
-#             return super().form_valid(form)
+@admin.register(ExpenseType)
+class ExpenseTypeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_on']
 
-# admin.site.unregister(User)
-# admin.site.register(User, CustomUserAdmin)
-# admin.site.register(Shop, CustomShopAdminAdmin)
+@admin.register(ReceiptType)
+class ReceiptTypeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_on']
 
+@admin.register(Bank)
+class BankAdmin(admin.ModelAdmin):
+    list_display = ['name', 'account_number', 'opening_balance', 'created_on']
 
-# class ShopAdminInline(admin.StackedInline):
-#     model = ShopAdmin
-#     can_delete = False
-#     max_num = 1
-#     fk_name = 'admin_user'
-# class ShopAdminAdmin(admin.ModelAdmin):
-#     model = ShopAdmin
-#     list_display = ['shop', ]  # Replace 'user' with the correct field
-#     search_fields = ['admin_user__username', 'shop__name']
-#     list_filter = ['shop']
+@admin.register(ReceiptTransaction)
+class ReceiptTransactionAdmin(admin.ModelAdmin):
+    list_display = ['date', 'receipt_type', 'received_amount', 'narration', 'created_on']
 
-# class ShopAdminUserAdmin(BaseUserAdmin):
-#     inlines = [ShopAdminInline]
+@admin.register(PaymentTransaction)
+class PaymentTransactionAdmin(admin.ModelAdmin):
+    list_display = ['date', 'expense_type', 'amount', 'narration', 'created_on']
 
-# # Unregister the default UserAdmin
-# admin.site.unregister(User)
-# # Register User with the custom ShopAdminUserAdmin
-# admin.site.register(User, ShopAdminUserAdmin)
+@admin.register(BankDeposit)
+class BankDepositAdmin(admin.ModelAdmin):
+    list_display = ['date', 'deposit_date', 'amount', 'transaction_type', 'narration', 'bank', 'created_on']
 
-# admin.site.register(Shop, ShopAdminAdmin)
-admin.site.register(Shop)
-#admin.site.register(ShopAdmin)
-admin.site.register(Sale)
-admin.site.register(Employee)
-#admin.site.register(UserProfile)
-admin.site.register(Service)
-#admin.site.register(BusinessProfile)
-# admin.site.register(DayClosing)
-# admin.site.register(DayClosingAdmin)
-admin.site.register(SaleByAdminService)
-# admin.site.register(Role)
-# admin.site.register(SaleItem)
-# admin.site.register(ExpenseType)
-# admin.site.register(ReceiptType)
-admin.site.register(Bank)
-# admin.site.register(ReceiptTransaction)
-# admin.site.register(PaymentTransaction)
-# admin.site.register(BankDeposit)
-# admin.site.register(Product)
-# admin.site.register(EmployeeTransaction)
-# admin.site.register(DailySummary)
-# admin.site.register(SalesByAdminItem)
-admin.site.register(SalesByStaffItemService)
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
+    list_display = ['employee_id', 'username', 'password', 'business_profile', 'business_profile_id', 'first_name', 'second_name', 'nationality', 'mobile_no', 'passport_no', 'passport_expiration_date', 'emirates_id', 'id_expiration_date', 'basic_pay', 'house_allowance', 'transportation_allowance', 'commission_percentage', 'joining_date', 'job_role', 'is_employee', 'created_on', 'id_expiration_due']
+
+# @admin.register(EmployeeTransaction)
+# class EmployeeTransactionAdmin(admin.ModelAdmin):
+#     list_display = ['transaction_type', 'total_amount', 'payment_option', 'employee', 'created_on']
+
+# @admin.register(DayClosing)
+# class DayClosing(admin.ModelAdmin):
+#     list_display = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection', 'status', 'created_on']
+
+@admin.register(DayClosingAdmin)
+class DayClosingAdminAdmin(admin.ModelAdmin):
+    list_display = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection', 'status', 'created_on']
+
+@admin.register(DailySummary)
+class DailySummaryAdmin(admin.ModelAdmin):
+    list_display = ['date', 'opening_balance', 'total_received_amount', 'total_expense_amount', 'total_bank_deposit', 'balance', 'narration', 'created_on']
+
+@admin.register(Sale)
+class SaleAdmin(admin.ModelAdmin):
+    list_display = ['date', 'amount', 'discount', 'net_amount', 'created_on']
+
+@admin.register(SaleByStaffService)
+class SaleByStaffServiceAdmin(admin.ModelAdmin):
+    list_display = ['date', 'employee', 'service', 'quantity', 'price', 'total_amount', 'payment_method', 'created_on']
+
+@admin.register(SaleByStaffItem)
+class SaleByStaffItemAdmin(admin.ModelAdmin):
+    list_display = ['date', 'employee', 'item', 'quantity', 'price', 'total_amount', 'payment_method', 'created_on']
+
+@admin.register(SaleByAdminService)
+class SaleByAdminServiceAdmin(admin.ModelAdmin):
+    list_display = ['date', 'employee', 'service', 'quantity', 'price', 'total_amount', 'payment_method', 'created_on']
+
+@admin.register(SalesByAdminItem)
+class SalesByAdminItemAdmin(admin.ModelAdmin):
+    list_display = ['date', 'employee', 'item', 'quantity', 'price', 'total_amount', 'payment_method', 'created_on']
+
+@admin.register(SalesByStaffItemService)
+class SalesByStaffItemServiceAdmin(admin.ModelAdmin):
+    list_display = ['date', 'employee', 'product', 'pquantity', 'pprice', 'service', 'squantity', 'sprice', 'sub_total', 'discount', 'total_amount', 'payment_method', 'created_on', 'itemtotal', 'servicetotal']

@@ -7,20 +7,31 @@
 {% block content %}
 <div class="card mt-3">
     <div class="card-header">
-        <h3 class="mb-0">Create Receipt Type</h3>
+        <h4 class="mb-0">Create Receipt Type</h4>
     </div>
+    <form method="POST">
     <div class="card-body">
         
     
-    <div class="col-md-6">
-    <form method="POST">
+   
+   
         {% csrf_token %}
-        <label for="name">Receipt Type Name:</label><br>
-        <input type="text" id="name" name="name"><br><br>
-        <input type="submit" value="Submit" class="btn btn-success">
-    </form>
-</div>
+        <div class="col-md-6">
+            <div class="form-group">
+        <label for="name">Receipt Type Name:</label>
+        <input type="text" id="name" name="name">
+    </div>
+        </div>
+      
+    
 
+
+    </div>
+<div class="card-footer">
+    <div class="form-group mb-0">
+    <button type="submit" value="Submit" class="btn btn-success">Submit</button>
 </div>
+</div>
+</form>
 </div>
 {% endblock %}

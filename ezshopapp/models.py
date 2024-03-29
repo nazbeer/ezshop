@@ -1,16 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext as _
 from django.utils import timezone
-from django.forms import inlineformset_factory
-from django.db.models import Sum
-from datetime import timedelta
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
-import pytz
 from django.core.validators import MinValueValidator
+from datetime import timedelta
+from django.dispatch import receiver
+from django.db.models.signals import pre_save
+import pytz
 
 STATUS_CHOICES = [
     ('pending', 'Pending'),
@@ -35,23 +31,33 @@ class Modules(models.Model):
     def get_sidebar_choices(cls):
 
         sidebar_choices = [
-          
-            ('day-closing',  'Day Closing'),
-            ('day-closing-admin',  'Admin Day Closing'),
-            ('sales-by-staff-item-service', 'Sales by Staff - Product/Service'),
-            ('sales-by-staff-item', 'Sales by Staff - Service'),
-            ('sale-by-staff-item', 'Sales by Staff - Product'),
-            ('day-closing-report',  'Day Closing Report'),
-            ('sales-report',  'Sales Report'),
+            ('/sale/dayclosing/',  'Day Closing'),
+            ('/dayclosing/admin/ ',  'Admin Day Closing'),
+            ('/sale/sales-by-staff-item-service/', 'Sales by Staff - Product/Service'),
+            ('/sale/sales-by-staff-service/', 'Sales by Staff - Service'),
+            ('/sale/sales-by-staff-item/', 'Sales by Staff - Product'),
+            ('/sale/day-closing-report/',  'Day Closing Report'),
+            ('/sale/sales-report/',  'Sales Report'),
         ]
         return sidebar_choices
 
 class Module(models.Model):
-    name = models.CharField(max_length=50)
+    URL_CHOICES = [
+        ('/sale/dayclosing/', 'Day Closing'),
+        ('/dayclosing/admin/', 'Admin Day Closing'),
+        ('/sale/sales-by-staff-item-service/', 'Sales by Staff - Product/Service'),
+        ('/sale/sales-by-staff-service/', 'Sales by Staff - Service'),
+        ('/sale/sales-by-staff-item/', 'Sales by Staff - Product'),
+        ('/sale/day-closing-report/', 'Day Closing Report'),
+        ('/sale/sales-report/', 'Sales Report'),
+    ]
+    url = models.CharField(max_length=150, choices=URL_CHOICES, null=True)
+    name = models.CharField(max_length=50, choices=URL_CHOICES, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
+
 
 class Shop(models.Model):
     name = models.CharField(max_length=255, verbose_name='Shop Name')
@@ -69,8 +75,6 @@ class Shop(models.Model):
     def __str__(self):
         return self.name
     
-    
-
 class ShopAdmin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True, null=True, verbose_name="Mite Admin User")
     shop = models.OneToOneField(Shop, on_delete=models.CASCADE)
@@ -80,8 +84,6 @@ class ShopAdmin(models.Model):
             return self.user.username
         else:
             return "No User Assigned"
-
-
 
 class BusinessProfile(models.Model):
     name = models.CharField(max_length=64, blank=False, default=None, null=True)
@@ -104,8 +106,6 @@ class BusinessProfile(models.Model):
     def __str__(self):
         return self.name
     
-
-    
     def license_expiration_reminder_due(self):
         return (self.license_expiration - timezone.now().date()).days <= self.license_expiration_reminder_days
 
@@ -126,11 +126,6 @@ class Role(models.Model):
 
     def __str__(self):
         return self.name
-
-for choice in Modules.get_sidebar_choices():
-    module_name = choice[1]
-    Module.objects.get_or_create(name=module_name)
-    
 
 class ExpenseType(models.Model):
     name = models.CharField(max_length=255)
@@ -175,7 +170,7 @@ class BankDeposit(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_type = models.CharField(max_length=20)  
     narration = models.TextField()
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE, null=True, blank=True)  # ForeignKey to Bank model
+    bank = models.ForeignKey(Bank, on_delete=models.CASCADE, null=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -233,21 +228,7 @@ class Employee(models.Model):
     def __str__(self):
         return f"{self.employee_id} - {self.first_name} {self.second_name}"
     
-    # def passport_expiration_due(self):
-    #     """
-    #     Check if the passport expiration date is within the reminder days.
-    #     Returns True if it's due, False otherwise.
-    #     """
-    #     business_profile = BusinessProfile.objects.get(license_number=self.business_profile)
-    #     reminder_days = business_profile.passport_expiration_reminder_days
-    #     expiration_due_date = self.passport_expiration_date - timedelta(days=reminder_days)
-    #     return expiration_due_date <= timezone.now().date()
-
     def id_expiration_due(self):
-        """
-        Check if the ID expiration date is within the reminder days.
-        Returns True if it's due, False otherwise.
-        """
         business_profile = BusinessProfile.objects.get(id=self.business_profile_id)
         reminder_days = business_profile.employee_visa_expiration_reminder_days
         expiration_due_date = self.id_expiration_date - timedelta(days=reminder_days)
@@ -263,11 +244,9 @@ class EmployeeTransaction(models.Model):
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES)
     service_transactions = models.ManyToManyField(Service, related_name='service_transactions', blank=True)
     product_transactions = models.ManyToManyField(Product, related_name='product_transactions', blank=True)
-
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_option = models.CharField(max_length=10, choices=[('cash', 'Cash'), ('card', 'Card')])
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True)
-    
     created_on = models.DateTimeField(auto_now_add=True, null=True)
     
     def __str__(self):
@@ -307,17 +286,15 @@ class DailySummary(models.Model):
     balance = models.DecimalField(max_digits=10, decimal_places=2)
     narration = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True, null=True)
+
     def __str__(self):
         return f"Daily Summary on {self.date}"
 
-
 class Sale(models.Model):
     date = models.DateField()
-    #employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='sales')
-    services = models.ManyToManyField(Service,)
+    services = models.ManyToManyField(Service)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-
     net_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -398,13 +375,8 @@ class SalesByStaffItemService(models.Model):
 
 @receiver(pre_save)
 def set_created_on_timezone(sender, instance, **kwargs):
-    # Check if the model has a 'created_on' field
     if hasattr(instance, 'created_on') and not instance.created_on:
-        # Convert the current time to Dubai timezone
         dubai_timezone = pytz.timezone('Asia/Dubai')
-        print(dubai_timezone)
         instance.created_on = timezone.localtime(timezone.now(), dubai_timezone)
-        print(instance.created_on)
 
-# Connect the signal receiver function to the pre_save signal
 pre_save.connect(set_created_on_timezone)

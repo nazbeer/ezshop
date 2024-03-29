@@ -6,9 +6,9 @@
 
 /* VARIABLE DEFINITIONS */
 :root {
-  --primary: #79aec8;
-  --secondary: #417690;
-  --accent: #f5dd5d;
+  --primary: #184b7c;
+  --secondary: #216bb1;
+  --accent: #184b7c;
   --primary-fg: #fff;
 
   --body-fg: #333;
@@ -16,17 +16,17 @@
   --body-quiet-color: #666;
   --body-loud-color: #000;
 
-  --header-color: #ffc;
-  --header-branding-color: var(--accent);
-  --header-bg: var(--secondary);
+  --header-color: #000;
+  --header-branding-color: #000;
+  --header-bg: #184b7c;
   --header-link-color: var(--primary-fg);
 
   --breadcrumbs-fg: #c4dce8;
   --breadcrumbs-link-fg: var(--body-bg);
-  --breadcrumbs-bg: var(--primary);
+  --breadcrumbs-bg: #3d3d3d;
 
   --link-fg: #447e9b;
-  --link-hover-color: #036;
+  --link-hover-color: #184b7c;
   --link-selected-fg: #5b80b2;
 
   --hairline-color: #e8e8e8;
@@ -40,7 +40,7 @@
 
   --darkened-bg: #f8f8f8; /* A bit darker than --body-bg */
   --selected-bg: #e4e4e4; /* E.g. selected table cells */
-  --selected-row: #ffc;
+  --selected-row: #e0ebfa;
 
   --button-fg: #fff;
   --button-bg: var(--primary);
@@ -64,7 +64,7 @@ html, body {
 body {
     margin: 0;
     padding: 0;
-    font-size: 0.875rem;
+    font-size: 14px;
     font-family: "Roboto","Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
     color: var(--body-fg);
     background: var(--body-bg);
@@ -89,18 +89,36 @@ a:focus {
 a img {
     border: none;
 }
-
+body, p, h1, h2, h3, h4, h5, h6, a, li, label, input, div, span, small{
+    font-family: "Open Sans", sans-serif !important;
+}
+button:focus, button{
+    outline: none !important;
+border: none;
+}
+body, p, a, label, div, button, li, li>a{
+    font-size:14px !important;
+}
+#font-c>li>a{
+    font-size:14px !important;
+}
 a.section:link, a.section:visited {
-    color: var(--header-link-color);
+    color: #fff;
+    font-weight: 600;
     text-decoration: none;
 }
+
 
 a.section:focus, a.section:hover {
     text-decoration: underline;
 }
 
 /* GLOBAL DEFAULTS */
-
+caption >a {
+    font-size:12px !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+}
 p, ol, ul, dl {
     margin: .2em 0 .8em 0;
 }
@@ -116,8 +134,8 @@ h1,h2,h3,h4,h5 {
 
 h1 {
     margin: 0 0 20px;
-    font-weight: 300;
-    font-size: 1.25rem;
+    font-weight: 600;
+    font-size: 1.5rem;
     color: var(--body-quiet-color);
 }
 
@@ -179,7 +197,27 @@ form {
     margin: 0;
     padding: 0;
 }
-
+table thead{
+    border-radius: 5px !important;
+}
+table thead th {
+    vertical-align: bottom !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    background-color: #184b7c !important;
+    color: #fff !important;
+    
+}
+tbody{
+    border-bottom: 0px !important;
+}
+thead>tr>th>div>a, thead>tr>th>span {
+    color:#fff !important;
+}
+thead>tr>th>div>a:hover{
+    color:#000000 !important;
+    text-decoration: none !important;
+    background-color: #ccc !important;
+}
 fieldset {
     margin: 0;
     min-width: 0;
@@ -437,7 +475,17 @@ table thead th.sorted .sortoptions a.descending:hover {
 
 /* FORM DEFAULTS */
 
-input, textarea, select, .form-row p, form .button {
+input, textarea, select, .form-row p {
+    background-color: #fff;
+    border: 1px solid #b1b5c3;
+    color: #260944;
+    font-size: 15px;
+    padding: 10px 20px;
+    
+    transition: all ease .5s;
+    border-radius: 10px;
+}
+form .button {
     margin: 2px 0;
     padding: 2px 3px;
     vertical-align: middle;
@@ -880,6 +928,7 @@ a.deletelink:focus, a.deletelink:hover {
 
 #header a:link, #header a:visited, #logout-form button {
     color: var(--header-link-color);
+    font-size:14px !important;
 }
 
 #header a:focus , #header a:hover {
@@ -892,14 +941,15 @@ a.deletelink:focus, a.deletelink:hover {
 
 #branding h1 {
     padding: 0;
-    margin: 0 20px 0 0;
-    font-weight: 300;
-    font-size: 1.5rem;
-    color: var(--header-branding-color);
+    margin: 0 0px 0 0;
+    font-weight: 600;
+    font-size: 16px;
+    text-transform: uppercase;
+    color: #fff !important;
 }
 
 #branding h1 a:link, #branding h1 a:visited {
-    color: var(--accent);
+    color: #fff !important;
 }
 
 #branding h2 {
@@ -929,6 +979,7 @@ a.deletelink:focus, a.deletelink:hover {
     float: right;
     margin: 0 0 0 20px;
     text-align: right;
+    color:#fff !important;
 }
 
 #user-tools, #logout-form button{

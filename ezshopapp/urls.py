@@ -72,7 +72,9 @@ urlpatterns = [
     path('expense-type/create/', create_expense_type, name='create_expense_type'),
     path('expense-type/<int:pk>/edit/', ExpenseTypeUpdateView.as_view(), name='edit_expense_type'),
     path('expense-type/<int:pk>/delete/', ExpenseTypeDeleteView.as_view(), name='delete_expense_type'),
-    path('receipt-type/create/', create_receipt_type, name='create_receipt_type'),
+    path('receipt-type/create/', create_receipt_type, 
+    name='create_receipt_type'),
+    path('receipt-type/', ReceiptTypeListView.as_view(), name='receipt_type_list'),
     path('receipt-transaction/', ReceiptTransactionListView.as_view(), name='receipt_transaction_list'),
     path('receipt-transaction/create/', create_receipt_transaction, name='create_receipt_transaction'),
     path('receipt-transaction/update/<int:pk>/', ReceiptTransactionUpdateView.as_view(), name='update_receipt_transaction'),
@@ -120,8 +122,13 @@ urlpatterns = [
     path('fetch-data/<int:employee_id>/', fetch_data, name='fetch_data'),
     path('sale/day-closing-report/', day_closing_report, name='day_closing_report'),
     path('profile/', employee_profile, name='employee_profile'),
+    path('sidebar_emp/', sidebar_emp, name='sidebar_emp'),
+    path('module/<int:module_id>/', module_detail, name='module_detail'), 
+
+
     path('notifications/', notification_view, name='notifications'),
     path('update_chart_data/', HomeView.as_view(), name='update_chart_data'),
+  
 ]
 handler404 = 'ezshopapp.views.handler404'
 if settings.DEBUG:

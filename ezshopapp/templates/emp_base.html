@@ -437,23 +437,17 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto pl-3">
-            <li class="d-n"><a href="/employee-dashboard/"><i class="fas fa-home"></i> Home</a></li>
-            <li class="dropdown d-n">
-                <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Sales by Staff</a>
-                <div class="dropdown-menu" aria-labelledby="saleDropdown">
-                    
-                    <a class="dropdown-item" href="/sale/sales-by-staff-item-service/"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Products & Services</a>
-                    <a class="dropdown-item" href="/sale/sales-by-staff-service"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Service</a>
-                    <a class="dropdown-item" href="/sale/sales-by-staff-item"><i class="fas fa-chart-line"></i> Sales by Staff <br/>- Products</a>
-                    
-    
-                    <a class="dropdown-item" href="/sale/sales-report/"><i class="fas fa-chart-bar"></i> Sales Report</a>
-                </div>
+            <li class="d-n"><a href="/employee-dashboard/">Home</a></li>
+            {% for module in active_modules %}
+            <li class="d-n">
+                <a href="{{ module.url }}">{{ module.name }}</a>
+                <ul>
+                    {% for view in module.views.all %}
+                        <li><a href="{% url 'view_detail' view.id %}">{{ view.name }}</a> - {{ view.code }}</li>
+                    {% endfor %}
+                </ul>
             </li>
-            <li class="d-n"><a href="/sale/dayclosing/"><i class="fas fa-calendar-check"></i> Day Closing</a></li>
-            <li class="d-n"> <a class="" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a></li>
-            <li class="d-n"><a href="/profile/"><i class="fas fa-user"></i> Profile</a></li>
-            <li>
+        {% endfor %}
                 <a class="nav-link" href="{% url 'employee_logout' %}" id="logout-link">Logout</a>
             </li>
         </ul>
@@ -461,8 +455,8 @@
 </nav>
 <div id="sidebar">
     <hr/>
-    <ul id="font-c" >
-        <li><a href="/employee-dashboard/"><i class="fas fa-home"></i> Home</a></li>
+    <!-- <ul id="font-c" >
+         <li><a href="/employee-dashboard/"><i class="fas fa-home"></i> Home</a></li>
         <li><a href="/profile/"><i class="fas fa-user"></i> Profile</a></li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Sales by Staff</a>
@@ -477,9 +471,26 @@
             </div>
         </li>
         <li class=""><a href="/sale/dayclosing/"><i class="fas fa-calendar-check"></i> Day Closing</a></li>
-        <li class=""> <a class="" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a></li>
+        <li class=""> <a class="" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a></li> 
        
-    </ul>
+       
+    </ul> -->
+    <!-- sidebar_emp.html -->
+<ul id="font-c" style="max-height: 400px; overflow-y: scroll;">
+    <li><a href="/employee-dashboard/">Home</a></li>
+   
+    {% for module in active_modules %}
+        <li>
+            <a href="{{ module.url }}">{{ module.name }}</a>
+            <ul>
+                {% for view in module.views.all %}
+                    <li><a href="{% url 'view_detail' view.id %}">{{ view.name }}</a> - {{ view.code }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
+</ul>
+
     
 </div>
 

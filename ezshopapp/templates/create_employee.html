@@ -165,12 +165,17 @@
         </div>
         <div class="form-group">
             <label for="username">Username:</label>
+           
             {{ form.username }}
             <div id="usernameAvailability" class="text-success"></div>
         </div>
         <div class="form-group">
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" class="form-control"  required>
+            
+        </div>
+        <div class="form-group">
+            <input type="hidden" id="is_employee" name="is_employee"  value="true" checked disabled>
             
         </div>
         <button type="submit" class="btn btn-primary" {% if error_occurred or num_users_created >= max_users_allowed %}disabled{% endif %}>Submit</button>

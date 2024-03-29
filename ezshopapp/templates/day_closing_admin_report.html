@@ -36,7 +36,7 @@
                         <th>Advance</th>
                         <th>Net Collection</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <!-- <th>Action</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -50,7 +50,7 @@
                         <td>{{ day_closing.advance }}</td>
                         <td>{{ day_closing.net_collection }}</td>
                         <td class="text-capitalize">{{ day_closing.status }}</td>
-                        <td>
+                        <!-- <td>
                             <div class="d-flex justify-content-between align-items-center gap-3">
                                 {% if day_closing.status == 'pending' %}
                                     <a href="{% url 'approve_day_closing' day_closing.id %}" class="btn btn-success btn-sm">Approve</a>
@@ -58,12 +58,12 @@
                                     <button class="btn btn-secondary btn-sm" disabled>Approved</button>
                                 {% endif %}
                                 {% if day_closing.status != 'approved' %}
-                                    <span class="pl-3"><a href="{% url 'edit_day_closing' day_closing.id %}" class="btn btn-primary btn-sm">Edit</a></span>
+                                    <span class="pl-3 d-none"><a href="{% url 'edit_day_closing' day_closing.id %}" class="d-none btn btn-primary btn-sm">Edit</a></span>
                                 {% else %}
-                                    <span class="pl-3"><button class="btn btn-primary btn-sm" disabled>Edit</button></span>
+                                    <span class="pl-3 d-none"><button class="btn btn-primary btn-sm d-none" disabled>Edit</button></span>
                                 {% endif %}
                             </div>
-                        </td>
+                        </td> -->
                     </tr>
                     {% endfor %}
                 </tbody>

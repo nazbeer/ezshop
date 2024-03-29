@@ -12,6 +12,7 @@ import calendar
 from itertools import chain
 from django.template.loader import get_template
 from xhtml2pdf import pisa
+from django.forms.models import ModelMultipleChoiceField
 from decimal import Decimal
 from django.http import HttpResponseNotFound
 from django.contrib.auth import logout as auth_logout
@@ -371,18 +372,22 @@ class RoleListView(ListView):
         
 
 def create_role(request):
-    if request.method == 'POST':
-        role_name = request.POST.get('name')
-        module_names = request.POST.getlist('modules')
-        is_employee = request.POST.get('is_employee') == 'on'
-
+    try:
         # Get the current shop admin
         shop_admin = ShopAdmin.objects.get(user=request.user)
         # Get the associated shop
         shop = shop_admin.shop
         # Get the business profile associated with the shop
         business_profile = BusinessProfile.objects.get(name=shop.name)
-        print(business_profile)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
+    if request.method == 'POST':
+        role_name = request.POST.get('name')
+        module_names = request.POST.getlist('modules')
+        is_employee = request.POST.get('is_employee') == 'on'
+
         new_role = Role.objects.create(name=role_name, is_employee=is_employee, business_profile=business_profile)
 
         for module_name in module_names:
@@ -394,7 +399,7 @@ def create_role(request):
         return redirect('role_list')
     else:
         modules = Module.objects.all()
-        return render(request, 'create_role.html', {'modules': modules})
+        return render(request, 'create_role.html', {'modules': modules, 'business_profile': business_profile})
 
 
 
@@ -410,6 +415,8 @@ def analytics_view(request):
         'total_revenue': total_revenue,
 
     })
+
+
 
 class RoleUpdateView(UpdateView):
     model = Role
@@ -432,7 +439,7 @@ class RoleUpdateView(UpdateView):
         role_id = self.kwargs.get('pk')
         role = get_object_or_404(Role, pk=role_id)
         context['role'] = role
-        context['modules'] = role.modules.all()
+        context['modules'] = Module.objects.all()  # Pass all modules queryset
         context['business_profile'] = self.get_business_profile()
         return context
 
@@ -454,6 +461,17 @@ class RoleDeleteView(DeleteView):
 
 # @login_required(login_url='login')
 def create_expense_type(request):
+    try:
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+
     if request.method == 'POST':
         form = ExpenseTypeForm(request.POST)
         if form.is_valid():
@@ -499,6 +517,16 @@ def employee_list(request):
 # @login_required
 def create_employee(request):
     error_occurred = False  
+    try:
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        BusinessProfile.objects.get(name=shop.name)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
 
     # Fetch the shop details associated with the logged-in user
     try:
@@ -662,7 +690,18 @@ def employee_dashboard(request):
 
     # Aggregate total services, total sales, and total advance for the current month
     day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month)
-
+    # t_service = SalesByStaffItemService.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month).aggregate(servicetotal=Sum('servicetotal'))['t_service'] or 0
+    # t_sales = SalesByStaffItemService.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month).aggregate(servicetotal=Sum('servicetotal'))['t_service'] or 0
+    # Check if the employee has a job_role
+    
+    # If job_role exists, filter roles based on it
+    role = Role.objects.filter(name=employee.job_role).first()
+    print("Role:", role)
+            
+    # Get active modules based on the filtered role
+    active_modules = role.modules.all()
+    print("Active Modules:", active_modules)
+           
     # Check if day_closings is not empty
     if day_closings.exists():
         total_services = day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or 0
@@ -706,6 +745,7 @@ def employee_dashboard(request):
         'total_advance': total_advance,
         'commission': commission,
         'chart_data_json': chart_data_json,
+        'active_modules': active_modules,
     }
     return render(request, 'employee_dashboard.html', context)
 
@@ -746,11 +786,36 @@ class ReceiptTransactionListView(ListView):
         # Return the queryset of DailySummary objects sorted by date in ascending order
         return ReceiptTransaction.objects.order_by('-created_on')
     
-class ReceiptTransactionCreateView(CreateView):
-    model = ReceiptTransaction
-    form_class = ReceiptTransactionForm
-    template_name = 'create_receipt_transaction.html'
-    success_url = reverse_lazy('receipt_transaction_list')
+
+# class ReceiptTransactionCreateView(CreateView):
+#     model = ReceiptTransaction
+#     form_class = ReceiptTransactionForm
+#     template_name = 'create_receipt_transaction.html'
+#     success_url = reverse_lazy('receipt_transaction_list')
+
+#     def dispatch(self, request, *args, **kwargs):
+#         try:
+#             # Get the current shop admin
+#             shop_admin = ShopAdmin.objects.get(user=request.user)
+#             # Get the associated shop
+#             shop = shop_admin.shop
+#             # Get the business profile associated with the shop
+#             self.business_profile = BusinessProfile.objects.get(name=shop.name)
+#         except BusinessProfile.DoesNotExist:
+#             messages.error(request, "Business profile is not created. Please create a business profile first.")
+#             return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+#         return super().dispatch(request, *args, **kwargs)
+
+#     def form_valid(self, form):
+#         # Assign the business profile to the form instance before saving
+#         form.instance.business_profile = self.business_profile
+#         return super().form_valid(form)
+    
+class ReceiptTypeListView(ListView):
+    model = ReceiptType
+    template_name = 'receipt_type_list.html'
+    context_object_name = 'object_list'  # Define the name used in the template for the queryset
+    success_url = reverse_lazy('receipt_type_list')
 
 class ReceiptTransactionUpdateView(UpdateView):
     model = ReceiptTransaction
@@ -776,6 +841,20 @@ class PaymentTransactionCreateView(CreateView):
     template_name = 'create_payment_transaction.html'
     success_url = reverse_lazy('payment_transaction_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            # Get the current shop admin
+            shop_admin = ShopAdmin.objects.get(user=request.user)
+            # Get the associated shop
+            shop = shop_admin.shop
+            # Get the business profile associated with the shop
+            self.business_profile = BusinessProfile.objects.get(name=shop.name)
+        except BusinessProfile.DoesNotExist:
+            messages.error(request, "Business profile is not created. Please create a business profile first.")
+            return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+        return super().dispatch(request, *args, **kwargs)
+
+
 class PaymentTransactionUpdateView(UpdateView):
     model = PaymentTransaction
     form_class = PaymentTransactionForm
@@ -795,6 +874,17 @@ class BankDepositListView(ListView):
         return BankDeposit.objects.order_by('-created_on')
 
 def create_bank_deposit(request):
+    try:
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
     if request.method == 'POST':
         form = BankDepositForm(request.POST)
         if form.is_valid():
@@ -819,6 +909,17 @@ class BankListView(ListView):
         return Bank.objects.order_by('-created_on')
     
 def create_bank(request):
+    try:
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
     if request.method == 'POST':
         form = BankForm(request.POST)
         if form.is_valid():
@@ -1328,6 +1429,12 @@ def submit_sale(request):
     employee_id = request.session.get('employee_id')
     employees = Employee.objects.get(id=employee_id)
     print(employees.id)
+      
+    role = Role.objects.filter(name=employees.job_role).first()
+            
+    # Get active modules based on the filtered role
+    active_modules = role.modules.all()
+    
     
         # business_profile = employee.business_profile_id.businessprofile_set.first()
     # business_profile = BusinessProfile.objects.get(id=employees.id)
@@ -1357,7 +1464,7 @@ def submit_sale(request):
     else:
         sales_form = SalesByStaffServiceForm()
 
-    return render(request, 'sales-by-staff-service.html', {'sales_form': sales_form, 'services': services,'employees':employees})
+    return render(request, 'sales-by-staff-service.html', {'sales_form': sales_form, 'services': services,'employees':employees, 'active_modules':active_modules})
 
 # @login_required
 
@@ -1373,7 +1480,10 @@ def DayClosingCreate(request):
     
     # Fetch the associated Shop for the employee
     shop = Shop.objects.filter(name=business_profile.name).first()
-    
+    role = Role.objects.filter(name=employees.job_role).first()
+            
+    # Get active modules based on the filtered role
+    active_modules = role.modules.all()
     # context = {
     #     'employees': employees,
     #     'business_profile': business_profile,
@@ -1398,7 +1508,7 @@ def DayClosingCreate(request):
     # Pass the logged-in employee to the template as a list
     #employees = logged_in_employee
 
-    return render(request, 'dayclosing.html', {'current_date': current_date, 'form': form, 'employees':employees})
+    return render(request, 'dayclosing.html', {'current_date': current_date, 'form': form, 'employees':employees, 'active_modules':active_modules})
 
 
 def fetch_data(request, employee_id):
@@ -1461,8 +1571,8 @@ def day_closing_admin(request):
 def fetch_data_admin(request, selected_date):
     # Fetch data for the selected date
     
-    total_services = SalesByAdminItem.objects.filter(date=selected_date).aggregate(total_services=Sum('total_amount'))['total_services'] or 0
-    total_sales = SaleByAdminService.objects.filter(date=selected_date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+    total_services = SaleByAdminService.objects.filter(date=selected_date).aggregate(total_services=Sum('total_amount'))['total_services'] or 0
+    total_sales = SalesByAdminItem.objects.filter(date=selected_date).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
     total_collection = total_sales + total_services
     advance = DayClosing.objects.filter(date=selected_date).aggregate(total_advance=Sum('advance'))['total_advance'] or 0
 
@@ -1531,7 +1641,13 @@ def day_closing_report(request):
 
     # Filter the DayClosing queryset to get only the day closings associated with the logged-in employee
     day_closings_list = DayClosing.objects.filter(employee__id=logged_in_employee_id).order_by('-created_on')
-
+    employees = Employee.objects.get(id=logged_in_employee_id)
+    print(employees.id)
+      
+    role = Role.objects.filter(name=employees.job_role).first()
+            
+    # Get active modules based on the filtered role
+    active_modules = role.modules.all()
 
     # Paginate the day closings list
     paginator = Paginator(day_closings_list, 10)
@@ -1544,7 +1660,7 @@ def day_closing_report(request):
     except EmptyPage:
         day_closings = paginator.page(paginator.num_pages)
 
-    return render(request, 'day_closing_report.html', {'day_closings': day_closings})
+    return render(request, 'day_closing_report.html', {'day_closings': day_closings, 'active_modules':active_modules})
 
 
 def day_closing_admin_report(request):
@@ -1595,7 +1711,13 @@ def sales_by_staff_item(request):
     # Retrieve the employee
     # try:
     employee = Employee.objects.get(id=employee_id)
-
+    role = Role.objects.filter(name=employee.job_role).first()
+    print("Role:", role)
+            
+    # Get active modules based on the filtered role
+    active_modules = role.modules.all()
+    print("Active Modules:", active_modules)
+    
     # Retrieve products based on the employee's business profile
     if employee:
         products = Product.objects.filter(business_profile=employee.business_profile_id)
@@ -1615,7 +1737,7 @@ def sales_by_staff_item(request):
     else:
         sales_form = SaleByStaffItemForm()
 
-    return render(request, 'sales_by_staff_item.html', {'sales_form': sales_form, 'products': products, 'employee': employee})
+    return render(request, 'sales_by_staff_item.html', {'sales_form': sales_form, 'products': products, 'employee': employee, 'active_modules':active_modules})
 
 
 
@@ -1633,7 +1755,13 @@ def sales_by_staff_item_service(request):
         services = Service.objects.filter(business_profile=employees.business_profile_id)
     else:
        return render(request, 'error.html')
-   
+    role = Role.objects.filter(name=employees.job_role).first()
+    print("Role:", role)
+            
+    # Get active modules based on the filtered role
+    active_modules = role.modules.all()
+    print("Active Modules:", active_modules)
+    
     if request.method == 'POST':
         sales_form = SalesByStaffItemServiceForm(request.POST)
         if sales_form.is_valid():
@@ -1645,7 +1773,7 @@ def sales_by_staff_item_service(request):
     else:
         sales_form = SalesByStaffItemServiceForm()
 
-    return render(request, 'sales_by_staff_item_service.html', {'sales_form': sales_form, 'products': products, 'services': services, 'employees': employees})
+    return render(request, 'sales_by_staff_item_service.html', {'sales_form': sales_form, 'products': products, 'services': services, 'employees': employees,'active_modules':active_modules})
 
 
 def sales_report(request):
@@ -1656,9 +1784,16 @@ def sales_report(request):
     sales = SalesByStaffItemService.objects.filter(employee__id=logged_in_employee_id)
     sales_staff_service = SaleByStaffService.objects.filter(employee__id=logged_in_employee_id)
     sales_staff_item = SaleByStaffItem.objects.filter(employee__id=logged_in_employee_id)
-
+    employees = Employee.objects.get(id=logged_in_employee_id)
+    role = Role.objects.filter(name=employees.job_role).first()
+    print("Role:", role)
+            
+    # Get active modules based on the filtered role
+    active_modules = role.modules.all()
+    print("Active Modules:", active_modules)
+    
     # Pass the filtered sales data to the template
-    context = {'sales': sales, 'sales_staff_service': sales_staff_service, 'sales_staff_item': sales_staff_item}
+    context = {'sales': sales, 'sales_staff_service': sales_staff_service, 'sales_staff_item': sales_staff_item,'active_modules':active_modules}
     return render(request, 'sales_report.html', context)
 
 def sales_report_admin(request):
@@ -1784,6 +1919,17 @@ class ExportSalesReportAdminPDF(View):
         return response
     
 def create_receipt_transaction(request):
+    try:
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
     if request.method == 'POST':
         form = ReceiptTransactionForm(request.POST)
         if form.is_valid():
@@ -1794,6 +1940,17 @@ def create_receipt_transaction(request):
     return render(request, 'create_receipt_transaction.html', {'form': form})
 
 def create_receipt_type(request):
+    try:
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
     if request.method == "POST":
         form = ReceiptTypeForm(request.POST)
         if form.is_valid():
@@ -1811,6 +1968,17 @@ def vat_submission_date_reminder_due(submission_dates, reminder_days):
     return any((date and (date - today).days <= reminder_days) for date in submission_dates)
 # Notification view
 def notification_view(request):
+    try:
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        BusinessProfile.objects.get(name=shop.name)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+
     notifications = []
 
     # Fetch the shop associated with the current user
@@ -1864,7 +2032,44 @@ def notification_view(request):
     # Render the template with the notifications
     return render(request, 'notification_list.html', {'notifications': notifications})
 
+def sidebar_emp(request):
+    # Fetch employee ID from session
+    employee_id = request.session.get('employee_id')
+    print("Employee ID from session:", employee_id)
+    
+    # Fetch employee details
+    employee = get_object_or_404(Employee, pk=employee_id)
+    print("Employee Details:", employee)
+    
+    # Check if the employee has a job_role
+    if employee.job_role:
+        # If job_role exists, filter roles based on it
+        role = Role.objects.filter(name=employee.job_role).first()
+        print("Role:", role)
+        
+        if role:
+            # Get active modules based on the filtered role
+            active_modules = role.modules.all()
+            print("Active Modules:", active_modules)
+            
+            context = {
+                'active_modules': active_modules,
+            }
 
+            return render(request, 'emp_base.html', context)
+        else:
+            # Handle case where no role is found for the job_role
+            return render(request, 'error.html', {'message': 'No role assigned for this job role.'})
+    else:
+        # Handle case where employee has no job_role assigned
+        return render(request, 'error.html', {'message': 'No job role assigned to this employee.'})
+    
+
+
+def module_detail(request, module_id):
+    module = get_object_or_404(Module, pk=module_id)
+    return redirect(module.url)
+ 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home.html'
 
