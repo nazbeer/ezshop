@@ -1378,6 +1378,7 @@ def login_view(request):
 
 def sales_by_admin_item(request):
     # Get the business profile associated with the logged-in user
+    
     try:
         shop_admin = ShopAdmin.objects.get(user=request.user)
         business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
@@ -1388,6 +1389,9 @@ def sales_by_admin_item(request):
         # print(products)
     except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
         employees = Employee.objects.none()
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
 
     if request.method == 'POST':
         form = SalesByAdminItemForm(request.POST)
@@ -1411,7 +1415,9 @@ def sale_by_admin_service(request):
         services = Service.objects.filter(business_profile=business_profile.id)
     except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
         employees = Employee.objects.none()
-
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
     if request.method == 'POST':
         sales_form = SaleByAdminServiceForm(request.POST)
         if sales_form.is_valid():
