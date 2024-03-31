@@ -107,9 +107,9 @@ class DayClosingAdminAdmin(admin.ModelAdmin):
 class DailySummaryAdmin(admin.ModelAdmin):
     list_display = ['date', 'opening_balance', 'total_received_amount', 'total_expense_amount', 'total_bank_deposit', 'balance', 'narration', 'created_on']
 
-@admin.register(Sale)
-class SaleAdmin(admin.ModelAdmin):
-    list_display = ['date', 'amount', 'discount', 'net_amount', 'created_on']
+# @admin.register(Sale)
+# class SaleAdmin(admin.ModelAdmin):
+#     list_display = ['date', 'amount', 'discount', 'net_amount', 'created_on']
 
 @admin.register(SaleByStaffService)
 class SaleByStaffServiceAdmin(admin.ModelAdmin):

@@ -299,13 +299,13 @@ class DailySummary(models.Model):
     def __str__(self):
         return f"Daily Summary on {self.date}"
 
-class Sale(models.Model):
-    date = models.DateField()
-    services = models.ManyToManyField(Service)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    net_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    created_on = models.DateTimeField(auto_now_add=True, null=True)
+# class Sale(models.Model):
+#     date = models.DateField()
+#     services = models.ManyToManyField(Service)
+#     amount = models.DecimalField(max_digits=10, decimal_places=2)
+#     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+#     net_amount = models.DecimalField(max_digits=10, decimal_places=2)
+#     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
 class SaleByStaffService(models.Model):
     date = models.DateField(_("Date"))

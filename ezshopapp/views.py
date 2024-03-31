@@ -38,7 +38,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import *
 from .forms import *
-from .serializers import LoginSerializer, SaleSerializer
+from .serializers import LoginSerializer
 from django.contrib.auth.views import LogoutView, LoginView
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -1431,9 +1431,9 @@ def sale_by_admin_service(request):
 
     return render(request, 'sales_by_admin_service.html', {'sales_form': sales_form, 'services': services, 'employees':employees})
 
-class SaleListCreateView(generics.ListCreateAPIView):
-    queryset = Sale.objects.all()
-    serializer_class = SaleSerializer
+# class SaleListCreateView(generics.ListCreateAPIView):
+#     queryset = Sale.objects.all()
+#     serializer_class = SaleSerializer
 
 def submit_sale(request):
     employee_id = request.session.get('employee_id')

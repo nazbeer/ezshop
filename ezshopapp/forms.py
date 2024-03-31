@@ -225,10 +225,10 @@ class DailySummaryForm(forms.ModelForm):
 class CustomLoginForm(forms.Form):
     username = forms.CharField(max_length=150, label='Username')
     password = forms.CharField(widget=forms.PasswordInput, label='Password')
-class SalesForm(forms.ModelForm):
-    class Meta:
-        model = Sale
-        fields = '__all__'
+# class SalesForm(forms.ModelForm):
+#     class Meta:
+#         model = Sale
+#         fields = '__all__'
 
 
 # class SaleItemForm(forms.ModelForm):

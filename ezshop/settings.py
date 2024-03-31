@@ -90,10 +90,36 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ezshop.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+# DATABASES = {
+#     'default': {
+#         #'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {
+#             'init_command': 'SET default_storage_engine=INNODB',
+#         },
+#         'NAME': 'ezshopdb',
+#         'USER': 'root',
+#         'PASSWORD': 'root',
+#         'HOST': '127.0.0.1',
+#         'PORT': '3306',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ezshopdb',  # Replace with your database name
+        'USER': 'root',  # Replace with your database username
+        'PASSWORD': 'El2m63fqXH9eQczR0HF98v4qtaM3PfDu',  # Replace with your database password
+        'HOST': 'dpg-co4q5ncf7o1s738vjdk0-a',  # Replace with your database host
+        'PORT': '5432',  # Replace with your database port
     }
 }
 
