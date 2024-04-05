@@ -7,6 +7,8 @@ from django.views import View
 from django.db import IntegrityError, transaction
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse, JsonResponse
 import json
+from django.db.models import Sum, Q, DecimalField, F
+from django.db.models.functions import Coalesce, Cast
 import jwt
 import calendar
 from itertools import chain
@@ -31,7 +33,7 @@ from django.urls import reverse
 from django.forms import formset_factory
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
 from django.contrib import messages
@@ -41,6 +43,7 @@ from .forms import *
 from .serializers import LoginSerializer
 from django.contrib.auth.views import LogoutView, LoginView
 from rest_framework.decorators import action
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics, viewsets, status
 from django.urls import get_resolver
@@ -64,6 +67,7 @@ class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
     serializer_class = SalesByStaffItemServiceSerializer
 
+
 class EmployeeViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'])
     def list_employees(self, request):
@@ -71,27 +75,6 @@ class EmployeeViewSet(viewsets.ViewSet):
         serializer = EmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
-    # @action(detail=False, methods=['post', 'get'])
-    # def loginapi(self, request):
-    #     username = request.data.get('username')
-    #     password = request.data.get('password')
-        
-    #     try:
-    #         # Attempt to get an Employee instance with the provided username
-    #         employee = Employee.objects.get(username=username, password=password)
-            
-    #         # Validate the password
-    #         if check_password(password, employee.password):
-    #             # Password is correct, generate JWT token
-    #             secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
-    #             token = jwt.encode({'employee_id': employee.pk, 'exp': timezone.now() + timedelta(hours=20)}, secretkey, algorithm='HS256')
-    #             return JsonResponse({'token': token.decode('utf-8')})
-    #         else:
-    #             # Password is incorrect
-    #             return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
-    #     except Employee.DoesNotExist:
-    #         # Employee with the provided username does not exist
-    #         return JsonResponse({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
         
     @action(detail=False, methods=['post'])
     def logout(self, request):
@@ -270,41 +253,6 @@ class ShopListView(ListView):
 
         return Shop.objects.all().order_by('-name')
 
-# class ShopCreateView(CreateView):
-#     model = Shop
-#     form_class = ShopForm
-#     template_name = 'create_shop.html'
-#     success_url = reverse_lazy('shop_list')
-
-#     def form_valid(self, form):
-#         shop_instance = form.save(commit=False)
-
-#         username = form.cleaned_data['username']
-#         email = form.cleaned_data['email']
-#         password = form.cleaned_data['password']
-
-#         try:
-#             # Check if a superuser already exists for the given shop
-#             if User.objects.filter(is_superuser=True, shop=shop_instance).exists():
-#                 messages.error(self.request, "A superuser already exists for this shop.")
-#                 return redirect('shop_list')
-
-#             # Create a new superuser
-#             user = User.objects.create_superuser(username=username, email=email, password=password)
-#             user.is_staff = True  
-#             user.is_active = True
-#             user.is_superuser = True  
-#             user.save()
-
-#             shop_instance.user = user
-#             shop_instance.save()
-
-#             return super().form_valid(form)
-#         except IntegrityError:
-#             messages.error(self.request, "An error occurred while creating the shop.")
-#             return super().form_valid(form)
-        
-
 class ShopAdminCreateView(CreateView):
     model = User
     form_class = ShopAdminForm
@@ -361,7 +309,11 @@ class RoleListView(ListView):
     def get_business_profile(self):
         try:
             # Get the current shop admin
-            shop_admin = ShopAdmin.objects.get(user=self.request.user)
+            try:
+                shop_admin = ShopAdmin.objects.get(user=self.request.user)
+            except ShopAdmin.DoesNotExist:
+        # Redirect to the login page
+                return redirect('login')
             # Get the associated shop
             shop = shop_admin.shop
             # Get the business profile associated with the shop
@@ -448,7 +400,11 @@ class RoleUpdateView(UpdateView):
     
     def get_business_profile(self):
         # Get the current shop admin
-        shop_admin = ShopAdmin.objects.get(user=self.request.user)
+        try:
+            shop_admin = ShopAdmin.objects.get(user=self.request.user)
+        except ShopAdmin.DoesNotExist:
+        # Redirect to the login page
+            return redirect('login')
         # Get the associated shop
         shop = shop_admin.shop
         # Get the business profile associated with the shop
@@ -660,7 +616,6 @@ def employee_logout(request):
     # Clear localStorage session using JavaScript
     response.content = """
     <script>
-        // Clear all items in localStorage
         localStorage.clear();
     </script>
     """
@@ -789,32 +744,7 @@ class ReceiptTransactionListView(ListView):
     def get_queryset(self):
         # Return the queryset of DailySummary objects sorted by date in ascending order
         return ReceiptTransaction.objects.order_by('-created_on')
-    
 
-# class ReceiptTransactionCreateView(CreateView):
-#     model = ReceiptTransaction
-#     form_class = ReceiptTransactionForm
-#     template_name = 'create_receipt_transaction.html'
-#     success_url = reverse_lazy('receipt_transaction_list')
-
-#     def dispatch(self, request, *args, **kwargs):
-#         try:
-#             # Get the current shop admin
-#             shop_admin = ShopAdmin.objects.get(user=request.user)
-#             # Get the associated shop
-#             shop = shop_admin.shop
-#             # Get the business profile associated with the shop
-#             self.business_profile = BusinessProfile.objects.get(name=shop.name)
-#         except BusinessProfile.DoesNotExist:
-#             messages.error(request, "Business profile is not created. Please create a business profile first.")
-#             return redirect('create_business_profile')  # Redirect to the view where you create a business profile
-#         return super().dispatch(request, *args, **kwargs)
-
-#     def form_valid(self, form):
-#         # Assign the business profile to the form instance before saving
-#         form.instance.business_profile = self.business_profile
-#         return super().form_valid(form)
-    
 class ReceiptTypeListView(ListView):
     model = ReceiptType
     template_name = 'receipt_type_list.html'
@@ -957,17 +887,14 @@ class ServiceListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # Retrieve the shop associated with the logged-in user
         try:
-            shop_admin = ShopAdmin.objects.get(user=self.request.user)
+            try:
+                shop_admin = ShopAdmin.objects.get(user=self.request.user)
+            except ShopAdmin.DoesNotExist:
+        # Redirect to the login page
+                return redirect('login')
             shop = shop_admin.shop
             business = BusinessProfile.objects.get(license_number=shop.license_number)
-            print("shop license:", shop.license_number)
-            print("business id:", business.id)
-            print("business license:", business.license_number)
-        # try:
-        #     # Assuming there's an intermediary model linking User and Shop
-        #     shop_admin = user.shop_admin
-        #     print("shop_admin =", shop_admin)
-        #     shop = shop_admin.shop
+        
         except AttributeError:
         #     # Handle cases where the user is not associated with a shop
             business = None
@@ -976,22 +903,6 @@ class ServiceListView(LoginRequiredMixin, ListView):
         queryset = Service.objects.filter(business_profile=business.id)
         return queryset
     
-# class ServiceListView(ListView):
-#     model = Service
-#     template_name = 'service_list.html'
-#     success_url = reverse_lazy('service_list')
-    # def get_queryset(self):
-    #         # Return the queryset of DailySummary objects sorted by date in ascending order
-    #         shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
-        
-    #         # Get the shop associated with the shop admin
-    #         shop = shop_admin.shop
-    #         print(shop)
-    #         # Get the business profile associated with the shop
-    #         business_profile = get_object_or_404(BusinessProfile, name=shop.name)
-    #         print(Service.objects.filter(business_profile=business_profile.id).order_by('-created_on'))
-    #         return Service.objects.filter(business_profile=business_profile.id).order_by('-created_on')
-
 def create_service(request):
     shop_admin = get_object_or_404(ShopAdmin, user=request.user)
     
@@ -1000,10 +911,7 @@ def create_service(request):
     
     # Get the business profile associated with the shop
     business_profile = get_object_or_404(BusinessProfile, name=shop.name)
-    
-    # Print business_profile to verify
-    # print(business_profile)
-    
+
     if request.method == 'POST':
         form = ServiceForm(request.POST)
         if form.is_valid():
@@ -1037,7 +945,11 @@ class ProductListView(ListView):
     def get_queryset(self):
         # Retrieve the shop associated with the logged-in user
         try:
-            shop_admin = ShopAdmin.objects.get(user=self.request.user)
+            try:
+                shop_admin = ShopAdmin.objects.get(user=self.request.user)
+            except ShopAdmin.DoesNotExist:
+        # Redirect to the login page
+                return redirect('login')
             shop = shop_admin.shop
             business = BusinessProfile.objects.get(license_number=shop.license_number)
             print("shop license:", shop.license_number)
@@ -1371,6 +1283,7 @@ def login_view(request):
             else:
                 # Invalid login credentials, display error message
                 messages.error(request, 'Invalid username or password. Please try again.')
+                return redirect('login')
     else:
         serializer = LoginSerializer()
 
@@ -2121,7 +2034,11 @@ class HomeView(LoginRequiredMixin, TemplateView):
         if self.request.user.is_authenticated:
             # Fetch the shop details associated with the logged-in user
             try:
-                shop_admin = ShopAdmin.objects.get(user=self.request.user)
+                try:
+                    shop_admin = ShopAdmin.objects.get(user=self.request.user)
+                except ShopAdmin.DoesNotExist:
+    
+                    return redirect('login')
                 context['shop'] = shop_admin.shop
                 
                 # Get employees associated with the shop
@@ -2131,7 +2048,53 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 next_month = start_of_month.replace(month=start_of_month.month + 1, day=1)
                 end_of_month = next_month - timezone.timedelta(days=1)
+                total_services_all = 0
+                total_sales_all = 0
+                # Fetch day closings from both models using a Union query
+                day_closings1 = DayClosing.objects.filter(
+                    Q(date__range=[start_of_month, end_of_month]) & Q(employee__in=employees)
+                ).annotate(
+                    total_services_annotated=Cast('total_services', output_field=DecimalField()),
+                    total_sales_annotated=Cast('total_sales', output_field=DecimalField()),
+                    total_advance_annotated=Cast('advance', output_field=DecimalField())  # Assuming advance is a DecimalField
+                ).values('date', 'employee', 'total_services_annotated', 'total_sales_annotated', 'total_advance_annotated')
 
+                day_closings_admin = DayClosingAdmin.objects.filter(
+                    Q(date__range=[start_of_month, end_of_month]) & Q(employee__in=employees)
+                ).annotate(
+                    total_services_annotated=Cast('total_services', output_field=DecimalField()),
+                    total_sales_annotated=Cast('total_sales', output_field=DecimalField()),
+                    total_advance_annotated=Cast('advance', output_field=DecimalField())  # Assuming advance is a DecimalField
+                ).values('date', 'employee', 'total_services_annotated', 'total_sales_annotated', 'total_advance_annotated')
+                print(day_closings_admin)
+                # Combine the two querysets using Union
+                combined_day_closings = day_closings1.union(day_closings_admin)
+
+                for closing in combined_day_closings:
+                    # Extract relevant information from the closing
+                    date = closing['date']
+                    employee = closing['employee']
+                    total_services = closing['total_services_annotated']
+                    total_sales = closing['total_sales_annotated']
+                    total_advance = closing['total_advance_annotated']
+
+                    # Perform processing or actions with the extracted data
+                    # For example, you can print the information
+                    print(f"Date: {date}, Employee: {employee}, Total Services: {total_services}, Total Sales: {total_sales}, Total Advance: {total_advance}")
+
+                    # Or you can perform other operations, such as calculations or saving to another data structure
+                    # For instance, you might aggregate the total services and total sales for all employees
+                    total_services_all += total_services
+                    total_sales_all += total_sales
+                    print(total_services_all)
+                    print(total_sales_all)
+                # Optionally, you can pass the combined_day_closings queryset to the template context
+                    context = {
+                        'combined_day_closings': combined_day_closings,
+                        'total_services_all': total_services_all,
+                        'total_sales_all': total_sales_all,
+                        # Other context data as needed
+                    }
                 # Fetch day closings for the current month
                 day_closings = DayClosingAdmin.objects.filter(date__range=[start_of_month, end_of_month], employee__in=employees)
                 
@@ -2172,7 +2135,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 context['chart_data_json'] = json.dumps(chart_data_json)
                 context['employee_json'] = json.dumps(employee_totals)
                 context['employees'] = employees
-                print(json.dumps(employee_totals))
+                # print(json.dumps(employee_totals))
             except ShopAdmin.DoesNotExist:
                 context['shop'] = None
                 context['total_services_this_month'] = 0

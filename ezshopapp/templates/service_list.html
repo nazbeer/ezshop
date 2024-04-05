@@ -21,6 +21,7 @@
             <th scope="col">Max Discount Allowed</th>
             <th scope="col">Status</th>
             <th scope="col">Created On</th>
+            <th scope="col">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -34,6 +35,9 @@
               <td>{{ service.max_discount_allowed|floatformat:2 }}</td>
               <td>{% if service.status %}Active{% else %}Inactive{% endif %}</td>
               <td>{{ service.created_on|date:"D, d M Y H:i:s" }}</td>
+              <td>
+                <a href="{% url 'update_service' pk=service.pk %}" class="btn btn-primary">Edit</a>
+            </td>
             </tr>
           {% endfor %}
         </tbody>

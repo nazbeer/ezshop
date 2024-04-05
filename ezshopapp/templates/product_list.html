@@ -10,34 +10,39 @@
     </div>
     <div class="card-body">
       <div class="table-responsive">
-      <table class="table table-bordered table-striped nowrap" id="productlist">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Name</th>
-            <th scope="col">VAT</th>
-            <th scope="col">Amount</th>
-            <th scope="col">Max Discount Allowed</th>
-            <th scope="col">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for product in object_list %}
+        <table class="table table-bordered table-striped nowrap" id="productlist">
+          <thead>
             <tr>
-              <th scope="row">{{ forloop.counter }}</th>
-              <td>{{ product.name }}</td>
-              <td>{{ product.vat }}</td>
-              <td>{{ product.amount }}</td>
-              <td>{{ product.max_discount_allowed }}</td>
-              <td>{{ product.status }}</td>
+              <th scope="col">#</th>
+              <th scope="col">Name</th>
+              <th scope="col">VAT</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Max Discount Allowed</th>
+              <th scope="col">Status</th>
+              <th scope="col">Actions</th> <!-- New column for actions -->
             </tr>
-          {% empty %}
-            <tr>
-              <td colspan="6">No products found.</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for product in object_list %}
+              <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ product.name }}</td>
+                <td>{{ product.vat }}</td>
+                <td>{{ product.amount }}</td>
+                <td>{{ product.max_discount_allowed }}</td>
+                <td>{{ product.status }}</td>
+                <td> <!-- Actions column -->
+                  <a href="{% url 'update_product' pk=product.pk %}" class="btn btn-primary">Edit</a> <!-- Edit button linked to update_product URL -->
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7">No products found.</td> <!-- Colspan to span across all columns -->
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
     </div>
   </div>
   <div class="card-footer text-right">

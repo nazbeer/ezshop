@@ -3,22 +3,33 @@ from django.conf import settings
 from django.conf.urls.static import static
 from . import views
 from .views import *
-
+from . import appviews
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'salesbyis', SalesByStaffItemServiceViewSet)
-router.register(r'employees', EmployeeViewSet, basename='employee')
-router.register(r'dayclosingemp', DayClosingViewSet)
-router.register(r'dailysummary', DailySummaryViewSet)
+router.register(r'day-closings', appviews.DayClosingViewSet, basename='day-closings')
+router.register(r'day-closings-admin', appviews.DayClosingAdminViewSet, basename='day-closings-admin')
+router.register(r'sales-by-staff-service', appviews.SaleByStaffServiceViewSet, basename='sales-by-staff-service')
+router.register(r'sales-by-staff-item', appviews.SaleByStaffItemViewSet, basename='sales-by-staff-item')
+router.register(r'sales-by-staff-item-service', appviews.SalesByStaffItemServiceViewSet, basename='sales-by-staff-item-service')
+router.register(r'employee-profile', appviews.EmployeeProfileViewSet, basename='employee-profile')
+
+
+# Register new APIs
+# router.register(r'employeelogin', EmployeeLoginAPIView, basename='employeelogin')
+# router.register(r'employeelogout', EmployeeLogoutAPIView, basename='employeelogout')
+#router.register(r'employeedashboard', appviews.EmployeeDashboardAPIView.as_view(), basename='employeedashboard')
+# router.register(r'employeeprofile', EmployeeProfileAPIView, basename='employeeprofile')
+# router.register(r'dayclosingreport', DayClosingReportAPIView, basename='dayclosingreport')
+# router.register(r'salesreport', SalesReportAPIView, basename='salesreport')
 
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('api/employees/login/<str:username>/<str:password>/', EmployeeViewSet.as_view({'post': 'loginapi'}), name='employee_login'),
-    path('api/employees/employee_dashboard/', EmployeeViewSet.as_view({'get': 'employee_dashboard'}), name='employee_dashboard'),
-    path('api/employees/profile/', EmployeeViewSet.as_view({'get': 'profile'}), name='profile'),
-    path('api/employees/logout/', EmployeeViewSet.as_view({'post': 'logout'}), name='logout'),
+    # path('api/employees/login/<str:username>/<str:password>/', EmployeeViewSet.as_view({'post': 'loginapi'}), name='employee_login'),
+    # path('api/employees/employee_dashboard/', EmployeeViewSet.as_view({'get': 'employee_dashboard'}), name='employee_dashboard'),
+    # path('api/employees/profile/', EmployeeViewSet.as_view({'get': 'profile'}), name='profile'),
+    # path('api/employees/logout/', EmployeeViewSet.as_view({'post': 'logout'}), name='logout'),
     path('clearcache/', views.clear_cache_admin, name='clearcache_admin'),
     path('', CustomLoginView.as_view(), name='login'),
     path('login/', CustomLoginView.as_view(), name='login'),
@@ -128,6 +139,10 @@ urlpatterns = [
 
     path('notifications/', notification_view, name='notifications'),
     path('update_chart_data/', HomeView.as_view(), name='update_chart_data'),
+    
+    path('api/employees-login/', appviews.EmployeeLoginAPIView.as_view(), name='employee_login'),
+    path('api/employees-logout/', appviews.EmployeeLogoutAPIView.as_view(), name='employee_logout'),
+    path('api/employees-dashboard/', appviews.EmployeeDashboardAPIView.as_view(), name='employee_dashboard'),
   
 ]
 handler404 = 'ezshopapp.views.handler404'
