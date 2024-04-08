@@ -1597,7 +1597,7 @@ def day_closing_report(request):
     # Filter the DayClosing queryset to get only the day closings associated with the logged-in employee
     day_closings_list = DayClosing.objects.filter(employee__id=logged_in_employee_id).order_by('-created_on')
     employees = Employee.objects.get(id=logged_in_employee_id)
-    print(employees.id)
+    # print(employees.id)
       
     role = Role.objects.filter(name=employees.job_role).first()
             
@@ -1667,11 +1667,11 @@ def sales_by_staff_item(request):
     # try:
     employee = Employee.objects.get(id=employee_id)
     role = Role.objects.filter(name=employee.job_role).first()
-    print("Role:", role)
+    # print("Role:", role)
             
     # Get active modules based on the filtered role
     active_modules = role.modules.all()
-    print("Active Modules:", active_modules)
+    # print("Active Modules:", active_modules)
     
     # Retrieve products based on the employee's business profile
     if employee:
@@ -1680,7 +1680,7 @@ def sales_by_staff_item(request):
         # Handle the case where there's no business profile associated with the employee
         # You might want to redirect the user or show an error message
         return render(request, 'error.html')
-    print(products)
+    # print(products)
     if request.method == 'POST':
         sales_form = SaleByStaffItemForm(request.POST)
         if sales_form.is_valid():
@@ -1701,7 +1701,7 @@ def sales_by_staff_item_service(request):
 
     # Filter employees based on the retrieved employee ID
     employees = Employee.objects.get(id=employee_id)
-    print(employees.id)
+    # print(employees.id)
     
 
     
@@ -1711,11 +1711,11 @@ def sales_by_staff_item_service(request):
     else:
        return render(request, 'error.html')
     role = Role.objects.filter(name=employees.job_role).first()
-    print("Role:", role)
+    # print("Role:", role)
             
     # Get active modules based on the filtered role
     active_modules = role.modules.all()
-    print("Active Modules:", active_modules)
+    # print("Active Modules:", active_modules)
     
     if request.method == 'POST':
         sales_form = SalesByStaffItemServiceForm(request.POST)
@@ -1741,11 +1741,11 @@ def sales_report(request):
     sales_staff_item = SaleByStaffItem.objects.filter(employee__id=logged_in_employee_id)
     employees = Employee.objects.get(id=logged_in_employee_id)
     role = Role.objects.filter(name=employees.job_role).first()
-    print("Role:", role)
+    # print("Role:", role)
             
     # Get active modules based on the filtered role
     active_modules = role.modules.all()
-    print("Active Modules:", active_modules)
+    # print("Active Modules:", active_modules)
     
     # Pass the filtered sales data to the template
     context = {'sales': sales, 'sales_staff_service': sales_staff_service, 'sales_staff_item': sales_staff_item,'active_modules':active_modules}
@@ -1802,7 +1802,7 @@ def update_item_sales_data(request):
         employees = None
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    print("start date: ", start_date)
+    # print("start date: ", start_date)
     # Retrieve filtered item sales data based on the selected date range
     sales = SalesByAdminItem.objects.filter(date__range=[start_date, end_date]).values('date',
         'employee__id',
@@ -1815,7 +1815,7 @@ def update_item_sales_data(request):
         'discount',
         'total_amount',
         'payment_method')
-    print(sales)
+    # print(sales)
     return JsonResponse(list(sales), safe=False)
 
 def update_service_sales_data(request):
@@ -1831,7 +1831,7 @@ def update_service_sales_data(request):
         employees = None
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    print("start date service: ", start_date)
+    #  print("start date service: ", start_date)
     # Retrieve filtered service sales data based on the selected date range
     service_sales = SaleByAdminService.objects.filter(date__range=[start_date, end_date]).values('date',
         'employee__id',
@@ -1844,7 +1844,7 @@ def update_service_sales_data(request):
         'discount',
         'total_amount',
         'payment_method')
-    print(service_sales)
+    # print(service_sales)
     return JsonResponse(list(service_sales), safe=False)
 
 class ExportSalesReportAdminPDF(View):
