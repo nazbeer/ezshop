@@ -19,6 +19,8 @@ from .serializers import *
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 
+
+
 class DayClosingViewSet(viewsets.ModelViewSet):
     queryset = DayClosing.objects.all()
     serializer_class = DayClosingSerializer
@@ -43,6 +45,8 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
 
+
+
 class DayClosingListCreateAPIView(APIView):
     def get(self, request, format=None):
         day_closings = DayClosing.objects.all()
@@ -55,6 +59,7 @@ class DayClosingListCreateAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 
 class DayClosingRetrieveUpdateDestroyAPIView(APIView):
@@ -78,6 +83,7 @@ class DayClosingRetrieveUpdateDestroyAPIView(APIView):
         day_closing = self.get_object(pk)
         day_closing.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class DayClosingAdminListCreateAPIView(APIView):
@@ -254,11 +260,11 @@ class EmployeeLoginAPIView(APIView):
             # Authenticate the employee
             employee = authenticate(username=username, password=password)
             if employee is not None:
+                print('emp',employee)
                 # Generate or retrieve the token for the authenticated employee
                 token, created = Token.objects.get_or_create(user=employee)
-                
                 # Get the profile of the authenticated employee
-                employee_profile = get_object_or_404(Employee, user=employee)
+                employee_profile = get_object_or_404(Employee, username=username)
                 
                 # Serialize the employee profile
                 serializer = EmployeeSerializer(employee_profile)
@@ -278,6 +284,8 @@ class EmployeeLoginAPIView(APIView):
             # If the serializer is not valid, return the validation errors
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+        
+        
 class EmployeeLogoutAPIView(APIView):
     def post(self, request, format=None):
         logout(request)
@@ -289,7 +297,6 @@ class EmployeeDashboardAPIView(APIView):
     def get(self, request, format=None):
         # Retrieve the employee ID from the session
         employee_id = request.session.get('employee_id')
-        print(employee_id)
         # Fetch employee details
         employee = get_object_or_404(Employee, pk=employee_id)
         
@@ -297,8 +304,7 @@ class EmployeeDashboardAPIView(APIView):
         business_profile = BusinessProfile.objects.filter(name=employee.business_profile).first()
         
         # Fetch associated Shop for the employee
-        shop = Shop.objects.filter(name=business_profile.name).first()
-        
+        shop = Shop.objects.filter(name=business_profile.name).first()        
         # Get the current month and year
         current_month = timezone.now().month
         current_year = timezone.now().year
@@ -355,18 +361,19 @@ class EmployeeDashboardAPIView(APIView):
         
         # Construct the response
         response_data = {
-            'employee': employee,
-            'business_profile': business_profile,
-            'shop': shop,
-            'total_services': total_services,
-            'total_sales': total_sales,
-            'total_advance': total_advance,
-            'commission': commission,
-            'chart_data_json': chart_data_json,
-            'active_modules': active_modules,
+            'employee':str(employee),
+            'business_profile': str(business_profile),
+            'shop': str(shop),
+            'total_services': str(total_services),
+            'total_sales': str(total_sales),
+            'total_advance': str(total_advance),
+            'commission': str(commission),
+            'chart_data_json': str(chart_data_json),
+            'active_modules': str(active_modules),
         }
-        
-        return Response(response_data, status=status.HTTP_200_OK)
+    
+        return JsonResponse({"response_data":response_data}, status=status.HTTP_200_OK)
+
 
 class EmployeeProfileAPIView(APIView):
     def get(self, request, format=None):
@@ -378,12 +385,14 @@ class EmployeeProfileAPIView(APIView):
 class DayClosingReportAPIView(APIView):
     def get(self, request, format=None):
         logged_in_employee_id = request.session.get('employee_id')  # Retrieve the logged-in employee's ID from the session
+        # logged_in_employee_id=1
         day_closings_list = DayClosing.objects.filter(employee__id=logged_in_employee_id).order_by('-created_on')
+        print(day_closings_list)
 
         # Paginate the day closings list
         paginator = Paginator(day_closings_list, 10)
         page = request.GET.get('page')
-
+        
         try:
             day_closings = paginator.page(page)
         except PageNotAnInteger:
@@ -400,6 +409,7 @@ class DayClosingReportAPIView(APIView):
 class SalesReportAPIView(APIView):
     def get(self, request, format=None):
         logged_in_employee_id = request.session.get('employee_id')  # Retrieve the logged-in employee's ID from the session
+        # logged_in_employee_id=1
 
         # Query the sales data filtered by the logged-in employee's ID
         sales = SalesByStaffItemService.objects.filter(employee__id=logged_in_employee_id)

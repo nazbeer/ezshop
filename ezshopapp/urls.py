@@ -15,6 +15,7 @@ router.register(r'sales-by-staff-item-service', appviews.SalesByStaffItemService
 router.register(r'employee-profile', appviews.EmployeeProfileViewSet, basename='employee-profile')
 
 
+
 # Register new APIs
 # router.register(r'employeelogin', EmployeeLoginAPIView, basename='employeelogin')
 # router.register(r'employeelogout', EmployeeLogoutAPIView, basename='employeelogout')
@@ -26,6 +27,8 @@ router.register(r'employee-profile', appviews.EmployeeProfileViewSet, basename='
 
 urlpatterns = [
     path('api/', include(router.urls)),
+
+
     # path('api/employees/login/<str:username>/<str:password>/', EmployeeViewSet.as_view({'post': 'loginapi'}), name='employee_login'),
     # path('api/employees/employee_dashboard/', EmployeeViewSet.as_view({'get': 'employee_dashboard'}), name='employee_dashboard'),
     # path('api/employees/profile/', EmployeeViewSet.as_view({'get': 'profile'}), name='profile'),
@@ -143,6 +146,17 @@ urlpatterns = [
     path('api/employees-login/', appviews.EmployeeLoginAPIView.as_view(), name='employee_login'),
     path('api/employees-logout/', appviews.EmployeeLogoutAPIView.as_view(), name='employee_logout'),
     path('api/employees-dashboard/', appviews.EmployeeDashboardAPIView.as_view(), name='employee_dashboard'),
+
+    path('api/sales_report/',appviews.SalesReportAPIView.as_view(), name='sales_report'),
+    path('api/day_closing_report/',appviews.DayClosingReportAPIView.as_view(), name='day_closing_report'),
+    path('api/day_closing_create/',appviews.DayClosingListCreateAPIView.as_view(), name='day_closing_create_list'),
+    path('api/day_closing_update/<int:pk>/',appviews.DayClosingRetrieveUpdateDestroyAPIView.as_view(), name='day_closing_update_delete'),
+    path('api/day_closing-admin/',appviews.DayClosingAdminListCreateAPIView.as_view(), name='day_closing_admin_list_create'),
+    
+
+
+
+
   
 ]
 handler404 = 'ezshopapp.views.handler404'
