@@ -150,29 +150,39 @@ urlpatterns = [
     path('api/employees-profile/<int:pk>/', appviews.EmployeeProfileAPIView.as_view(), name='employee-profile'),
 
     #Employee sales (product,services,product-service)
-    path('api/employees-sales-by-service/', appviews.SaleByStaffServiceListCreateAPIView.as_view(), name='employee_sales_by_service_create_list'),
+    path('api/employees-sales-by-service/<int:pk>/', appviews.SaleByStaffServiceListCreateAPIView.as_view(), name='employee_sales_by_service_create_list'),
     path('api/employees-sales-by-service/update/<int:pk>/', appviews.SaleByStaffServiceRetrieveUpdateDestroyAPIView.as_view(), name='employee_sales_by_service_update_delete'),
-    path('api/employees-sales-by-item/', appviews.SaleByStaffItemListCreateAPIView.as_view(), name='employee_sales_by_item_create_list'),
+    path('api/employees-sales-by-item/<int:pk>/', appviews.SaleByStaffItemListCreateAPIView.as_view(), name='employee_sales_by_item_create_list'),
     path('api/employees-sales-by-item/update/<int:pk>/', appviews.SaleByStaffItemRetrieveUpdateDestroyAPIView.as_view(), name='employee_sales_by_item_update_delete'),
 
-    path('api/employees-sales-by-item-service/', appviews.SalesByStaffItemServiceListCreateAPIView.as_view(), name='employee_sales_by_item_service_list'),
+    path('api/employees-sales-by-item-service/<int:pk>/', appviews.SalesByStaffItemServiceListCreateAPIView.as_view(), name='employee_sales_by_item_service_list'),
     path('api/employees-sales-by-item-service/update/<int:pk>/', appviews.SalesByStaffItemServiceRetrieveUpdateDestroyAPIView.as_view(), name='employee_sales_by_item_servie_update_delete'),
 
     #Employee DayClosing
 
-    path('api/employees-day-closing/create/',appviews.DayClosingListCreateAPIView.as_view(), name='employees_day_closing_create'),
+    path('api/employees-day-closing/create/<int:pk>/',appviews.DayClosingListCreateAPIView.as_view(), name='employees_day_closing_create'),
     path('api/employees-day-closing/update/<int:pk>/',appviews.DayClosingRetrieveUpdateDestroyAPIView.as_view(), name='employees_day_closing_update'),
 
     # Employee DayClosingAdmin
 
-    path('api/employees-day-closing-admin/create/',appviews.DayClosingAdminListCreateAPIView.as_view(), name='employees_day_closing_update'),
+    path('api/employees-day-closing-admin/create/<int:pk>/',appviews.DayClosingAdminListCreateAPIView.as_view(), name='employees_day_closing_update'),
     path('api/employees-day-closing-admin/update/<int:pk>/',appviews.DayClosingAdminRetrieveUpdateDestroyAPIView.as_view(), name='employees_day_closing_admin_update'),
 
     # Employee sales and day closing reports and fetch-total-sales
 
-    path('api/employees-sales-report/',appviews.SalesReportAPIView.as_view(), name='employees_sales_report'),
-    path('api/fetch-total-sale/', appviews.fetch_total_sale, name='fetch_total_sale'),
-    path('api/employees-dayclosing-report/',appviews.DayClosingReportAPIView.as_view(), name='employees_dayclosing_report'),
+    path('api/employees-sales-report/<int:pk>/',appviews.SalesReportAPIView.as_view(), name='employees_sales_report'),
+    path('api/fetch-total-sale/<int:pk>/', appviews.fetch_total_sale, name='fetch_total_sale'),
+    path('api/employees-dayclosing-report/<int:pk>/',appviews.DayClosingReportAPIView.as_view(), name='employees_dayclosing_report'),
+
+
+    # product and service list
+    path('api/employees/products/', appviews.ProductListView.as_view(), name='employees-product-list'),
+    path('api/employees/service/', appviews.ServiceListView.as_view(), name='employees-service-list'),
+    path('api/employees/products/<int:pk>/', appviews.ProductDetailsView.as_view(), name='employees-product-detail'),  
+    path('api/employees/service/<int:pk>/', appviews.ServiceDetailsView.as_view(), name='employees-service-detail'),
+
+
+
   
 ]
 handler404 = 'ezshopapp.views.handler404'

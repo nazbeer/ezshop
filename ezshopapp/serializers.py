@@ -62,13 +62,11 @@ class BankDepositSerializer(serializers.ModelSerializer):
 
 
 
-# not used in apiview
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = '__all__'
 
-# not used in apiview
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
