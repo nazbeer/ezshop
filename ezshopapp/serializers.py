@@ -108,3 +108,10 @@ class DayClosingAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = DayClosingAdmin
         fields = '__all__'
+
+
+class BussinessProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =BusinessProfile
+        fields ='__all__'
+
