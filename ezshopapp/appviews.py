@@ -239,6 +239,12 @@ class LoginFormSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
 
+{
+    "username":"nazbeer","password":"123456"
+
+}
+
+
 # Modify your view to use the serializer
 class EmployeeLoginAPIView(APIView):
     def post(self, request, format=None):
@@ -249,24 +255,24 @@ class EmployeeLoginAPIView(APIView):
         if serializer.is_valid():
             # Extract the validated data
             username = serializer.validated_data.get('username')
-            password = serializer.validated_data.get('password')
-            
+            password = serializer.validated_data.get('password')            
             # Check if the username exists in the Employee module
             try:
-                employee = Employee.objects.get(username=username)
+                employee = Employee.objects.get(username=username,password=password)
             except Employee.DoesNotExist:
                 return Response({'message': 'Enter valid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Authenticate the employee
-            employee = authenticate(username=username, password=password)
+            # employee = authenticate(username=username)
+            # print(employee,'kkkkkkkkkk')
             if employee is not None:
                 # Generate or retrieve the token for the authenticated employee
                 # token, created = Token.objects.get_or_create(user=employee)
                 # Get the profile of the authenticated employee
-                employee_profile = get_object_or_404(Employee, username=username)
+                # employee_profile = get_object_or_404(Employee, username=username)
                 
                 # Serialize the employee profile
-                serializer = EmployeeSerializer(employee_profile)
+                serializer = EmployeeSerializer(employee)
                 
                 # Return the serialized data along with token, ID, and username
                 response_data = {
