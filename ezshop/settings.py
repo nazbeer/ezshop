@@ -69,7 +69,8 @@ SESSION_COOKIE_HTTPONLY = True  # Ensure session cookie is marked as HTTP-only
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:59917',
+    'http://localhost:3000',
+    # 'http://localhost:59917',\
     # Add other allowed origins as needed
 ]
 ROOT_URLCONF = 'ezshop.urls'

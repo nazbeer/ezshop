@@ -130,3 +130,12 @@ class SalesByAdminItemAdmin(admin.ModelAdmin):
 @admin.register(SalesByStaffItemService)
 class SalesByStaffItemServiceAdmin(admin.ModelAdmin):
     list_display = ['date', 'employee', 'product', 'pquantity', 'pprice', 'service', 'squantity', 'sprice', 'sub_total', 'discount', 'total_amount', 'payment_method', 'created_on', 'itemtotal', 'servicetotal']
+
+
+@admin.register(Product)
+class Product(admin.ModelAdmin):
+    list_display = ['name', 'vat','amount','max_discount_allowed','status','business_profile','created_on']
+
+@admin.register(Service)
+class Service(admin.ModelAdmin):
+    list_display = ['name','duration', 'vat','amount','max_discount_allowed','status','business_profile','created_on']

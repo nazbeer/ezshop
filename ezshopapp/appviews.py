@@ -17,7 +17,7 @@ from rest_framework import serializers
 from .models import *
 from .serializers import *
 from rest_framework import viewsets
-from rest_framework.authtoken.models import Token
+# from rest_framework.authtoken.models import Token
 
 
 
@@ -41,15 +41,16 @@ class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
     serializer_class = SalesByStaffItemServiceSerializer
 
-class EmployeeProfileViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
+# class EmployeeProfileViewSet(viewsets.ModelViewSet):
+#     queryset = Employee.objects.all()
+#     serializer_class = EmployeeSerializer
 
 
 
 class DayClosingListCreateAPIView(APIView):
     def get(self, request, format=None):
-        day_closings = DayClosing.objects.all()
+        employee_id = request.session.get('employee_id')
+        day_closings = DayClosing.objects.filter(employee=employee_id)
         serializer = DayClosingSerializer(day_closings, many=True)
         return Response(serializer.data)
 
@@ -123,15 +124,23 @@ class DayClosingAdminRetrieveUpdateDestroyAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+
+
+
 class SaleByStaffServiceListCreateAPIView(APIView):
+
     def get(self, request, format=None):
-        sales_by_staff_service = SaleByStaffService.objects.all()
+        employee_id = request.session.get('employee_id')
+        sales_by_staff_service = SaleByStaffService.objects.filter(employee=employee_id)
         serializer = SaleByStaffServiceSerializer(sales_by_staff_service, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
+        employee_id = request.session.get('employee_id')
+        employee =get_object_or_404(Employee,id=employee_id)
         serializer = SaleByStaffServiceSerializer(data=request.data)
         if serializer.is_valid():
+            serializer.validated_data['employee']=employee
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -161,14 +170,19 @@ class SaleByStaffServiceRetrieveUpdateDestroyAPIView(APIView):
 
 
 class SaleByStaffItemListCreateAPIView(APIView):
+
     def get(self, request, format=None):
-        sales_by_staff_item = SaleByStaffItem.objects.all()
-        serializer = SalesByStaffItemServiceSerializer(sales_by_staff_item, many=True)
+        employee_id = request.session.get('employee_id')
+        sales_by_staff_item = SaleByStaffItem.objects.filter(employee=employee_id)
+        serializer = SalesByStaffItemSerializer(sales_by_staff_item, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = SalesByStaffItemServiceSerializer(data=request.data)
+        employee_id = request.session.get('employee_id')
+        employee =get_object_or_404(Employee,id=employee_id)
+        serializer = SalesByStaffItemSerializer(data=request.data)
         if serializer.is_valid():
+            serializer.validated_data['employee']=employee
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -180,12 +194,12 @@ class SaleByStaffItemRetrieveUpdateDestroyAPIView(APIView):
 
     def get(self, request, pk, format=None):
         sale_by_staff_item = self.get_object(pk)
-        serializer = SalesByStaffItemServiceSerializer(sale_by_staff_item)
+        serializer = SalesByStaffItemSerializer(sale_by_staff_item)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         sale_by_staff_item = self.get_object(pk)
-        serializer = SalesByStaffItemServiceSerializer(sale_by_staff_item, data=request.data)
+        serializer = SalesByStaffItemSerializer(sale_by_staff_item, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -197,15 +211,23 @@ class SaleByStaffItemRetrieveUpdateDestroyAPIView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+
+
+
 class SalesByStaffItemServiceListCreateAPIView(APIView):
+
     def get(self, request, format=None):
-        sales_by_staff_item_service = SalesByStaffItemService.objects.all()
+        employee_id = request.session.get('employee_id')
+        sales_by_staff_item_service = SalesByStaffItemService.objects.filter(employee=employee_id)
         serializer = SalesByStaffItemServiceSerializer(sales_by_staff_item_service, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
+        employee_id = request.session.get('employee_id')
+        employee = get_object_or_404(Employee,id=employee_id)
         serializer = SalesByStaffItemServiceSerializer(data=request.data)
         if serializer.is_valid():
+            serializer.validated_data['employee']=employee
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -290,6 +312,7 @@ class EmployeeLoginAPIView(APIView):
         
 class EmployeeLogoutAPIView(APIView):
     def post(self, request, format=None):
+        del request.session['employee_id']
         logout(request)
         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
@@ -297,8 +320,10 @@ class EmployeeLogoutAPIView(APIView):
 
 class EmployeeDashboardAPIView(APIView):
     def get(self, request, format=None):
+        print('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk')
         # Retrieve the employee ID from the session
         employee_id = request.session.get('employee_id')
+        print(employee_id)
         # Fetch employee details
         employee = get_object_or_404(Employee, pk=employee_id)
         
@@ -324,7 +349,6 @@ class EmployeeDashboardAPIView(APIView):
             role = Role.objects.filter(name=employee.job_role).first()
             # Get active modules based on the filtered role
             active_modules = role.modules.all()
-            print(active_modules)
         else:
             active_modules = []
         
@@ -366,6 +390,11 @@ class EmployeeDashboardAPIView(APIView):
         module_serializer = ModuleSerializer(active_modules, many=True)
         active_modules_data = module_serializer.data  
 
+        # use the below method or EmployeeSerializer
+        # employee_data = {
+        #     'id': employee.id,
+        #     'name': employee.name,
+        # }
 
         # Construct the response
         response_data = {
@@ -384,7 +413,8 @@ class EmployeeDashboardAPIView(APIView):
 
 class EmployeeProfileAPIView(APIView):
     def get(self, request, format=None):
-        employee = get_object_or_404(Employee, user=request.user)
+        id =request.session.get('employee_id')
+        employee = get_object_or_404(Employee, id=id)
         serializer = EmployeeSerializer(employee)
         return Response(serializer.data)
 
