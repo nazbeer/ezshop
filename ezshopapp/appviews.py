@@ -65,25 +65,24 @@ class DayClosingListCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 def fetch_total_sale(request):
     employee_id = request.session.get('employee_id')
     current_date = timezone.now().strftime('%Y-%m-%d')
     
     total_services = (SalesByStaffItemService.objects
-                    .filter(employee_id=employee_id, date=current_date)
-                    .aggregate(total_services=Sum('itemtotal'))['total_services'] or 0) + \
-                    (SaleByStaffItem.objects
-                    .filter(employee_id=employee_id, date=current_date)
-                    .aggregate(total_services=Sum('total_amount'))['total_services'] or 0)
+                      .filter(employee_id=employee_id, date=current_date)
+                      .aggregate(total_services=Sum('servicetotal'))['total_services'] or 0) + \
+                     (SaleByStaffItem.objects
+                      .filter(employee_id=employee_id, date=current_date)
+                      .aggregate(total_services=Sum('total_amount'))['total_services'] or 0)
 
     total_sales = (SalesByStaffItemService.objects
-                .filter(employee_id=employee_id, date=current_date)
-                .aggregate(total_sales=Sum('servicetotal'))['total_sales'] or 0) + \
-                (SaleByStaffService.objects
-                .filter(employee_id=employee_id, date=current_date)
-                .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0)
+                   .filter(employee_id=employee_id, date=current_date)
+                   .aggregate(total_sales=Sum('itemtotal'))['total_sales'] or 0) + \
+                  (SaleByStaffService.objects
+                   .filter(employee_id=employee_id, date=current_date)
+                   .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0) 
+                   
     total_collection = total_sales + total_services 
 
     data = {
@@ -92,7 +91,6 @@ def fetch_total_sale(request):
         'total_collection': total_collection
     }
     return JsonResponse(data)
-
 
 
 
@@ -357,12 +355,12 @@ class EmployeeLogoutAPIView(APIView):
 
 
 class EmployeeDashboardAPIView(APIView):
-    def get(self, request, format=None):
+    def get(self, request,pk ,format=None):
         # Retrieve the employee ID from the session
-        employee_id = request.session.get('employee_id')
-        print(employee_id)
+        # employee_id = request.session.get('employee_id')
+        # print(employee_id)
         # Fetch employee details
-        employee = get_object_or_404(Employee, pk=employee_id)
+        employee = get_object_or_404(Employee, pk=pk)
         
         # Fetch associated BusinessProfile for the employee
         business_profile = BusinessProfile.objects.filter(id=employee.business_profile_id).first()
@@ -378,7 +376,7 @@ class EmployeeDashboardAPIView(APIView):
         last_day_of_month = timezone.datetime(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
 
         # Aggregate total services, total sales, and total advance for the current month
-        day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month)
+        day_closings = DayClosing.objects.filter(employee_id=pk, date__gte=first_day_of_month, date__lte=last_day_of_month)
         
         # Check if the employee has a job_role
         if employee and employee.job_role:
@@ -446,12 +444,12 @@ class EmployeeDashboardAPIView(APIView):
             'active_modules': active_modules_data,
         }
         return JsonResponse({"response_data":response_data}, status=status.HTTP_200_OK)
+    
 
 
 class EmployeeProfileAPIView(APIView):
-    def get(self, request, format=None):
-        id =request.session.get('employee_id')
-        employee = get_object_or_404(Employee, id=id)
+    def get(self, request, pk, format=None):
+        employee = get_object_or_404(Employee, id=pk)
         serializer = EmployeeSerializer(employee)
         return Response(serializer.data)
 

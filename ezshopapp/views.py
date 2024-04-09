@@ -1440,27 +1440,28 @@ def fetch_data(request, employee_id):
     current_date = timezone.now().strftime('%Y-%m-%d')
     
     total_services = (SalesByStaffItemService.objects
-                    .filter(employee_id=employee_id, date=current_date)
-                    .aggregate(total_services=Sum('itemtotal'))['total_services'] or 0) + \
-                    (SaleByStaffItem.objects
-                    .filter(employee_id=employee_id, date=current_date)
-                    .aggregate(total_services=Sum('total_amount'))['total_services'] or 0)
+                      .filter(employee_id=employee_id, date=current_date)
+                      .aggregate(total_services=Sum('servicetotal'))['total_services'] or 0) + \
+                     (SaleByStaffItem.objects
+                      .filter(employee_id=employee_id, date=current_date)
+                      .aggregate(total_services=Sum('total_amount'))['total_services'] or 0)
 
     total_sales = (SalesByStaffItemService.objects
-                .filter(employee_id=employee_id, date=current_date)
-                .aggregate(total_sales=Sum('servicetotal'))['total_sales'] or 0) + \
-                (SaleByStaffService.objects
-                .filter(employee_id=employee_id, date=current_date)
-                .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0)
-    total_collection = total_sales + total_services  # Assuming total collection is the same as total sales initially
+                   .filter(employee_id=employee_id, date=current_date)
+                   .aggregate(total_sales=Sum('itemtotal'))['total_sales'] or 0) + \
+                  (SaleByStaffService.objects
+                   .filter(employee_id=employee_id, date=current_date)
+                   .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0) 
+                   
+    total_collection = total_sales + total_services 
 
     data = {
         'total_services': total_services,
         'total_sales': total_sales,
         'total_collection': total_collection
     }
-
     return JsonResponse(data)
+    
 
 def day_closing_admin(request):
     current_date = timezone.now().date()
