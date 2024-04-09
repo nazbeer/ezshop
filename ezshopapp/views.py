@@ -63,116 +63,116 @@ def clear_cache_admin(request):
     return HttpResponse("Cache cleared successfully.")
 
 
-class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
-    queryset = SalesByStaffItemService.objects.all()
-    serializer_class = SalesByStaffItemServiceSerializer
+# class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
+#     queryset = SalesByStaffItemService.objects.all()
+#     serializer_class = SalesByStaffItemServiceSerializer
 
 
-class EmployeeViewSet(viewsets.ViewSet):
-    @action(detail=False, methods=['get'])
-    def list_employees(self, request):
-        employees = Employee.objects.all()
-        serializer = EmployeeSerializer(employees, many=True)
-        return Response(serializer.data)
+# class EmployeeViewSet(viewsets.ViewSet):
+#     @action(detail=False, methods=['get'])
+#     def list_employees(self, request):
+#         employees = Employee.objects.all()
+#         serializer = EmployeeSerializer(employees, many=True)
+#         return Response(serializer.data)
 
         
-    @action(detail=False, methods=['post'])
-    def logout(self, request):
-        # You can revoke the token here if needed
-        return JsonResponse({'message': 'Logged out successfully'})
+#     @action(detail=False, methods=['post'])
+#     def logout(self, request):
+#         # You can revoke the token here if needed
+#         return JsonResponse({'message': 'Logged out successfully'})
 
-    @action(detail=False, methods=['get'])
-    def profile(self, request):
-        try:
-            # Extract employee_id from the JWT token
-            token = request.headers.get('Authorization').split(' ')[1]  # Assuming token is passed in the Authorization header
-            secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
-            decoded_token = jwt.decode(token, secretkey, algorithms=['HS256'])
-            employee_id = decoded_token['employee_id']
+#     @action(detail=False, methods=['get'])
+#     def profile(self, request):
+#         try:
+#             # Extract employee_id from the JWT token
+#             token = request.headers.get('Authorization').split(' ')[1]  # Assuming token is passed in the Authorization header
+#             secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
+#             decoded_token = jwt.decode(token, secretkey, algorithms=['HS256'])
+#             employee_id = decoded_token['employee_id']
             
-            # Fetch employee profile using employee_id
-            employee = get_object_or_404(Employee, id=employee_id)
-            serializer = EmployeeSerializer(employee)
-            return Response(serializer.data)
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({'error': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
-        except jwt.InvalidTokenError:
-            return JsonResponse({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+#             # Fetch employee profile using employee_id
+#             employee = get_object_or_404(Employee, id=employee_id)
+#             serializer = EmployeeSerializer(employee)
+#             return Response(serializer.data)
+#         except jwt.ExpiredSignatureError:
+#             return JsonResponse({'error': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
+#         except jwt.InvalidTokenError:
+#             return JsonResponse({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    @action(detail=False, methods=['get'])
-    def employee_dashboard(self, request):
-        try:
-            # Extract employee_id from the JWT token
-            token = request.headers.get('Authorization').split(' ')[1]  # Assuming token is passed in the Authorization header
-            secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
-            decoded_token = jwt.decode(token, secretkey, algorithms=['HS256'])
-            employee_id = decoded_token['employee_id']
+#     @action(detail=False, methods=['get'])
+#     def employee_dashboard(self, request):
+#         try:
+#             # Extract employee_id from the JWT token
+#             token = request.headers.get('Authorization').split(' ')[1]  # Assuming token is passed in the Authorization header
+#             secretkey = 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcxMDQ4OTM3NywiaWF0IjoxNzEwNDg5Mzc3fQ.HUVrXY6SIzuVoFmrrssoxunYOxFJVOPRi-vv0Py-6EY'
+#             decoded_token = jwt.decode(token, secretkey, algorithms=['HS256'])
+#             employee_id = decoded_token['employee_id']
             
-            # Fetch employee data using employee_id
-            employee = get_object_or_404(Employee, pk=employee_id)
+#             # Fetch employee data using employee_id
+#             employee = get_object_or_404(Employee, pk=employee_id)
 
-            # Fetch other related data (business_profile, shop, etc.)
-            business_profile = BusinessProfile.objects.filter(name=employee.business_profile).first()
-            shop = Shop.objects.filter(name=business_profile.name).first()
+#             # Fetch other related data (business_profile, shop, etc.)
+#             business_profile = BusinessProfile.objects.filter(name=employee.business_profile).first()
+#             shop = Shop.objects.filter(name=business_profile.name).first()
             
-            # Fetch dashboard metrics
-            total_services = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('total_services'))['total_services']
-            total_sales = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('total_sales'))['total_sales']
-            total_advance = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_advance=Sum('advance'))['total_advance']
+#             # Fetch dashboard metrics
+#             total_services = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_services=Sum('total_services'))['total_services']
+#             total_sales = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_sales=Sum('total_sales'))['total_sales']
+#             total_advance = DayClosing.objects.filter(employee_id=employee_id).aggregate(total_advance=Sum('advance'))['total_advance']
 
-            # Fetch chart data for the last 10 days
-            ten_days_ago = datetime.now() - timedelta(days=10)
-            day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
+#             # Fetch chart data for the last 10 days
+#             ten_days_ago = datetime.now() - timedelta(days=10)
+#             day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=ten_days_ago)
 
-            chart_data = [{
-                'date': closing.date.strftime('%Y-%m-%d'),
-                'total_services': float(closing.total_services),
-                'total_sales': float(closing.total_sales),
-                'advance': float(closing.advance)
-            } for closing in day_closings]
+#             chart_data = [{
+#                 'date': closing.date.strftime('%Y-%m-%d'),
+#                 'total_services': float(closing.total_services),
+#                 'total_sales': float(closing.total_sales),
+#                 'advance': float(closing.advance)
+#             } for closing in day_closings]
 
-            # Construct response context
-            context = {
-                'employee': {
-                    'id': employee.id,
-                    'employee_id': employee.employee_id,
-                    'username': employee.username,
-                    # Add other fields as needed
-                },
-                'business_profile': {
-                    'name': business_profile.name,
-                    # Add other fields as needed
-                },
-                'shop': {
-                    'name': shop.name,
-                    # Add other fields as needed
-                },
-                'total_services': total_services,
-                'total_sales': total_sales,
-                'total_advance': total_advance,
-                'chart_data': chart_data,
-            }
-            return JsonResponse(context)
-        except jwt.ExpiredSignatureError:
-            return JsonResponse({'error': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
-        except jwt.InvalidTokenError:
-            return JsonResponse({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#             # Construct response context
+#             context = {
+#                 'employee': {
+#                     'id': employee.id,
+#                     'employee_id': employee.employee_id,
+#                     'username': employee.username,
+#                     # Add other fields as needed
+#                 },
+#                 'business_profile': {
+#                     'name': business_profile.name,
+#                     # Add other fields as needed
+#                 },
+#                 'shop': {
+#                     'name': shop.name,
+#                     # Add other fields as needed
+#                 },
+#                 'total_services': total_services,
+#                 'total_sales': total_sales,
+#                 'total_advance': total_advance,
+#                 'chart_data': chart_data,
+#             }
+#             return JsonResponse(context)
+#         except jwt.ExpiredSignatureError:
+#             return JsonResponse({'error': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
+#         except jwt.InvalidTokenError:
+#             return JsonResponse({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class DayClosingViewSet(viewsets.ModelViewSet):
-    queryset = DayClosing.objects.all()
-    serializer_class = DayClosingSerializer
+# class DayClosingViewSet(viewsets.ModelViewSet):
+#     queryset = DayClosing.objects.all()
+#     serializer_class = DayClosingSerializer
 
 
-class DayClosingViewSet(viewsets.ModelViewSet):
-    queryset = DayClosing.objects.all()
-    serializer_class = DayClosingSerializer
+# class DayClosingViewSet(viewsets.ModelViewSet):
+#     queryset = DayClosing.objects.all()
+#     serializer_class = DayClosingSerializer
     
 
-class DailySummaryViewSet(viewsets.ModelViewSet):
-    queryset = DailySummary.objects.all()
-    serializer_class = DailySummarySerializer
+# class DailySummaryViewSet(viewsets.ModelViewSet):
+#     queryset = DailySummary.objects.all()
+#     serializer_class = DailySummarySerializer
     
 class CustomUserAddView(CreateView):
     model = User
