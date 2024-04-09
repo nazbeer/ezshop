@@ -255,14 +255,13 @@ class EmployeeLoginAPIView(APIView):
             try:
                 employee = Employee.objects.get(username=username)
             except Employee.DoesNotExist:
-                return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'message': 'Enter valid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Authenticate the employee
             employee = authenticate(username=username, password=password)
             if employee is not None:
-                print('emp',employee)
                 # Generate or retrieve the token for the authenticated employee
-                token, created = Token.objects.get_or_create(user=employee)
+                # token, created = Token.objects.get_or_create(user=employee)
                 # Get the profile of the authenticated employee
                 employee_profile = get_object_or_404(Employee, username=username)
                 
@@ -271,7 +270,7 @@ class EmployeeLoginAPIView(APIView):
                 
                 # Return the serialized data along with token, ID, and username
                 response_data = {
-                    'token': token.key,
+                    # 'token': token.key,
                     'id': employee.id,
                     'username': employee.username,
                     **serializer.data
