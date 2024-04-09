@@ -109,10 +109,12 @@ class SalesByStaffItemSerializer(serializers.ModelSerializer):
         model = SaleByStaffItem
         fields = '__all__'
 
+
 class DayClosingSerializer(serializers.ModelSerializer):
     class Meta:
         model = DayClosing
         fields = '__all__'
+
 
 class DayClosingAdminSerializer(serializers.ModelSerializer):
     class Meta:

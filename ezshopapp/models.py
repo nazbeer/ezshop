@@ -273,7 +273,7 @@ class DayClosing(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
-        return f"Day Closing by {self.employee.first_name} on {self.date}"
+        return f"Day Closing by {self.employee} on {self.date}"
 
 class DayClosingAdmin(models.Model):
     date = models.DateField(default=timezone.now)
