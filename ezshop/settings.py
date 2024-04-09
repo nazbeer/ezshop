@@ -37,9 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'ezshopapp',
     'corsheaders',
     "bootstrap_daterangepicker",
+
 ]
 
 MIDDLEWARE = [
