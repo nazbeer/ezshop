@@ -146,8 +146,8 @@ urlpatterns = [
     # Employee Api
     path('api/employees-login/', appviews.EmployeeLoginAPIView.as_view(), name='employees_login'),
     path('api/employees-logout/', appviews.EmployeeLogoutAPIView.as_view(), name='employees_logout'),
-    path('api/employees-dashboard/', appviews.EmployeeDashboardAPIView.as_view(), name='employees_dashboard'),
-    path('api/employees-profile/', appviews.EmployeeProfileAPIView.as_view(), name='employees_profile_update'),
+    path('api/employees-dashboard/<int:pk>/', appviews.EmployeeDashboardAPIView.as_view(), name='employees_dashboard'),
+    path('api/employees-profile/<int:pk>/', appviews.EmployeeProfileAPIView.as_view(), name='employee-profile'),
 
     #Employee sales (product,services,product-service)
     path('api/employees-sales-by-service/', appviews.SaleByStaffServiceListCreateAPIView.as_view(), name='employee_sales_by_service_create_list'),
@@ -173,11 +173,6 @@ urlpatterns = [
     path('api/employees-sales-report/',appviews.SalesReportAPIView.as_view(), name='employees_sales_report'),
     path('api/fetch-total-sale/', appviews.fetch_total_sale, name='fetch_total_sale'),
     path('api/employees-dayclosing-report/',appviews.DayClosingReportAPIView.as_view(), name='employees_dayclosing_report'),
-    
-
-
-
-
   
 ]
 handler404 = 'ezshopapp.views.handler404'

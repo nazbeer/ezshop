@@ -73,6 +73,9 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:59917',
     # Add other allowed origins as needed
 ]
+
+
+
 ROOT_URLCONF = 'ezshop.urls'
 
 TEMPLATES = [
