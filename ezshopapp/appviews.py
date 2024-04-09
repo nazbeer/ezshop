@@ -238,12 +238,7 @@ class SalesByStaffItemServiceRetrieveUpdateDestroyAPIView(APIView):
 class LoginFormSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
-
-{
-    "username":"nazbeer","password":"123456"
-
-}
-
+    
 
 # Modify your view to use the serializer
 class EmployeeLoginAPIView(APIView):
@@ -259,6 +254,8 @@ class EmployeeLoginAPIView(APIView):
             # Check if the username exists in the Employee module
             try:
                 employee = Employee.objects.get(username=username,password=password)
+                request.session['employee_id'] = employee.id
+
             except Employee.DoesNotExist:
                 return Response({'message': 'Enter valid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -306,10 +303,10 @@ class EmployeeDashboardAPIView(APIView):
         employee = get_object_or_404(Employee, pk=employee_id)
         
         # Fetch associated BusinessProfile for the employee
-        business_profile = BusinessProfile.objects.filter(name=employee.business_profile).first()
+        business_profile = BusinessProfile.objects.filter(id=employee.business_profile_id).first()
         
         # Fetch associated Shop for the employee
-        shop = Shop.objects.filter(name=business_profile.name).first()        
+        shop = Shop.objects.filter(name=business_profile.name).first()  
         # Get the current month and year
         current_month = timezone.now().month
         current_year = timezone.now().year
@@ -327,6 +324,7 @@ class EmployeeDashboardAPIView(APIView):
             role = Role.objects.filter(name=employee.job_role).first()
             # Get active modules based on the filtered role
             active_modules = role.modules.all()
+            print(active_modules)
         else:
             active_modules = []
         
@@ -363,20 +361,24 @@ class EmployeeDashboardAPIView(APIView):
 
         # Convert data to JSON format
         chart_data_json = json.dumps(chart_data)
-        
+
+        #Convert into serialized data
+        module_serializer = ModuleSerializer(active_modules, many=True)
+        active_modules_data = module_serializer.data  
+
+
         # Construct the response
         response_data = {
-            'employee':str(employee),
-            'business_profile': str(business_profile),
-            'shop': str(shop),
-            'total_services': str(total_services),
-            'total_sales': str(total_sales),
-            'total_advance': str(total_advance),
-            'commission': str(commission),
-            'chart_data_json': str(chart_data_json),
-            'active_modules': str(active_modules),
+            'employee':EmployeeSerializer(employee).data,
+            'business_profile':BussinessProfileSerializer(business_profile).data,
+            'shop': ShopSerializer(shop).data,
+            'total_services': total_services,
+            'total_sales': total_sales,
+            'total_advance': total_advance,
+            'commission': commission,
+            'chart_data_json': chart_data_json,
+            'active_modules': active_modules_data,
         }
-    
         return JsonResponse({"response_data":response_data}, status=status.HTTP_200_OK)
 
 
