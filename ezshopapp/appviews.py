@@ -362,8 +362,7 @@ class EmployeeDashboardAPIView(APIView):
         # employee_id = request.session.get('employee_id')
         # print(employee_id)
         # Fetch employee details
-        employee = get_object_or_404(Employee, pk=pk)
-        
+        employee = get_object_or_404(Employee, id=pk)
         # Fetch associated BusinessProfile for the employee
         business_profile = BusinessProfile.objects.filter(id=employee.business_profile_id).first()
         
@@ -415,9 +414,9 @@ class EmployeeDashboardAPIView(APIView):
         # Prepare data for the chart
         chart_data = [{
             'date': closing.date.strftime('%Y-%m-%d'),
-            'total_services': float(closing.total_services),
-            'total_sales': float(closing.total_sales),
-            'advance': float(closing.advance),
+            'total_services': float(closing.total_services) if closing.total_services is not None else None,
+            'total_sales': float(closing.total_sales) if closing.total_sales is not None else None,
+            'advance': float(closing.advance) if closing.advance is not None else None,
         } for closing in day_closings]
 
         # Convert data to JSON format
