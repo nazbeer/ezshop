@@ -41,9 +41,9 @@ class SalesByStaffItemServiceViewSet(viewsets.ModelViewSet):
     queryset = SalesByStaffItemService.objects.all()
     serializer_class = SalesByStaffItemServiceSerializer
 
-# class EmployeeProfileViewSet(viewsets.ModelViewSet):
-#     queryset = Employee.objects.all()
-#     serializer_class = EmployeeSerializer
+class EmployeeProfileViewSet(viewsets.ModelViewSet):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
 
 
 
@@ -55,12 +55,45 @@ class DayClosingListCreateAPIView(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
+        employee_id = request.session.get('employee_id')
+        employee =get_object_or_404(Employee,id=employee_id)
         serializer = DayClosingSerializer(data=request.data)
         if serializer.is_valid():
+            serializer.validated_data['employee']=employee
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+def fetch_total_sale(request):
+    employee_id = request.session.get('employee_id')
+    current_date = timezone.now().strftime('%Y-%m-%d')
     
+    total_services = (SalesByStaffItemService.objects
+                    .filter(employee_id=employee_id, date=current_date)
+                    .aggregate(total_services=Sum('itemtotal'))['total_services'] or 0) + \
+                    (SaleByStaffItem.objects
+                    .filter(employee_id=employee_id, date=current_date)
+                    .aggregate(total_services=Sum('total_amount'))['total_services'] or 0)
+
+    total_sales = (SalesByStaffItemService.objects
+                .filter(employee_id=employee_id, date=current_date)
+                .aggregate(total_sales=Sum('servicetotal'))['total_sales'] or 0) + \
+                (SaleByStaffService.objects
+                .filter(employee_id=employee_id, date=current_date)
+                .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0)
+    total_collection = total_sales + total_services 
+
+    data = {
+        'total_services': total_services,
+        'total_sales': total_sales,
+        'total_collection': total_collection
+    }
+    return JsonResponse(data)
+
+
 
 
 class DayClosingRetrieveUpdateDestroyAPIView(APIView):
@@ -87,15 +120,20 @@ class DayClosingRetrieveUpdateDestroyAPIView(APIView):
 
 
 
+
 class DayClosingAdminListCreateAPIView(APIView):
     def get(self, request, format=None):
-        day_closing_admins = DayClosingAdmin.objects.all()
+        employee_id = request.session.get('employee_id')
+        day_closing_admins = DayClosingAdmin.objects.filter(employee=employee_id)
         serializer = DayClosingAdminSerializer(day_closing_admins, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
+        employee_id = request.session.get('employee_id')
+        employee =get_object_or_404(Employee,id=employee_id)
         serializer = DayClosingAdminSerializer(data=request.data)
         if serializer.is_valid():
+            serializer.validated_data['employee']=employee
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -320,7 +358,6 @@ class EmployeeLogoutAPIView(APIView):
 
 class EmployeeDashboardAPIView(APIView):
     def get(self, request, format=None):
-        print('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk')
         # Retrieve the employee ID from the session
         employee_id = request.session.get('employee_id')
         print(employee_id)
@@ -424,8 +461,6 @@ class DayClosingReportAPIView(APIView):
         logged_in_employee_id = request.session.get('employee_id')  # Retrieve the logged-in employee's ID from the session
         # logged_in_employee_id=1
         day_closings_list = DayClosing.objects.filter(employee__id=logged_in_employee_id).order_by('-created_on')
-        print(day_closings_list)
-
         # Paginate the day closings list
         paginator = Paginator(day_closings_list, 10)
         page = request.GET.get('page')

@@ -139,3 +139,8 @@ class Product(admin.ModelAdmin):
 @admin.register(Service)
 class Service(admin.ModelAdmin):
     list_display = ['name','duration', 'vat','amount','max_discount_allowed','status','business_profile','created_on']
+
+@admin.register(DayClosing)
+class DayClosing(admin.ModelAdmin):
+    list_display = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection', 'status', 'created_on']
+
