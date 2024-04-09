@@ -1462,6 +1462,7 @@ def fetch_data(request, employee_id):
 
     return JsonResponse(data)
 
+
 def day_closing_admin(request):
     current_date = timezone.now().date()
 
