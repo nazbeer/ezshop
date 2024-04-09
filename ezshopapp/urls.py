@@ -143,9 +143,9 @@ urlpatterns = [
     path('notifications/', notification_view, name='notifications'),
     path('update_chart_data/', HomeView.as_view(), name='update_chart_data'),
     
-    path('api/employees-login/', appviews.EmployeeLoginAPIView.as_view(), name='employee_login'),
-    path('api/employees-logout/', appviews.EmployeeLogoutAPIView.as_view(), name='employee_logout'),
-    path('api/employees-dashboard/', appviews.EmployeeDashboardAPIView.as_view(), name='employee_dashboard'),
+    path('api/employees-login/', appviews.EmployeeLoginAPIView.as_view(), name='employees_login'),
+    path('api/employees-logout/', appviews.EmployeeLogoutAPIView.as_view(), name='employees_logout'),
+    path('api/employees-dashboard/', appviews.EmployeeDashboardAPIView.as_view(), name='employees_dashboard'),
 
     path('api/sales_report/',appviews.SalesReportAPIView.as_view(), name='sales_report'),
     path('api/day_closing_report/',appviews.DayClosingReportAPIView.as_view(), name='day_closing_report'),
