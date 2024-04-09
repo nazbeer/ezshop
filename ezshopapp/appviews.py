@@ -17,6 +17,8 @@ from rest_framework import serializers
 from .models import *
 from .serializers import *
 from rest_framework import viewsets
+from rest_framework import generics
+
 # from rest_framework.authtoken.models import Token
 
 
@@ -48,15 +50,15 @@ class EmployeeProfileViewSet(viewsets.ModelViewSet):
 
 
 class DayClosingListCreateAPIView(APIView):
-    def get(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        day_closings = DayClosing.objects.filter(employee=employee_id)
+    def get(self, request,pk, format=None):
+        # employee_id = request.session.get('employee_id')
+        day_closings = DayClosing.objects.filter(employee=pk)
         serializer = DayClosingSerializer(day_closings, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        employee =get_object_or_404(Employee,id=employee_id)
+    def post(self, request,pk, format=None):
+        # employee_id = request.session.get('employee_id')
+        employee =get_object_or_404(Employee,id=pk)
         serializer = DayClosingSerializer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['employee']=employee
@@ -65,22 +67,22 @@ class DayClosingListCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def fetch_total_sale(request):
-    employee_id = request.session.get('employee_id')
+def fetch_total_sale(request,pk):
+    # employee_id = request.session.get('employee_id')
     current_date = timezone.now().strftime('%Y-%m-%d')
     
     total_services = (SalesByStaffItemService.objects
-                      .filter(employee_id=employee_id, date=current_date)
+                      .filter(employee_id=pk, date=current_date)
                       .aggregate(total_services=Sum('servicetotal'))['total_services'] or 0) + \
                      (SaleByStaffItem.objects
-                      .filter(employee_id=employee_id, date=current_date)
+                      .filter(employee_id=pk, date=current_date)
                       .aggregate(total_services=Sum('total_amount'))['total_services'] or 0)
 
     total_sales = (SalesByStaffItemService.objects
-                   .filter(employee_id=employee_id, date=current_date)
+                   .filter(employee_id=pk, date=current_date)
                    .aggregate(total_sales=Sum('itemtotal'))['total_sales'] or 0) + \
                   (SaleByStaffService.objects
-                   .filter(employee_id=employee_id, date=current_date)
+                   .filter(employee_id=pk, date=current_date)
                    .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0) 
                    
     total_collection = total_sales + total_services 
@@ -120,15 +122,15 @@ class DayClosingRetrieveUpdateDestroyAPIView(APIView):
 
 
 class DayClosingAdminListCreateAPIView(APIView):
-    def get(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        day_closing_admins = DayClosingAdmin.objects.filter(employee=employee_id)
+    def get(self, request,pk, format=None):
+        # employee_id = request.session.get('employee_id')
+        day_closing_admins = DayClosingAdmin.objects.filter(employee=pk)
         serializer = DayClosingAdminSerializer(day_closing_admins, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        employee =get_object_or_404(Employee,id=employee_id)
+    def post(self, request,pk, format=None):
+        # employee_id = request.session.get('employee_id')
+        employee =get_object_or_404(Employee,id=pk)
         serializer = DayClosingAdminSerializer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['employee']=employee
@@ -165,15 +167,15 @@ class DayClosingAdminRetrieveUpdateDestroyAPIView(APIView):
 
 class SaleByStaffServiceListCreateAPIView(APIView):
 
-    def get(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        sales_by_staff_service = SaleByStaffService.objects.filter(employee=employee_id)
+    def get(self, request,pk, format=None):
+        # employee_id = request.session.get('employee_id')
+        sales_by_staff_service = SaleByStaffService.objects.filter(employee=pk)
         serializer = SaleByStaffServiceSerializer(sales_by_staff_service, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        employee =get_object_or_404(Employee,id=employee_id)
+    def post(self, request,pk, format=None):
+        # employee_id = request.session.get('employee_id')
+        employee =get_object_or_404(Employee,id=pk)
         serializer = SaleByStaffServiceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['employee']=employee
@@ -207,15 +209,15 @@ class SaleByStaffServiceRetrieveUpdateDestroyAPIView(APIView):
 
 class SaleByStaffItemListCreateAPIView(APIView):
 
-    def get(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        sales_by_staff_item = SaleByStaffItem.objects.filter(employee=employee_id)
+    def get(self, request,pk, format=None):
+        # employee_id = request.session.get('employee_id')
+        sales_by_staff_item = SaleByStaffItem.objects.filter(employee=pk)
         serializer = SalesByStaffItemSerializer(sales_by_staff_item, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        employee =get_object_or_404(Employee,id=employee_id)
+    def post(self, request,pk, format=None):
+        # employee_id = request.session.get('employee_id')
+        employee =get_object_or_404(Employee,id=pk)
         serializer = SalesByStaffItemSerializer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['employee']=employee
@@ -252,15 +254,15 @@ class SaleByStaffItemRetrieveUpdateDestroyAPIView(APIView):
 
 class SalesByStaffItemServiceListCreateAPIView(APIView):
 
-    def get(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        sales_by_staff_item_service = SalesByStaffItemService.objects.filter(employee=employee_id)
+    def get(self, request, pk,format=None):
+        # employee_id = request.session.get('employee_id')
+        sales_by_staff_item_service = SalesByStaffItemService.objects.filter(employee=pk)
         serializer = SalesByStaffItemServiceSerializer(sales_by_staff_item_service, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        employee_id = request.session.get('employee_id')
-        employee = get_object_or_404(Employee,id=employee_id)
+    def post(self, request, pk,format=None):
+        # employee_id = request.session.get('employee_id')
+        employee = get_object_or_404(Employee,id=pk)
         serializer = SalesByStaffItemServiceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['employee']=employee
@@ -455,10 +457,10 @@ class EmployeeProfileAPIView(APIView):
 
 
 class DayClosingReportAPIView(APIView):
-    def get(self, request, format=None):
-        logged_in_employee_id = request.session.get('employee_id')  # Retrieve the logged-in employee's ID from the session
+    def get(self, request,pk, format=None):
+        # logged_in_employee_id = request.session.get('employee_id')  # Retrieve the logged-in employee's ID from the session
         # logged_in_employee_id=1
-        day_closings_list = DayClosing.objects.filter(employee__id=logged_in_employee_id).order_by('-created_on')
+        day_closings_list = DayClosing.objects.filter(employee__id=pk).order_by('-created_on')
         # Paginate the day closings list
         paginator = Paginator(day_closings_list, 10)
         page = request.GET.get('page')
@@ -477,14 +479,14 @@ class DayClosingReportAPIView(APIView):
 
 
 class SalesReportAPIView(APIView):
-    def get(self, request, format=None):
-        logged_in_employee_id = request.session.get('employee_id')  # Retrieve the logged-in employee's ID from the session
+    def get(self, request,pk, format=None):
+        # logged_in_employee_id = request.session.get('employee_id')  # Retrieve the logged-in employee's ID from the session
         # logged_in_employee_id=1
 
         # Query the sales data filtered by the logged-in employee's ID
-        sales = SalesByStaffItemService.objects.filter(employee__id=logged_in_employee_id)
-        sales_staff_service = SaleByStaffService.objects.filter(employee__id=logged_in_employee_id)
-        sales_staff_item = SaleByStaffItem.objects.filter(employee__id=logged_in_employee_id)
+        sales = SalesByStaffItemService.objects.filter(employee__id=pk)
+        sales_staff_service = SaleByStaffService.objects.filter(employee__id=pk)
+        sales_staff_item = SaleByStaffItem.objects.filter(employee__id=pk)
 
         # Convert sales data to JSON
         sales_json = [{"date": s.date, "total_amount": s.total_amount} for s in sales]
@@ -492,3 +494,25 @@ class SalesReportAPIView(APIView):
         sales_staff_item_json = [{"date": si.date, "total_amount": si.total_amount} for si in sales_staff_item]
 
         return JsonResponse({'sales': sales_json, 'sales_staff_service': sales_staff_service_json, 'sales_staff_item': sales_staff_item_json}, status=status.HTTP_200_OK)
+    
+
+
+class ProductListView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+class ProductDetailsView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+class ServiceListView(generics.ListAPIView):
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+
+
+class ServiceDetailsView(generics.RetrieveAPIView):
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+
+    
