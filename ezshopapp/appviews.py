@@ -74,14 +74,14 @@ def fetch_total_sale(request,pk):
     total_services = (SalesByStaffItemService.objects
                       .filter(employee_id=pk, date=current_date)
                       .aggregate(total_services=Sum('servicetotal'))['total_services'] or 0) + \
-                     (SaleByStaffItem.objects
+                     (SaleByStaffService.objects
                       .filter(employee_id=pk, date=current_date)
                       .aggregate(total_services=Sum('total_amount'))['total_services'] or 0)
 
     total_sales = (SalesByStaffItemService.objects
                    .filter(employee_id=pk, date=current_date)
                    .aggregate(total_sales=Sum('itemtotal'))['total_sales'] or 0) + \
-                  (SaleByStaffService.objects
+                  (SaleByStaffItem.objects
                    .filter(employee_id=pk, date=current_date)
                    .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0) 
                    
