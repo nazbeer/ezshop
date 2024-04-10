@@ -477,6 +477,7 @@ class DayClosingReportAPIView(APIView):
         return JsonResponse({'day_closings': day_closings_json}, status=status.HTTP_200_OK)
 
 
+
 class SalesReportAPIView(APIView):
     def get(self, request,pk, format=None):
         # logged_in_employee_id = request.session.get('employee_id')  # Retrieve the logged-in employee's ID from the session
@@ -488,27 +489,47 @@ class SalesReportAPIView(APIView):
         sales_staff_item = SaleByStaffItem.objects.filter(employee__id=pk)
 
         # Convert sales data to JSON
-        sales_json = [{"date": s.date, "total_amount": s.total_amount} for s in sales]
-        sales_staff_service_json = [{"date": ss.date, "total_amount": ss.total_amount} for ss in sales_staff_service]
-        sales_staff_item_json = [{"date": si.date, "total_amount": si.total_amount} for si in sales_staff_item]
+        # sales_json = [{"date": s.date, "total_amount": s.total_amount} for s in sales]
+        # sales_staff_service_json = [{"date": ss.date, "total_amount": ss.total_amount} for ss in sales_staff_service]
+        # sales_staff_item_json = [{"date": si.date, "total_amount": si.total_amount} for si in sales_staff_item]
+        
 
-        return JsonResponse({'sales': sales_json, 'sales_staff_service': sales_staff_service_json, 'sales_staff_item': sales_staff_item_json}, status=status.HTTP_200_OK)
+        combined_sales = [
+            [{"date": s.date, "total_amount": s.total_amount} for s in sales],
+            [{"date": ss.date, "total_amount": ss.total_amount} for ss in sales_staff_service],
+            [{"date": si.date, "total_amount": si.total_amount} for si in sales_staff_item],
+        ]
+
+        total_sum = 0
+
+        for sales_list in combined_sales:
+            for sale in sales_list:
+                total_sum += sale['total_amount']
+
+        return JsonResponse({'sales': total_sum}, status=status.HTTP_200_OK)
     
 
+    
+class ProductListView(APIView):
+    def get(self,request,pk):
+        employee =get_object_or_404(Employee,pk=pk)
+        queryset = Product.objects.filter(business_profile=employee.business_profile_id)
+        serializer= ProductSerializer(queryset,many=True)
+        return Response(serializer.data)
+    
 
-class ProductListView(generics.ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+class ServiceListView(APIView):
+    def get(self,request,pk):
+        employee =get_object_or_404(Employee,pk=pk)
+        queryset = Service.objects.filter(business_profile=employee.business_profile_id)
+        serializer= ServiceSerializer(queryset,many=True)
+        return Response(serializer.data)
+
+
 
 class ProductDetailsView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-
-
-class ServiceListView(generics.ListAPIView):
-    queryset = Service.objects.all()
-    serializer_class = ServiceSerializer
-
 
 class ServiceDetailsView(generics.RetrieveAPIView):
     queryset = Service.objects.all()
