@@ -86,11 +86,13 @@ def fetch_total_sale(request,pk):
                    .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0) 
                    
     total_collection = total_sales + total_services 
+    net_collection = total_sales - total_services + total_collection
 
     data = {
         'total_services': total_services,
         'total_sales': total_sales,
-        'total_collection': total_collection
+        'total_collection': total_collection,
+        'net_collection':net_collection
     }
     return JsonResponse(data)
 
@@ -358,7 +360,6 @@ class EmployeeLoginAPIView(APIView):
         
 class EmployeeLogoutAPIView(APIView):
     def post(self, request, format=None):
-        del request.session['employee_id']
         logout(request)
         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
