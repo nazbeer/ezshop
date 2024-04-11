@@ -3,7 +3,14 @@
 {% block title %}Role List{% endblock %}
 
 {% block content %}
-  <h2>Role List</h2>
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <h4 class="mb-0 text-white">Role List</h4>
+    </div>
+    <div class="card-body">
+      
+  
   <div class="table-responsive">
     <table class="table">
       <thead>
@@ -21,7 +28,7 @@
           <tr>
             <td>{{ role.id }}</td>
             <td>{{ role.name }}</td>
-            <td>
+            <td width="420px">
               {% for module in role.modules.all %}
                 {{ module.name }}
                 {% if not forloop.last %}, {% endif %}
@@ -37,4 +44,13 @@
       </tbody>
     </table>
   </div>
+
+</div>
+<div class="card-footer">
+  <div class="form-group mb-0">
+    <a href="/role/create/"><button class="btn btn-warning" type="button">Add New Role</button></a>
+  </div>
+</div>
+</div>
+</div>
 {% endblock %}

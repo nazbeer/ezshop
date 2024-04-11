@@ -659,10 +659,7 @@ def employee_dashboard(request):
 
     # Aggregate total services, total sales, and total advance for the current month
     day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month)
-    # t_service = SalesByStaffItemService.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month).aggregate(servicetotal=Sum('servicetotal'))['t_service'] or 0
-    # t_sales = SalesByStaffItemService.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month).aggregate(servicetotal=Sum('servicetotal'))['t_service'] or 0
-    # Check if the employee has a job_role
-    
+
     # If job_role exists, filter roles based on it
     role = Role.objects.filter(name=employee.job_role).first()
       
@@ -673,9 +670,11 @@ def employee_dashboard(request):
     if day_closings.exists():
         total_services = day_closings.aggregate(total_services=Sum('total_services'))['total_services'] or 0
         total_sales = day_closings.aggregate(total_sales=Sum('total_sales'))['total_sales'] or 0
-        total_advance = day_closings.aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+    # Ensure that advance is converted to a float only if it's not None
+        total_advance = sum(float(closing.advance) for closing in day_closings if closing.advance is not None)
+        print(total_advance)
     else:
-        # If day_closings is empty, set totals to 0
+    # If day_closings is empty, set totals to 0
         total_services = 0
         total_sales = 0
         total_advance = 0
@@ -696,7 +695,7 @@ def employee_dashboard(request):
         'date': closing.date.strftime('%Y-%m-%d'),
         'total_services': float(closing.total_services),
         'total_sales': float(closing.total_sales),
-        'advance': float(closing.advance),
+        'total_advance': float(closing.advance) if closing.advance is not None else 0,
         
     } for closing in day_closings]
 

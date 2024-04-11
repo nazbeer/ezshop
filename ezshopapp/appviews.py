@@ -530,9 +530,9 @@ class ProductListView(APIView):
 
 class ServiceListView(APIView):
     def get(self,request,pk):
-        employee =get_object_or_404(Employee,pk=pk)
+        employee = get_object_or_404(Employee,pk=pk)
         queryset = Service.objects.filter(business_profile=employee.business_profile_id)
-        serializer= ServiceSerializer(queryset,many=True)
+        serializer = ServiceSerializer(queryset,many=True)
         return Response(serializer.data)
 
 
