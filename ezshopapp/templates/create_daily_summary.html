@@ -7,7 +7,13 @@
 
 {% block content %}
 <div class="container">
-    <h1>Create Daily Summary</h1>
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0 text-white">Create Daily Summary</h4>
+        </div>
+        <div class="card-body">
+            
+    
     <form method="post" id="dailySummaryForm" action="#" >
         {% csrf_token %}
         <div class="form-group">
@@ -41,6 +47,9 @@
         <!-- <p id="value1"> value</p> -->
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
+
+</div>
+</div>
 </div>
 
 <script>
