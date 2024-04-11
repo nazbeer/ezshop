@@ -154,7 +154,7 @@
                 <div class="card-body">
                     <ul class="list-group">
                         {% for link in category.links %}
-                        <li class="list-group-item"><a href="{% url link.url_name %}">{{ link.label }}</a></li>
+                        <a href="{% url link.url_name %}" style="border-radius:5px;"><li class="list-group-item">{{ link.label }}</li></a>
                         {% endfor %}
                     </ul>
                 </div>
