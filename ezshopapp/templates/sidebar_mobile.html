@@ -3,77 +3,82 @@
     
 
 
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Sales by Admin</a>
-    <div class="dropdown-menu" aria-labelledby="saleDropdown">
+    <li class="dropdown d-n">
+        <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Sales</a>
+        <div class="dropdown-menu" aria-labelledby="saleDropdown">
+        
+            <a class="dropdown-item" href="/sale/sales-by-admin-service/"> Service</a>
+            <a class="dropdown-item" href="/sale/sales_by_admin_item/"> Products</a>
+            <a class="dropdown-item" href="/sale/sales-report-admin/"> Sales Report</a>
+        </div>
+    </li>
+    <li class="dropdown d-n">
+        <a href="#" class="dropdown-toggle" id="paymentTransactionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Payment</a>
+        <div class="dropdown-menu" aria-labelledby="paymentTransactionDropdown">
+            <a class="dropdown-item" href="/payment-transaction/"> Payment Transaction List</a>
+            <a class="dropdown-item" href="/payment-transaction/create/"> Create Payment Transaction</a>
+        </div>
+    </li>
+    <li class="dropdown d-n">
+        <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Day Closing</a>
+        <div class="dropdown-menu" aria-labelledby="saleDropdown">
+            
+            
+            <a class="dropdown-item" href="/dayclosing/admin"> Day Closing</a>
+            <!-- <a class="dropdown-item" href="/sale/dayclosing/"><i class="fas fa-calendar-check"></i> Day Closing - Employee</a> -->
+            <!-- <a class="dropdown-item" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a> -->
+            <a class="dropdown-item" href="/sale/day-closing-admin-report/"> Day Closing Report</a>
+            
+        </div>
+    </li>
+    <li class="dropdown d-n">
+        <a href="#" class="dropdown-toggle" id="dailySummaryDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Daily Summary</a>
+        <div class="dropdown-menu" aria-labelledby="dailySummaryDropdown">
+            <a class="dropdown-item" href="/daily-summary/"> Daily Summary List</a>
+            <a class="dropdown-item" href="/daily-summary/create/"> Create Daily Summary</a>
+        </div>
+    </li>
     
-        <a class="dropdown-item" href="/sale/sales-by-admin-service/"><i class="fas fa-chart-line"></i> Sales by Admin<br/>- Service</a>
-        <a class="dropdown-item" href="/sale/sales_by_admin_item/"><i class="fas fa-chart-line"></i> Sales by Admin<br/>- Products</a>
-        <a class="dropdown-item" href="/sale/sales-report-admin/"><i class="fas fa-chart-bar"></i> Sales Report</a>
-    </div>
-</li>
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="saleDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt"></i> Day Closing</a>
-    <div class="dropdown-menu" aria-labelledby="saleDropdown">
-        
-        
-        <a class="dropdown-item" href="/dayclosing/admin"><i class="fas fa-calendar-check"></i> Day Closing Admin</a>
-        <!-- <a class="dropdown-item" href="/sale/dayclosing/"><i class="fas fa-calendar-check"></i> Day Closing - Employee</a> -->
-        <!-- <a class="dropdown-item" href="/sale/day-closing-report/"><i class="fas fa-file-alt"></i> Day Closing Report</a> -->
-        <a class="dropdown-item" href="/sale/day-closing-admin-report/"><i class="fas fa-file-alt"></i> Day Closing Admin Report</a>
-        
-    </div>
-</li>
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="dailySummaryDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-clipboard-list"></i> Daily Summary</a>
-    <div class="dropdown-menu" aria-labelledby="dailySummaryDropdown">
-        <a class="dropdown-item" href="/daily-summary/"><i class="fas fa-list"></i> Daily Summary List</a>
-        <a class="dropdown-item" href="/daily-summary/create/"><i class="fas fa-plus"></i> Create Daily Summary</a>
-    </div>
-</li>
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="serviceDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-handshake"></i> Product &amp; Service</a>
-    <div class="dropdown-menu" aria-labelledby="serviceDropdown">
-        <a class="dropdown-item" href="/service/create/"><i class="fas fa-plus"></i> Create Service</a>
-        <a class="dropdown-item" href="/product/create/"><i class="fas fa-plus"></i> Create Product</a>
-        <a class="dropdown-item" href="/product/"><i class="fas fa-list"></i> Product List</a>
-        <a class="dropdown-item" href="/service/"><i class="fas fa-list"></i> Service List</a>
-        
-    </div>
-</li>
-
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="expenseTypeDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-check-alt"></i> Expense Type</a>
-    <div class="dropdown-menu" aria-labelledby="expenseTypeDropdown">
-        <a class="dropdown-item" href="/expense-type/"><i class="fas fa-list"></i> Expense Type List</a>
-        <a class="dropdown-item" href="/expense-type/create/"><i class="fas fa-plus"></i> Create Expense Type</a>
-    </div>
-</li>
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="receiptTransactionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-receipt"></i> Receipt Transaction</a>
-    <div class="dropdown-menu" aria-labelledby="receiptTransactionDropdown">
-        <a class="dropdown-item" href="/receipt-type/create/"><i class="fas fa-plus"></i> Create Receipt Type</a>
-        <a class="dropdown-item" href="/receipt-type/"><i class="fas fa-list"></i> Receipt Type List</a>
-        <a class="dropdown-item" href="/receipt-transaction/"><i class="fas fa-list"></i> Receipt Transaction List</a>
-        <a class="dropdown-item" href="/receipt-transaction/create/"><i class="fas fa-plus"></i> Create Receipt Transaction</a>
-    </div>
-</li>
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="paymentTransactionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-check"></i> Payment Transaction</a>
-    <div class="dropdown-menu" aria-labelledby="paymentTransactionDropdown">
-        <a class="dropdown-item" href="/payment-transaction/"><i class="fas fa-list"></i> Payment Transaction List</a>
-        <a class="dropdown-item" href="/payment-transaction/create/"><i class="fas fa-plus"></i> Create Payment Transaction</a>
-    </div>
-</li>
-<li class="dropdown d-n">
-    <a href="#" class="dropdown-toggle" id="bankDepositDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-piggy-bank"></i> Bank Deposit</a>
-    <div class="dropdown-menu" aria-labelledby="bankDepositDropdown">
-        <a class="dropdown-item" href="/bank/create/"><i class="fas fa-plus"></i> Create Bank</a>
-        <a class="dropdown-item" href="/banks/"><i class="fas fa-list"></i> Bank List</a>
-        <a class="dropdown-item" href="/bank-deposit/"><i class="fas fa-list"></i> Bank Deposit List</a>
-        <a class="dropdown-item" href="/bank-deposit/create/"><i class="fas fa-plus"></i> Create Bank Deposit</a>
-    </div>
-</li>
+    <li class="dropdown d-n">
+        <a href="#" class="dropdown-toggle" id="bankDepositDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Banking</a>
+        <div class="dropdown-menu" aria-labelledby="bankDepositDropdown">
+            <a class="dropdown-item" href="/bank/create/"> Add New Bank</a>
+            <a class="dropdown-item" href="/bank-deposit/create/"> Add Bank Deposit</a>
+            <a class="dropdown-item" href="/banks/"> Bank List</a>
+            <a class="dropdown-item" href="/bank-deposit/"> Bank Deposit List</a>
+            
+        </div>
+    </li>
+    <li class="dropdown d-n">
+        <a href="#" class="dropdown-toggle" id="serviceDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Product &amp; Service</a>
+        <div class="dropdown-menu" aria-labelledby="serviceDropdown">
+            
+            <a class="dropdown-item" href="/product/create/"> Create Product</a>
+            <a class="dropdown-item" href="/service/create/"> Create Service</a>
+            <a class="dropdown-item" href="/product/"> Product List</a>
+            <a class="dropdown-item" href="/service/"> Service List</a>
+            
+        </div>
+    </li>
+    <li class="dropdown d-n">
+        <a href="#" class="dropdown-toggle" id="receiptTransactionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Receipt</a>
+        <div class="dropdown-menu" aria-labelledby="receiptTransactionDropdown">
+            <a class="dropdown-item" href="/receipt-type/create/"> Create Receipt</a>
+            <a class="dropdown-item" href="/receipt-transaction/create/"> Create Receipt Transaction</a>
+            <a class="dropdown-item" href="/receipt-transaction/"> Receipt Transaction List</a>
+            <a class="dropdown-item" href="/receipt-type/"> Receipt Type List</a>
+            
+        </div>
+    </li>
+ 
+    <li class="dropdown d-n">
+        <a href="#" class="dropdown-toggle" id="expenseTypeDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Expense</a>
+        <div class="dropdown-menu" aria-labelledby="expenseTypeDropdown">
+            <a class="dropdown-item" href="/expense-type/create/"> Create Expense</a>
+            <a class="dropdown-item" href="/expense-type/"> Expense List</a>
+            
+        </div>
+    </li>
 
 <li class="nav-item" style="margin-top: 8px !important;"><a href="/notifications/"><i class="fas fa-bell"></i><span class="d-md-none"> Notifications</span></a></li>
     <li class="nav-item">
