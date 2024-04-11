@@ -5,6 +5,7 @@ from . import views
 from .views import *
 from . import appviews
 from rest_framework.routers import DefaultRouter
+from django.conf.urls import handler404
 
 router = DefaultRouter()
 router.register(r'day-closings', appviews.DayClosingViewSet, basename='day-closings')
@@ -27,7 +28,6 @@ router.register(r'employee-profile', appviews.EmployeeProfileViewSet, basename='
 
 urlpatterns = [
     path('api/', include(router.urls)),
-
 
     # path('api/employees/login/<str:username>/<str:password>/', EmployeeViewSet.as_view({'post': 'loginapi'}), name='employee_login'),
     # path('api/employees/employee_dashboard/', EmployeeViewSet.as_view({'get': 'employee_dashboard'}), name='employee_dashboard'),
@@ -174,17 +174,20 @@ urlpatterns = [
     path('api/fetch-total-sale/<int:pk>/', appviews.fetch_total_sale, name='fetch_total_sale'),
     path('api/employees-dayclosing-report/<int:pk>/',appviews.DayClosingReportAPIView.as_view(), name='employees_dayclosing_report'),
 
-
     # product and service list
     path('api/employees/products/<int:pk>/', appviews.ProductListView.as_view(), name='employees-product-list'),
     path('api/employees/service/<int:pk>/', appviews.ServiceListView.as_view(), name='employees-service-list'),
     path('api/employees/products/<int:pk>/', appviews.ProductDetailsView.as_view(), name='employees-product-detail'),  
     path('api/employees/service/<int:pk>/', appviews.ServiceDetailsView.as_view(), name='employees-service-detail'),
 
-
-
-  
+    #Errors
+    path('error/', views.error_page, name='error_page'),
 ]
-handler404 = 'ezshopapp.views.handler404'
+
+#handler404 = 'ezshopapp.views.handler404'
+# handler404 = views.error_404,
+# handler500 = views.error_500,
+handler404 = views.not_found_view
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

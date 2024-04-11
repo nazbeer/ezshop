@@ -54,6 +54,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.cache import cache
+from django.http import HttpResponseNotFound
 
 ####### admin cache clear
 
@@ -174,6 +175,19 @@ def clear_cache_admin(request):
 #     queryset = DailySummary.objects.all()
 #     serializer_class = DailySummarySerializer
     
+
+def not_found_view(request, exception):
+    return render(request, 'error.html', status=404)
+
+def error_page(request):
+    return render(request, 'error.html')
+
+def error_404(request, exception):
+    return render(request, 'error.html', status=404)
+
+def error_500(request):
+    return render(request, 'error.html', status=500)
+
 class CustomUserAddView(CreateView):
     model = User
     form_class = CustomUserCreationForm
