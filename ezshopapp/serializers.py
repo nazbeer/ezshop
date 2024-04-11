@@ -120,7 +120,7 @@ class DayClosingAdminSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BussinessProfileSerializer(serializers.ModelSerializer):
+class BusinessProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model =BusinessProfile
         fields ='__all__'
