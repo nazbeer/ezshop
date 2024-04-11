@@ -176,8 +176,8 @@ urlpatterns = [
 
 
     # product and service list
-    path('api/employees/products/', appviews.ProductListView.as_view(), name='employees-product-list'),
-    path('api/employees/service/', appviews.ServiceListView.as_view(), name='employees-service-list'),
+    path('api/employees/products/<int:pk>/', appviews.ProductListView.as_view(), name='employees-product-list'),
+    path('api/employees/service/<int:pk>/', appviews.ServiceListView.as_view(), name='employees-service-list'),
     path('api/employees/products/<int:pk>/', appviews.ProductDetailsView.as_view(), name='employees-product-detail'),  
     path('api/employees/service/<int:pk>/', appviews.ServiceDetailsView.as_view(), name='employees-service-detail'),
 

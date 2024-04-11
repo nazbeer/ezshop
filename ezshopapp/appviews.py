@@ -435,7 +435,7 @@ class EmployeeDashboardAPIView(APIView):
         # Construct the response
         response_data = {
             'employee':EmployeeSerializer(employee).data,
-            'business_profile':BussinessProfileSerializer(business_profile).data,
+            'business_profile':BusinessProfileSerializer(business_profile).data,
             'shop': ShopSerializer(shop).data,
             'total_services': total_services,
             'total_sales': total_sales,
@@ -496,19 +496,27 @@ class SalesReportAPIView(APIView):
     
 
 
-class ProductListView(generics.ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+class ProductListView(APIView):
+    def get(self,request,pk):
+        employee =get_object_or_404(Employee,pk=pk)
+        queryset = Product.objects.filter(business_profile=employee.business_profile_id)
+        serializer= ProductSerializer(queryset,many=True)
+        return Response(serializer.data)
+
+
+
+class ServiceListView(APIView):
+    def get(self,request,pk):
+        employee =get_object_or_404(Employee,pk=pk)
+        queryset = Service.objects.filter(business_profile=employee.business_profile_id)
+        serializer= ServiceSerializer(queryset,many=True)
+        return Response(serializer.data)
+
+
 
 class ProductDetailsView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-
-
-class ServiceListView(generics.ListAPIView):
-    queryset = Service.objects.all()
-    serializer_class = ServiceSerializer
-
 
 class ServiceDetailsView(generics.RetrieveAPIView):
     queryset = Service.objects.all()
