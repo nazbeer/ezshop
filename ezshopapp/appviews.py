@@ -123,20 +123,28 @@ class DayClosingRetrieveUpdateDestroyAPIView(APIView):
 
 class DayClosingAdminListCreateAPIView(APIView):
     def get(self, request,pk, format=None):
-        # employee_id = request.session.get('employee_id')
-        day_closing_admins = DayClosingAdmin.objects.filter(employee=pk)
-        serializer = DayClosingAdminSerializer(day_closing_admins, many=True)
-        return Response(serializer.data)
+        employee = get_object_or_404(Employee,pk=pk)
+        if employee.job_role.modules.filter(url='/dayclosing/admin/').exists():
+            day_closing_admins = DayClosingAdmin.objects.filter(employee=pk)
+            serializer = DayClosingAdminSerializer(day_closing_admins, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"message": "Admin Day Closing module not enabled for this employee"},status=status.HTTP_403_FORBIDDEN)
+
 
     def post(self, request,pk, format=None):
-        # employee_id = request.session.get('employee_id')
         employee =get_object_or_404(Employee,id=pk)
-        serializer = DayClosingAdminSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.validated_data['employee']=employee
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if employee.job_role.modules.filter(url='/dayclosing/admin/').exists():
+            serializer = DayClosingAdminSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.validated_data['employee'] = employee
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "Admin Day Closing module not enabled for this employee"}, status=status.HTTP_403_FORBIDDEN)
+
 
 
 class DayClosingAdminRetrieveUpdateDestroyAPIView(APIView):
