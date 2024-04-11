@@ -147,16 +147,16 @@ urlpatterns = [
     path('api/employees-login/', appviews.EmployeeLoginAPIView.as_view(), name='employees_login'),
     path('api/employees-logout/', appviews.EmployeeLogoutAPIView.as_view(), name='employees_logout'),
     path('api/employees-dashboard/<int:pk>/', appviews.EmployeeDashboardAPIView.as_view(), name='employees_dashboard'),
-    path('api/employees-profile/<int:pk>/', appviews.EmployeeProfileAPIView.as_view(), name='employee-profile'),
+    path('api/employees-profile/<int:pk>/', appviews.EmployeeProfileAPIView.as_view(), name='employees-profile'),
 
     #Employee sales (product,services,product-service)
-    path('api/employees-sales-by-service/<int:pk>/', appviews.SaleByStaffServiceListCreateAPIView.as_view(), name='employee_sales_by_service_create_list'),
-    path('api/employees-sales-by-service/update/<int:pk>/', appviews.SaleByStaffServiceRetrieveUpdateDestroyAPIView.as_view(), name='employee_sales_by_service_update_delete'),
-    path('api/employees-sales-by-item/<int:pk>/', appviews.SaleByStaffItemListCreateAPIView.as_view(), name='employee_sales_by_item_create_list'),
-    path('api/employees-sales-by-item/update/<int:pk>/', appviews.SaleByStaffItemRetrieveUpdateDestroyAPIView.as_view(), name='employee_sales_by_item_update_delete'),
+    path('api/employees-sales-by-service/<int:pk>/', appviews.SaleByStaffServiceListCreateAPIView.as_view(), name='employees_sales_by_service_create_list'),
+    path('api/employees-sales-by-service/update/<int:pk>/', appviews.SaleByStaffServiceRetrieveUpdateDestroyAPIView.as_view(), name='employees_sales_by_service_update_delete'),
+    path('api/employees-sales-by-item/<int:pk>/', appviews.SaleByStaffItemListCreateAPIView.as_view(), name='employees_sales_by_item_create_list'),
+    path('api/employees-sales-by-item/update/<int:pk>/', appviews.SaleByStaffItemRetrieveUpdateDestroyAPIView.as_view(), name='employees_sales_by_item_update_delete'),
 
-    path('api/employees-sales-by-item-service/<int:pk>/', appviews.SalesByStaffItemServiceListCreateAPIView.as_view(), name='employee_sales_by_item_service_list'),
-    path('api/employees-sales-by-item-service/update/<int:pk>/', appviews.SalesByStaffItemServiceRetrieveUpdateDestroyAPIView.as_view(), name='employee_sales_by_item_servie_update_delete'),
+    path('api/employees-sales-by-item-service/<int:pk>/', appviews.SalesByStaffItemServiceListCreateAPIView.as_view(), name='employees_sales_by_item_service_list'),
+    path('api/employees-sales-by-item-service/update/<int:pk>/', appviews.SalesByStaffItemServiceRetrieveUpdateDestroyAPIView.as_view(), name='employees_sales_by_item_servie_update_delete'),
 
     #Employee DayClosing
 
