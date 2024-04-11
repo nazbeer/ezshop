@@ -86,13 +86,11 @@ def fetch_total_sale(request,pk):
                    .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0) 
                    
     total_collection = total_sales + total_services 
-    net_collection = total_sales - total_services + total_collection
 
     data = {
         'total_services': total_services,
         'total_sales': total_sales,
         'total_collection': total_collection,
-        'net_collection':net_collection
     }
     return JsonResponse(data)
 
@@ -124,6 +122,22 @@ class DayClosingRetrieveUpdateDestroyAPIView(APIView):
 
 
 class DayClosingAdminListCreateAPIView(APIView):
+    # def get(self, request, pk, format=None):
+    #     employee = get_object_or_404(Employee, pk=pk) 
+    #     role = Role.objects.filter(name=employee.job_role).first()
+    #     if role:
+    #         active_modules = role.modules.all()
+    #         if active_modules:
+    #             day_closing_admins = DayClosingAdmin.objects.filter(employee=pk)
+    #             serializer = DayClosingAdminSerializer(day_closing_admins, many=True)
+    #             return Response(serializer.data)
+    #         else:
+    #             return Response({"message": "Admin Day Closing module not enabled for this employee"}, status=status.HTTP_403_FORBIDDEN)
+    #     else:
+    #         return Response({"message": "No role found for this employee"}, status=status.HTTP_403_FORBIDDEN)
+
+
+    
     def get(self, request,pk, format=None):
         employee = get_object_or_404(Employee,pk=pk)
         if employee.job_role.modules.filter(url='/dayclosing/admin/').exists():
@@ -481,7 +495,7 @@ class DayClosingReportAPIView(APIView):
             day_closings = paginator.page(paginator.num_pages)
 
         # Convert day closings queryset to JSON
-        day_closings_json = [{"date": dc.date, "total_services": dc.total_services, "total_sales": dc.total_sales, "total_collection": dc.total_collection} for dc in day_closings]
+        day_closings_json = [{"date": dc.date, "total_services": dc.total_services, "total_sales": dc.total_sales, "advance":dc.advance,"status":dc.status,"net_collection":dc.net_collection,"total_collection": dc.total_collection} for dc in day_closings]
 
         return JsonResponse({'day_closings': day_closings_json}, status=status.HTTP_200_OK)
 
@@ -497,9 +511,9 @@ class SalesReportAPIView(APIView):
         sales_staff_item = SaleByStaffItem.objects.filter(employee__id=pk)
 
         # Convert sales data to JSON
-        sales_json = [{"date": s.date, "total_amount": s.total_amount} for s in sales]
-        sales_staff_service_json = [{"date": ss.date, "total_amount": ss.total_amount} for ss in sales_staff_service]
-        sales_staff_item_json = [{"date": si.date, "total_amount": si.total_amount} for si in sales_staff_item]
+        sales_json = [{"date": s.date,"product_price":s.pprice,"service_price":s.sprice,"discount":s.discount,"sub_total":s.sub_total,"payment_method":s.payment_method,"product_total":s.itemtotal,"service_total":s.servicetotal,"total_amount": s.total_amount} for s in sales]
+        sales_staff_service_json = [{"date": ss.date,"price":ss.price,"discount":ss.discount,"payment_method":ss.payment_method, "total_amount": ss.total_amount} for ss in sales_staff_service]
+        sales_staff_item_json = [{"date": si.date, "price":si.price,"discount":si.discount,"payment_method":si.payment_method,"total_amount": si.total_amount} for si in sales_staff_item]
 
         return JsonResponse({'sales': sales_json, 'sales_staff_service': sales_staff_service_json, 'sales_staff_item': sales_staff_item_json}, status=status.HTTP_200_OK)
     
