@@ -88,9 +88,9 @@ def fetch_total_sale(request,pk):
     total_collection = total_sales + total_services 
 
     data = {
-        'total_services': total_services,
-        'total_sales': total_sales,
-        'total_collection': total_collection,
+        'total_services': int(total_services),
+        'total_sales': int(total_sales),
+        'total_collection': int(total_collection),
     }
     return JsonResponse(data)
 
