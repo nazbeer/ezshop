@@ -86,12 +86,13 @@ def fetch_total_sale(request,pk):
                    .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0) 
                    
     total_collection = total_sales + total_services 
-
+    
     data = {
-        'total_services': int(total_services),
-        'total_sales': int(total_sales),
-        'total_collection': int(total_collection),
+        'total_services': float(total_services),
+        'total_sales': float(total_sales),
+        'total_collection': float(total_collection),
     }
+
     return JsonResponse(data)
 
 
