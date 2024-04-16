@@ -118,16 +118,16 @@ DATABASES = {
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'ezshopdb',  # Replace with your database name
-#         'USER': 'root',  # Replace with your database username
-#         'PASSWORD': 'El2m63fqXH9eQczR0HF98v4qtaM3PfDu',  # Replace with your database password
-#         'HOST': 'dpg-co4q5ncf7o1s738vjdk0-a',  # Replace with your database host
-#         'PORT': '5432',  # Replace with your database port
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ezshop',  # Replace with your database name
+        'USER': 'postgres',  # Replace with your database username
+        'PASSWORD': '1234',  # Replace with your database password
+        'HOST': 'localhost',  # Replace with your database host
+        'PORT': '5432',  # Replace with your database port
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
