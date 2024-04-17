@@ -102,21 +102,21 @@ WSGI_APPLICATION = 'ezshop.wsgi.application'
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        # 'ENGINE': 'django.db.backends.mysql',
-        # 'OPTIONS': {
-        #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES",
-        # },
-        # 'USER': 'root',
-        # 'PASSWORD': 'Mite@2024!',
-        # 'HOST': 'localhost',
-        # 'PORT': '3307',
-        # 'NAME': 'ezshopdb',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         # 'ENGINE': 'django.db.backends.mysql',
+#         # 'OPTIONS': {
+#         #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES",
+#         # },
+#         # 'USER': 'root',
+#         # 'PASSWORD': 'Mite@2024!',
+#         # 'HOST': 'localhost',
+#         # 'PORT': '3307',
+#         # 'NAME': 'ezshopdb',
+#     }
+# }
 
 # DATABASES = {
 #     'default': {
@@ -128,6 +128,16 @@ DATABASES = {
 #         'PORT': '5432',  # Replace with your database port
 #     }
 # }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "ezshop",
+        "USER": "postgres",
+        "PASSWORD": "1234",
+        "HOST": "localhost",
+        "PORT": "5432",
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
