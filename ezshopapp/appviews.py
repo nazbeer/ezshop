@@ -546,4 +546,10 @@ class ServiceDetailsView(generics.RetrieveAPIView):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
 
-    
+class JobRoleApiView(APIView):
+    def get(self,request,pk):
+        employee = get_object_or_404(Employee,pk=pk)
+        queryset = Role.objects.filter(name = employee.job_role.name)
+        serializer = JobRoleSerializer(queryset,many=True)
+        return Response(serializer.data)
+

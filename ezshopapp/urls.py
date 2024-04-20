@@ -179,6 +179,8 @@ urlpatterns = [
     path('api/employees/service/<int:pk>/', appviews.ServiceListView.as_view(), name='employees-service-list'),
     path('api/employees/products/<int:pk>/', appviews.ProductDetailsView.as_view(), name='employees-product-detail'),  
     path('api/employees/service/<int:pk>/', appviews.ServiceDetailsView.as_view(), name='employees-service-detail'),
+    path('api/employees/job-role/<int:pk>/', appviews.JobRoleApiView.as_view(), name='employees-job-role'),
+
 
     #Errors
     path('error/', views.error_page, name='error_page'),
