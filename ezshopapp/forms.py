@@ -131,13 +131,14 @@ class EmployeeForm(forms.ModelForm):
         employee_id = cleaned_data.get('employee_id')
         passport_no = cleaned_data.get('passport_no')
         emirates_id = cleaned_data.get('emirates_id')
-        
+        business_profile_id = cleaned_data.get('business_profile_id')
+
         # Check if Emirates ID, Passport No, and Username are unique
-        if Employee.objects.exclude(pk=self.instance.pk).filter(employee_id=employee_id).exists():
+        if Employee.objects.exclude(pk=self.instance.pk).filter( business_profile_id=business_profile_id,employee_id=employee_id).exists():
             self.add_error('employee_id', 'Employee ID must be unique.')
-        if Employee.objects.exclude(pk=self.instance.pk).filter(passport_no=passport_no).exists():
+        if Employee.objects.exclude(pk=self.instance.pk).filter(business_profile_id=business_profile_id,passport_no=passport_no).exists():
             self.add_error('passport_no', 'Passport No must be unique.')
-        if Employee.objects.exclude(pk=self.instance.pk).filter(emirates_id=emirates_id).exists():
+        if Employee.objects.exclude(pk=self.instance.pk).filter(business_profile_id=business_profile_id,emirates_id=emirates_id).exists():
             self.add_error('emirates_id', 'Emirates ID must be unique.')
             
 
