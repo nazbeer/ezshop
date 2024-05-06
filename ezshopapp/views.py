@@ -835,6 +835,7 @@ def create_bank_deposit(request):
     if request.method == 'POST':
         form = BankDepositForm(request.POST)
         if form.is_valid():
+            form.business_profile = business_profile.id
             form.save()
             return redirect('bank_deposit_list')  
     else:
@@ -845,15 +846,26 @@ def create_bank_deposit(request):
 
     context = {
         'form': form,
-        'banks': banks,  # Pass the banks to the context
+        'banks': banks,
+        'business_profile': business_profile.id,
     }
     return render(request, 'create_bank_deposit.html', context)
+
 class BankListView(ListView):
     model = Bank
     template_name = 'bank_list.html'
+    
     def get_queryset(self):
-        # Return the queryset of DailySummary objects sorted by date in ascending order
-        return Bank.objects.order_by('-created_on')
+        shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+    
+        # Get the shop associated with the shop admin
+        shop = shop_admin.shop
+        
+        # Get the business profile associated with the shop
+        business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+    
+        # Return the queryset of Bank objects filtered by business profile and sorted by created_on date in descending order
+        return Bank.objects.filter(business_profile=business_profile.id).order_by('-created_on')
     
 def create_bank(request):
     try:
@@ -877,6 +889,7 @@ def create_bank(request):
 
     context = {
         'form': form,
+        'business_profile': business_profile.id,
     }
     return render(request, 'create_bank.html', context)
 
@@ -1084,6 +1097,7 @@ def DailySummaryCreate(request):
     return render(request, 'create_daily_summary.html', {'form': form})
 
 def fetch_summary_data(request, date):
+
     # Initialize default values
     opening_balance = 0
     total_received_amount = 0
@@ -1092,6 +1106,14 @@ def fetch_summary_data(request, date):
     net_collection = 0
     balance = 0
 
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    
+    # Get the shop associated with the shop admin
+    shop = shop_admin.shop
+    
+    # Get the business profile associated with the shop
+    business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+  
     # Fetch the latest DailySummary for the selected date
     try:
         daily_summary = DailySummary.objects.filter(date=date).latest('created_on')
@@ -1101,17 +1123,17 @@ def fetch_summary_data(request, date):
 
     # Fetch the DayClosingAdmin objects for the given date
     day_closing_admins = DayClosingAdmin.objects.filter(date=date)
-    if day_closing_admins.exists():
+    # if day_closing_admins.exists():
         # If there are multiple DayClosingAdmin objects, take the latest one
-        day_closing_admin = day_closing_admins.latest('created_on')
-        net_collection = day_closing_admin.net_collection
+    day_closing_admin = day_closing_admins.latest('created_on')
+    net_collection = day_closing_admin.net_collection
 
     # Calculate total_received_amount from ReceiptTransactions
     receipt_transactions_total = ReceiptTransaction.objects.filter(date=date).aggregate(total_amount=Sum('received_amount'))['total_amount'] or 0
     total_received_amount = receipt_transactions_total + net_collection
 
     # Calculate total_bank_deposit from BankDeposit
-    total_bank_deposit = BankDeposit.objects.filter(date=date).aggregate(amount=Sum('amount'))['amount'] or 0
+    total_bank_deposit = BankDeposit.objects.filter(date=date, business_profile=business_profile.id).aggregate(amount=Sum('amount'))['amount'] or 0
 
     # Calculate total_expense_amount from PaymentTransactions
     payment_transactions_total = PaymentTransaction.objects.filter(date=date).aggregate(total_amount=Sum('amount'))['total_amount'] or 0

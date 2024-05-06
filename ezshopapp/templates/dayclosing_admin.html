@@ -67,7 +67,8 @@
             </form>
         </div>
     </div>
-</div><script>
+</div>
+<script>
     // Get today's date
     var today = new Date();
 
@@ -166,12 +167,21 @@
                 document.getElementById("id_total_collection").value = data.total_collection;
                 document.getElementById("id_advance").value = data.advance;
                 var totalCollection = parseFloat(data.total_collection);
-                var advance = parseFloat(data.advance);
+                var advance = parseFloat(document.getElementById("id_advance").value);
                 var netCollection = totalCollection - advance;
                 document.getElementById("id_net_collection").value = netCollection.toFixed(2);
             })
             .catch(error => console.error('Error:', error));
     }
+      // Update net collection when advance value changes
+      document.getElementById("id_advance").addEventListener("input", function() {
+        var totalCollection = parseFloat(document.getElementById("id_total_collection").value);
+        var advance = parseFloat(document.getElementById("id_advance").value);
+        var netCollection = totalCollection - advance;
+
+        // Update net collection input field
+        document.getElementById("id_net_collection").value = netCollection.toFixed(2);
+    });
 </script>
 
 

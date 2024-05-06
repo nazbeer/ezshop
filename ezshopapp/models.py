@@ -154,6 +154,7 @@ class Bank(models.Model):
     name = models.CharField(max_length=255)
     account_number = models.CharField(max_length=50)
     opening_balance = models.DecimalField(max_digits=10, decimal_places=2)
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -180,6 +181,7 @@ class BankDeposit(models.Model):
     transaction_type = models.CharField(max_length=20)  
     narration = models.TextField()
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE, null=True, blank=True)
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
