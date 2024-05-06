@@ -138,6 +138,7 @@ class Role(models.Model):
 
 class ExpenseType(models.Model):
     name = models.CharField(max_length=255)
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -145,6 +146,7 @@ class ExpenseType(models.Model):
 
 class ReceiptType(models.Model):
     name = models.CharField(max_length=255)
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):

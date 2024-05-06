@@ -449,7 +449,7 @@ def create_expense_type(request):
             return redirect('expense_type_list')
     else:
         form = ExpenseTypeForm()
-    return render(request, 'create_expense_type.html', {'form': form})
+    return render(request, 'create_expense_type.html', {'form': form,'business_profile':business_profile.id})
 
 # @login_required
 def employee_list(request):
@@ -738,8 +738,16 @@ class ExpenseTypeListView(ListView):
     model = ExpenseType
     template_name = 'expense_type_list.html'
     def get_queryset(self):
+        shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+    
+        # Get the shop associated with the shop admin
+        shop = shop_admin.shop
+        
+        # Get the business profile associated with the shop
+        business_profile = get_object_or_404(BusinessProfile, name=shop.name)
         # Return the queryset of DailySummary objects sorted by date in ascending order
-        return ExpenseType.objects.order_by('-created_on')
+        return ExpenseType.objects.filter(business_profile=business_profile.id).order_by('-created_on')
+    
 class ExpenseTypeUpdateView(UpdateView):
     model = ExpenseType
     form_class = ExpenseTypeForm
