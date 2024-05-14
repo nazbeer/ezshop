@@ -123,6 +123,10 @@ urlpatterns = [
     path('daily-summary/delete/<int:pk>/', DailySummaryDeleteView.as_view(), name='delete_daily_summary'),
 
 
+    path('generate_invoice/<int:id>/<str:type>/', generate_invoice_pdf, name='generate_invoice_pdf'),
+
+
+
     ##### EMployee dashboard
 
     path('employee-login/', employee_login, name='employee_login'),

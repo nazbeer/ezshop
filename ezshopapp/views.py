@@ -1348,13 +1348,6 @@ def sale_by_admin_service(request):
         sales_form = SaleByAdminServiceForm(request.POST)
         if sales_form.is_valid():
             sales_form = sales_form.save(commit=False)
-            # sales_form.itemtotal = request.POST['itemTotal']
-            # sales_form.servicetotal = request.POST['serviceTotal']
-            sales_form.save()
-            return redirect('sales_report_admin')
-    else:
-        sales_form = SaleByAdminServiceForm()
-
     return render(request, 'sales_by_admin_service.html', {'sales_form': sales_form, 'services': services, 'employees':employees})
 
 # class SaleListCreateView(generics.ListCreateAPIView):
@@ -2194,3 +2187,82 @@ class HomeView(LoginRequiredMixin, TemplateView):
             # Redirect to login page if user is not logged in
             return redirect(reverse('login'))  # Adjust 'login' to your login URL name
         return super().dispatch(request, *args, **kwargs)
+
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
+def generate_invoice_pdf(request, id,type):
+    if type == 'salebyadminservice':
+        invoice_instance = get_object_or_404(SaleByAdminService, id=id)
+        invoice_id = f"INV_SAS_{invoice_instance.pk}"
+        data_source = "Admin"
+    elif type == 'salebyadminproduct':
+        invoice_instance = get_object_or_404(SalesByAdminItem, id=id)
+        invoice_id = f"INV_SAP_{invoice_instance.pk}"
+        data_source = "Admin"
+    elif type == 'salesbystaffitemservice':
+        invoice_instance = get_object_or_404(SalesByStaffItemService, id=id)
+        invoice_id = f"INV_SSPS_{invoice_instance.pk}"
+        data_source = "Staff"
+    elif type == 'salebystaffitem':
+        invoice_instance = get_object_or_404(SaleByStaffItem, id=id)
+        invoice_id = f"INV_SSP_{invoice_instance.pk}"
+        data_source = "Staff"
+    elif type == 'salebystaffservice':
+        invoice_instance = get_object_or_404(SaleByStaffService, id=id)
+        invoice_id = f"INV_SSS_{invoice_instance.pk}"
+        data_source = "Staff"
+    else:
+        pass
+    business_profile = get_object_or_404(BusinessProfile ,id=invoice_instance.employee.business_profile_id) 
+    vat = business_profile.vat_percentage
+    if invoice_instance.note:
+        note_str = invoice_instance.note
+        note_list = eval(note_str)
+        invoice_details = []
+
+        for item in note_list:
+            note = ""
+            if 'service' in item: 
+                note = item['service']
+            elif 'product' in item: 
+                note = item['product']
+            elif 'service' in item and 'product' in item:
+                note = item['product']
+                note = item['service']
+            
+            quantity = item['quantity']
+            price = item['price']
+
+            invoice_details.append({
+                'note': note,
+                'quantity': quantity,
+                'price': price,
+            })
+    else:
+        invoice_details = []
+
+    invoice = {
+        'id': invoice_id,
+        'date': invoice_instance.date,
+        'employee': invoice_instance.employee,
+        'payment_method': invoice_instance.payment_method,
+        'total_amount': invoice_instance.total_amount,
+        'details': invoice_details,
+        'discount':invoice_instance.discount,
+        'data_source': data_source,
+        'VAT' :vat
+    }
+    template_path = 'preview_invoice.html'
+    template = get_template(template_path)
+    html = template.render(invoice)
+    # return render(request,'preview_invoice.html')
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice_{id}.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response

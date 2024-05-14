@@ -317,6 +317,7 @@ class SaleByStaffService(models.Model):
     payment_method = models.CharField(max_length=100,choices=PAYMENT_METHOD_CHOICES)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
+    note = models.TextField(null=True,blank=True)
 
     def __str__(self):
         return str(self.date)
@@ -331,6 +332,8 @@ class SaleByStaffItem(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
+    note = models.TextField(null=True,blank=True)
+
 
     def __str__(self):
         return f"Sale on {self.date}"  
@@ -345,6 +348,8 @@ class SaleByAdminService(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name=_("Payment Method"))
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
+    note = models.TextField(null=True,blank=True)
+
 
     def __str__(self):
         return f"Sale on {self.date}"
@@ -359,6 +364,8 @@ class SalesByAdminItem(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
+    note = models.TextField(null=True,blank=True)
+
 
     def __str__(self):
         return f"Sale on {self.date}"
@@ -378,6 +385,8 @@ class SalesByStaffItemService(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, null=True)
     itemtotal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Products Total"), null=True)
     servicetotal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Service Total"), null=True)
+    note = models.TextField(null=True,blank=True)
+
     
     def __str__(self):
         return f"Sale on {self.date}"
