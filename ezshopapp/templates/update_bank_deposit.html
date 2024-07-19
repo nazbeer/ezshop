@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Bank Deposit{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <h4 class="mb-0">Update Bank Deposit</h4>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="{{ form.date.id_for_label }}">Date:</label>
+          <input type="date" name="date" "{{ form.date_date.id_for_label }}" class="form-control" value="{{ form.date.value|date:'Y-m-d' }}" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.deposit_date.id_for_label }}">Deposit Date:</label>
+          <input type="date" name="deposit_date" id="{{ form.deposit_date.id_for_label }}" class="form-control" value="{{ form.deposit_date.value|date:'Y-m-d' }}" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.amount.id_for_label }}">Amount:</label>
+          <input type="text" name="amount" id="{{ form.amount.id_for_label }}" class="form-control" value="{{ form.amount.value|default_if_none:'' }}" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.transaction_type.id_for_label }}">Transaction Type:</label>
+          <input type="text" name="transaction_type" id="{{ form.transaction_type.id_for_label }}" class="form-control" value="{{ form.transaction_type.value|default_if_none:'' }}" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.narration.id_for_label }}">Narration:</label>
+          <textarea name="narration" id="{{ form.narration.id_for_label }}" class="form-control" required>{{ form.narration.value|default_if_none:'' }}</textarea>
+        </div>      
+  <div class="form-group">
+          <label for="id_bank">Bank:</label>
+          <select name="bank" id="id_bank" class="form-control" disabled>
+            {% for option in form.bank.field.queryset %}
+              <option value="{{ option.pk }}" {% if option.pk == form.bank.value %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
+          <input type="hidden" name="bank" value="{{ form.bank.value }}">
+        </div>
+
+
+        <input type="hidden" name="business_profile" value="{{ form.business_profile.value|default_if_none:'' }}">
+
+        <button type="submit" class="btn btn-primary">Update</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

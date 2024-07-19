@@ -1,0 +1,707 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zxx">
+<head>
+    <title>Salon Pro Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="{% static 'assets/images/favicon.svg' %}" type="image/x-icon">
+    <link rel="icon" href="{% static 'assets/images/favicon.svg' %}" type="image/x-icon">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{% static 'assets/images/ms-icon-144x144.png' %}">
+    <meta name="theme-color" content="#ffffff">
+    <link href="{% static 'assets/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'assets/js/bootstrap.min.js' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="{% static 'assets/css/style.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'assets/css/responsive.css' %}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'dependencies/owl.carousel/css/owl.carousel.min.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'dependencies/owl.carousel/css/owl.theme.default.min.css' %}" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" integrity="sha512-Y1HOODCqG5uKQ1yJeYGyZvh1KKlqMg4Fg4PdyULaMQFiB2rJ7E6qs3XrJ4BvjRsAj9YX8DWSTdXdsrIRuQHC5A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" integrity="sha512-utb/XI9W/2Ac99W9SOtZ4Sa9lMopWYIYB9PweD5QX50HGZWU9J08fX5Rup5KZhYCBt9jKTjIvIPSkUef70Pdsw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <!--Header  -->
+    <div class="banner_outer">
+        <header>
+            <div class="container">
+                <nav class="navbar navbar-expand-lg navbar-light">
+                    <a class="navbar-brand" href="http://salonprosuite.com:8000/"><figure class="mb-0"><img src="{% static 'assets/images/banner-logo.svg' %}" alt="" class="img-fluid"></figure></a>
+                    <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item active">
+                                <a class="nav-link" href="http://salonprosuite.com:8000/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/feature/">Features</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/about/">About</a>
+                            </li>
+                             <li class="nav-item">
+                                <a class="nav-link login" href="/login/" target="_blank">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link try_free_btn" href="/contact/">Try For Free</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </header>
+        <figure class="mb-0 bannersidelayer">
+            <img src="{% static 'assets/images/banner-sidelayer.png' %}" alt="">
+        </figure>
+    <!-- Banner -->
+    <section class="banner-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+                    <div class="banner_content" data-aos="fade-down">
+                        <h1>Empowering Salons with Seamless Software Solutions</h1>
+                        <h3 class="text-white">Do More, Rise Higher</h3>
+                        <p class="text-white">Boost efficiency with an intuitive task manager</p>
+                        <span >Available on:</span>
+                        <div class="image_wrapper">
+                            <a href="https://apps.apple.com/ae/app/salon-pro-suite/id6502859075">
+                                <figure class="mb-0 image_apple">
+                                    <img class="img-fluid" src="{% static 'assets/images/bannerapple-img1.png' %}" alt="">
+                                </figure>
+                            </a>
+                            <a class="image_google" href="https://play.google.com/store/apps/details?id=com.mite.saloonprosuite&hl=en">
+                                <figure class="mb-0 image_google"> 
+                                    <img class="img-fluid" src="{% static 'assets/images/bannergoogle-img2.png' %}" alt="">
+                                </figure> 
+                            </a>   
+                        </div> 
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+                    <div class="banner_wrapper2">
+                        <figure class="mb-0 bannerphoneback">
+                            <img src="{% static 'assets/images/bannerphoneback-image1.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 bannerphone2" >
+                            <img class="img-fluid" src="{% static 'assets/images/bannerphone2-img.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 bannerphone-circleicon">
+                            <img src="{% static 'assets/images/bannerphone-circleicon.png' %}" alt="">
+                        </figure> 
+                        <figure class="mb-0 bannerphone-circle">
+                            <img class="img-fluid" src="{% static 'assets/images/bannerphone-circle.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 bannerphone1">
+                            <img src="{% static 'assets/images/bannerphone1-img.png' %}" alt="">
+                        </figure> 
+                    </div>
+                </div>
+            </div>
+            <figure class="mb-0 bannersidecircle1" data-aos="fade-left">
+                <img src="{% static 'assets/images/banner-sidecircle1.png' %}" alt="">
+            </figure>
+            <figure class="mb-0 bannersidecircle2" data-aos="fade-left">
+                <img src="{% static 'assets/images/banner-sidecircle2.png' %}" alt="">
+            </figure>
+        </div>    
+    </section>
+    </div>
+    <!-- Partner -->
+    <div class="partner-section"> 
+        <div class="container">
+            <div class="partner_box" data-aos="fade-up">
+                <ul class="mb-0 list-unstyled">
+                    <li>
+                        <figure class="mb-0 partner1">
+                            <img class="img-fluid" src="{% static 'assets/images/partner1.png' %}" alt="">
+                        </figure>
+                    </li>
+                    <li>
+                        <figure class="mb-0 partner1 partner2">
+                            <img class="img-fluid" src="{% static 'assets/images/partner2.png' %}" alt="">
+                        </figure>
+                    </li>
+                    <li>
+                        <figure class="mb-0 partner1 partner3">
+                            <img class="img-fluid" src="{% static 'assets/images/partner3.png' %}" alt="">
+                        </figure>
+                    </li>
+                    <li>
+                        <figure class="mb-0 partner1 partner4">
+                            <img class="img-fluid" src="{% static 'assets/images/partner4.png' %}" alt="">
+                        </figure>
+                    </li>
+                    <li>
+                        <figure class="mb-0 partner1 partner5">
+                            <img class="img-fluid" src="{% static 'assets/images/partner5.png' %}" alt="">
+                        </figure>
+                    </li>
+                    <li>
+                        <figure class="mb-0 partner1 partner6">
+                            <img class="img-fluid" src="{% static 'assets/images/partner6.png' %}" alt="">
+                        </figure>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- About Us -->
+    <section class="aboutus-section overflow-hidden">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-12 col-12">
+                    <div class="aboutus_content">
+                        <h4>About Us</h4>
+                        <h2 class="mb-0 ">Why Should You Choose Us</h2>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-md-8 col-sm-12 col-12">
+                    <div class="aboutus_text" data-aos="fade-left">
+                        <p class="mb-0 ">MITE Salon Pro Suite streamlines internal operations and daily bookkeeping for medium to high-end salons and beauty parlors, empowering employees and owners with efficient process management.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Features -->
+    <section class="basic-feature" id="basic-feature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+                    <div class="feature_wrapperleft">
+                        <figure class="mb-0 feature-circle">
+                            <img class="img-fluid" src="{% static 'assets/images/feature-circle.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 featurephoneback">
+                            <img src="{% static 'assets/images/featurephoneback-img.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 featurephone">
+                            <img class="img-fluid" src="{% static 'assets/images/featurephone-img.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 featurephone-over">
+                            <img class="img-fluid" src="{% static 'assets/images/featurephone-over.png' %}" alt="">
+                        </figure>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+                    <div class="feature_wrapperright">
+                        <div class="feature_content">
+                            <h4>Our Basic Features</h4>
+                            <h2>Some of The Best Features</h2>
+                        </div>
+                        <div class="feature_lowercontent" data-aos="fade-up">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="feature-box">
+                                        <figure class="feature-marketicon">
+                                            <img src="{% static 'assets/images/track-icon.svg' %}" alt="" class="img-fluid">
+                                        </figure> 
+                                        <h6>Tracking</h6>
+                                        <p class="text-size-18 mb-0">Track each individual staff member's sales activities of services and products</p>
+                                    </div>   
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="feature-design">
+                                        <div class="feature-box">
+                                            <figure class="feature-graphicon feature-box-2">
+                                                <img src="{% static 'assets/images/efficiency_icon.svg' %}" alt="" class="img-fluid">
+                                            </figure>
+                                            <h6>Efficiency</h6>
+                                            <p class="text-size-18 mb-0">Save time by automating calculations and reducing manual entry errors.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="feature-downcontent">
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-12">
+                                        <div class="feature-box">
+                                            <figure class="feature-graphicon feature-box-3">
+                                                <img src="{% static 'assets/images/cost_icon.svg' %}" alt="" class="img-fluid">
+                                            </figure>
+                                            <h6>Cost-Effective</h6>
+                                            <p class="text-size-18 mb-0">Reduce the need for physical storage and paper-based records.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-12">
+                                        <div class="feature-design feature-guide">
+                                            <div class="feature-box">
+                                                <figure class="feature-guideicon feature-box-4">
+                                                    <img src="{% static 'assets/images/report_icon.svg' %}" alt="" class="img-fluid">
+                                                </figure>
+                                                <h6>Instant Reporting</h6>
+                                                <p class="text-size-18 mb-0">Generate and view detailed sales reports with a few taps.</p> 
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- offer-video -->
+    <!-- <div class="offer-videosection">
+        <div class="container">
+            <div class="row position-relative">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div class="position-relative">
+                        <a class="popup-vimeo" href="https://video-previews.elements.envatousercontent.com/h264-video-previews/d1c81f1e-849f-4d45-ae57-b61c2f5db34a/25628048.mp4">
+                            <figure class="mb-0 vediosession">
+                                <img class="thumb img-fluid" style="cursor: pointer" src="{% static 'assets/images/image-videosession.png' %}" alt="">
+                            </figure>
+                        </a>
+                    </div>
+                </div>
+                <figure class="mb-0 image-sidecircle">
+                    <img class="img-fluid" src="{% static 'assets/images/image-sidecircle.png' %}" alt="">
+                </figure>
+            </div>
+        </div>
+    </div> -->
+    <!-- offers -->
+    <section class="offer-section">
+        <div class="container">
+            <figure class="mb-0 offer-sidelayer">
+                <img src="{% static 'assets/images/offer-sidelayer.png' %}" alt="">
+            </figure>
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div class="offer_content" data-aos="fade-down">
+                        <h4 class="text-white">What We Offer</h4>
+                        <h2 class="text-white">Fully Customized App For You!</h2>
+                        <p class="text-white">Our Salon Management Software offers a comprehensive solution for streamlining your salon's operations. Designed for both medium and high-end salons, it facilitates client management, inventory tracking, and financial bookkeeping. </p>
+                        <div class="offer-imagewrapper">
+                            <a class="image_apple" href="https://apps.apple.com/ae/app/salon-pro-suite/id6502859075">
+                                <figure class="mb-0 offer-apple">
+                                    <img class="img-fluid" src="{% static 'assets/images/bannerapple-img1.png' %}" alt="">
+                                </figure>
+                            </a>
+                            <a class="image_google" href="https://play.google.com/store/apps/details?id=com.mite.saloonprosuite&hl=en">
+                                <figure class="mb-0 offer-google"> 
+                                    <img class="img-fluid" src="{% static 'assets/images/bannergoogle-img2.png' %}" alt="">
+                                </figure> 
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Ease of Search -->
+    <section class="search-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+                    <div class="search_content" data-aos="fade-up">
+                        <figure class="search-icon">
+                            <img src="{% static 'assets/images/ease_icon.svg' %}" alt="" class="img-fluid">
+                        </figure>
+                        <h2>Ease Of Use</h2>
+                        <p>Our Salon Management Software is designed with simplicity and efficiency in mind, ensuring a seamless experience for salon owners, managers, and staff. </p>
+                        <p class="p-text">The intuitive interface allows you to navigate effortlessly through various features such as client management to inventory tracking and sales bookkeeping.</p>
+                        <div class="search-button">
+                            <a class="try_free_btn" href="/contact/">Try For Free</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+                    <div class="search_wrapper">
+                        <figure class="mb-0 search-sidecircle">
+                            <img class="img-fluid" src="{% static 'assets/images/search-sidecircle.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 search-phoneback">
+                            <img src="{% static 'assets/images/search-phoneback.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 search-phone1">
+                            <img class="img-fluid" src="{% static 'assets/images/search-phone1.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 search-phone2">
+                            <img class="img-fluid" src="{% static 'assets/images/search-phone2.png' %}" alt="">
+                        </figure>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- statistics -->
+    <section class="statistics-section" id="statistics">
+        <div class="container">
+            <figure class="mb-0 statistics-sidelayer">
+                <img src="{% static 'assets/images/statistics-sidelayer.png' %}" alt="">
+            </figure>
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div class="statistics_content">
+                        <h4 class="text-white">App Information</h4>
+                        <h2 class="text-white">Explore Our Statistics</h2>
+                        <p class="text-white">Stay ahead in the competitive salon industry with actionable statistics that optimize resource allocation and improve customer satisfaction.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="statistics-value" data-aos="fade-down">
+                <div class="row">
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-6">
+                        <div class="number1">
+                            <span class="value1 counter">500</span>
+                            <sup class="mb-0 plus">+</sup>
+                            <span class="text1">Clients</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-6">
+                        <div class="number1">
+                            <span class="value1 counter">2430</span>
+                            <sup class="mb-0 plus">+</sup>
+                            <span class="text1 text2">Transactions</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-6">
+                        <div class="number1">
+                            <span class="value1 counter">14</span>
+                            <!-- <sup class="mb-0 plus">+</sup> -->
+                            <span class="mb-0 text1 text3">Years Of Expertise</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-6">
+                        <div class="number1 number4">
+                            <span class="value1 counter">1500000</span>
+                            <!-- <sup class="mb-0 plus">+</sup> -->
+                            <span class="mb-0 text1 text4">Sales Generated</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Manage -->
+    <section class="search-section" style="padding: 0px 0px 200px;">
+            <div class="manage-section">
+              <div class="container">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12 col-12 order-md-1 order-2">
+                       <div class="manage_wrapper">
+                            <figure class="mb-0 manage-sidecircle">
+                                <img class="img-fluid" src="{% static 'assets/images/manage-sidecircle.png' %}" alt="">
+                            </figure>
+                            <figure class="mb-0 manage-phoneback">
+                                <img src="{% static 'assets/images/manage-phoneback.png' %}" alt="">
+                            </figure>
+                            <figure class="mb-0 manage-phone2">
+                                <img class="img-fluid" src="{% static 'assets/images/manage-phone2.png' %}" alt="">
+                            </figure>
+                            <figure class="mb-0 manage-phone1">
+                                <img class="img-fluid" src="{% static 'assets/images/manage-phone1.png' %}" alt="">
+                            </figure>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12 col-12 order-md-2 order-1">
+                        <div class="manage_content" data-aos="fade-up">
+                            <figure class="search-icon manage-icon">
+                                <img src="{% static 'assets/images/msales_icon.svg' %}" alt="" class="img-fluid">
+                            </figure>
+                            <h2>Manage Your Sales</h2>
+                            <p>Our Salon Management Software offers a robust sales management feature that streamlines your financial operations, ensuring accuracy and efficiency.</p>
+                            <p class="p-text">Track daily sales effortlessly, manage invoices, and monitor transactions in real-time.</p>
+                            <div class="manage-button">
+                                <a class="try_free_btn" href="/contact/">Try For Free</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Pricing Plan -->
+    <!-- section class="price-section">
+        <div class="container">
+            <figure class="mb-0 price-circle">
+                <img class="img-fluid" src="{% static 'assets/images/price-circle.png' %}" alt="">
+            </figure>
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div class="price_heading">
+                        <h4>What We Offer</h4>
+                        <h2>Choose Your Pricing Plan</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="price-block">
+                <div class="row" data-aos="fade-up">
+                     <figure class="mb-0 price-sidecircle">
+                        <img class="img-fluid" src="{% static 'assets/images/price-sidecircle.png' %}" alt="">
+                    </figure>
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-12 mb-md-0 mb-4">
+                        <div class="price_content hover1">
+                            <div class="icon-size1">
+                                <figure class="mb-0 price-basicicon">
+                                    <img src="{% static 'assets/images/price-basicicon.png' %}" alt="" class="img-fluid">
+                                </figure>
+                            </div>
+                            <h5 class="mb-0">Basic</h5>
+                            <span class="text1">$4.99/mo</span>
+                            <ul class="list-unstyled mb-0">
+                                <li class="text-size-18">Free Consultation</li>
+                                <li class="text-size-18">2GB Storage</li>
+                                <li class="text-size-18">2 Free Download Images</li>
+                                <li class="text-size-18">Monthly Reports</li>
+                                <li class="for-space text-size-18">24/7 Full Support</li>
+                            </ul>
+                            <div class="price-button">
+                                <a class="get_started basic" href="./pricing.html">Get Started</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-12 mb-md-0 mb-4">
+                        <div class="price_content price_content1 hover2">
+                            <div class="icon-size1 icon-size2">
+                                <figure class="mb-0  price-premiumicon">
+                                    <img src="{% static 'assets/images/price-premiumicon.png' %}" alt="" class="img-fluid">
+                                </figure>
+                            </div>
+                            <h5 class="mb-0">Premium</h5>
+                            <span class="text1 text2">$9.99/mo</span>
+                            <ul class="list-unstyled mb-0">
+                                <li class="text-size-18">Free Consultation</li>
+                                <li class="text-size-18">2GB Storage</li>
+                                <li class="text-size-18">2 Free Download Images</li>
+                                <li class="text-size-18">Monthly Reports</li>
+                                <li class="for-space text-size-18">24/7 Full Support</li>
+                            </ul>
+                            <div class="price-button">
+                                <a class="get_started premium" href="./pricing.html">Get Started</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-12">
+                        <div class="price_content price_content2 hover3">
+                            <div class="icon-size1 icon-size3">
+                                <figure class="mb-0  price-businessicon">
+                                    <img src="{% static 'assets/images/price-businessicon.png' %}" alt="" class="img-fluid">
+                                </figure>
+                            </div>
+                            <h5 class="mb-0">Business</h5>
+                            <span class="text1 text3">$19.99/mo</span>
+                            <ul class="list-unstyled mb-0">
+                                <li class="text-size-18">Free Consultation</li>
+                                <li class="text-size-18">2GB Storage</li>
+                                <li class="text-size-18">2 Free Download Images</li>
+                                <li class="text-size-18">Monthly Reports</li>
+                                <li class="for-space text-size-18">24/7 Full Support</li>
+                            </ul>
+                            <div class="price-button">
+                                <a class="get_started business" href="./pricing.html">Get Started</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+    <!-- FAQ's -->
+    <!-- <section class="accordian-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div class="accordian_content">
+                        <h4>Ask Something?</h4>
+                        <h2>Frequently Asked Questions</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row position-relative" data-aos="fade-up">
+                <div class="col-lg-1 col-md-1 col-sm-1 d-lg-block d-none"></div>
+                <div class="col-lg-10 col-md-12 col-sm-12 col-xs-12">
+                    <div class="accordian-section-inner position-relative">
+                        <div class="accordian-inner">
+                            <div id="accordion1">
+                                <div class="accordion-card">
+                                    <div class="card-header" id="headingOne">
+                                        <a href="#" class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                            <h6>Maiores alias conseuatur aut peruerendis?</h6>
+                                        </a>
+                                    </div>
+                                    <div id="collapseOne" class="collapse" aria-labelledby="headingOne">
+                                        <div class="card-body">
+                                            <p class="pp text-left mb-0 p-0">Incidunt ut labore et dolore magnam aliquam quaerat voluptatem ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-card">
+                                    <div class="card-header" id="headingTwo">
+                                        <a href="#" class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                            <h6>Dolor renellendus temporibus autem zuibusdam?</h6>
+                                        </a>
+                                    </div>
+                                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo">
+                                        <div class="card-body">
+                                            <p class="pp text-left mb-0 p-0">Incidunt ut labore et dolore magnam aliquam quaerat voluptatem ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-card">
+                                    <div class="card-header" id="headingThree">
+                                        <a href="#" class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                            <h6>Officia deserunt mollitia animi est laborum?</h6>
+                                        </a>
+                                    </div>
+                                    <div id="collapseThree" class="collapse" aria-labelledby="headingThree">
+                                        <div class="card-body">
+                                            <p class="pp text-left mb-0 p-0">Incidunt ut labore et dolore magnam aliquam quaerat voluptatem ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-card">
+                                    <div class="card-header" id="headingFour">
+                                        <a href="#" class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                            <h6>Reiciendis voluptatibus maiores alias consequatur?</h6>
+                                        </a>
+                                    </div>
+                                    <div id="collapseFour" class="collapse" aria-labelledby="headingFour">
+                                        <div class="card-body">
+                                            <p class="pp text-left mb-0 p-0">Incidunt ut labore et dolore magnam aliquam quaerat voluptatem ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi.</p>                                
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-1 col-md-1 col-sm-1 d-lg-block d-none"></div>
+                <figure class="mb-0 faq_shape">
+                    <img src="{% static 'assets/images/faq_icon.png' %}" alt="" class="img-fluid">
+                </figure>
+            </div>
+        </div>
+    </section> -->
+    <!-- Available -->
+    <section class="available-section" id="get-app">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-7 col-md-7 col-sm-12 col-12">
+                    <div class="available_content">
+                        <h4 class="text-white">Apps available For all Devices</h4>
+                        <h2 class="text-white">Apps available For IOS and Android</h2>
+                        <p class="text-white">Experience seamless salon management with our mobile app, available on both iOS and Android platforms. Whether you are using a smartphone or tablet, our app lets you manage ensuring smooth operations and enhanced client satisfaction anytime, anywhere.</p>
+                        <div class="available-imagewrapper">
+                            <a class="image_apple" href="https://apps.apple.com/ae/app/salon-pro-suite/id6502859075">
+                                <figure class="mb-0 available-apple">
+                                    <img class="img-fluid" src="{% static 'assets/images/bannerapple-img1.png' %}" alt="">
+                                </figure>
+                            </a>
+                            <a class="image_google" href="https://play.google.com/store/apps/details?id=com.mite.saloonprosuite&hl=en">
+                                <figure class="mb-0 available-google"> 
+                                    <img class="img-fluid" src="{% static 'assets/images/bannergoogle-img2.png' %}" alt="">
+                                </figure> 
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5 col-md-5 col-sm-12 col-12">
+                    <div class="available_wrapper">
+                        <figure class="mb-0 available-phone1">
+                            <img class="img-fluid" src="{% static 'assets/images/available-phone1.png' %}" alt="">
+                        </figure>
+                        <figure class="mb-0 available-phone3">
+                            <img src="{% static 'assets/images/available-phone3.png' %}" alt="">
+                        </figure>
+                    </div>
+                </div>
+            </div>
+            <figure class="mb-0 available-phone2">
+                <img class="img-fluid" src="{% static 'assets/images/available-phone2.png' %}" alt="">
+            </figure>
+            <figure class="mb-0 available-sidelayer">
+                <img src="{% static 'assets/images/available-sidelayer.png' %}" alt="">
+            </figure>
+        </div>
+    </section>
+    <!-- Footer -->
+    <section class="footer-section">
+        <div class="container">
+            <div class="middle-portion">
+                <div class="row">
+                    <div class="col-lg-4 col-md-3 col-sm-6 col-12">
+                        <div class="icons">
+                            <a href="/">
+                                <figure class="footer-logo">
+                                    <img src="{% static 'assets/images/footer-logo.svg' %}" alt="">
+                                </figure>
+                            </a>
+                            <ul class="list-unstyled mb-0">
+                                <li>
+                                    <a href="ttps://www.facebook.com/MiteSolutionsFZE"><i class="fa-brands fa-facebook-f"></i></a> 
+                                </li>
+                                <li>
+                                    <a href="https://www.linkedin.com/company/mite-solutions"><i class="fa-brands fa-linkedin-in"></i></a> 
+                                </li>
+                                <li>
+                                    <a href="https://www.instagram.com/mitesolutions/"><i class="fa-brands fa-instagram"></i></a> 
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-3 col-sm-6 col-12 d-lg-block d-none">
+                        <div class="services">
+                            <h3 class="heading">Features</h3>
+                            <ul class="list-unstyled mb-0">
+                                <li><a href="/feature/" class=" text text-decoration-none">Friendly Interface</a></li>
+                                <li><a href="/feature/" class=" text text-decoration-none">Data Security</a></li>
+                                <li><a href="/feature/" class=" text text-decoration-none">Analytics & Reporting</a></li>
+                                <li><a href="/feature/" class=" text text-decoration-none">Mobile Accessibility</a></li>
+                                <li><a href="/feature/" class=" text text-decoration-none">Sales and Bookkeeping</a></li>
+                                <li><a href="/feature/" class=" text text-decoration-none">Staff Management</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-12 d-md-block d-none">
+                        <div class="aboutus">
+                            <h3 class="heading">Quick Links</h3>
+                            <ul class="list-unstyled mb-0">
+                                <li><a href="/feature/" class=" text text-decoration-none">Features</a></li>
+                                <li><a href="/about/" class=" text text-decoration-none">About Us</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-lower">
+                <div class="row">
+                    <div class="col-lg-12 col-md-6 col-sm-12 col-12">
+                        <p class="mb-0 text-size-18" style="text-align: center;">Copyright ©️ Saloon Pro Suite | <a href="https://mitesolutions.com/" title=""> MITE Solutions</a>. All rights reserved</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Latest compiled JavaScript -->
+    <script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"> </script>
+    <script src="{% static 'assets/js/bootstrap.min.js' %}"> </script>
+    <script src="{% static 'assets/js/video_link.js' %}"></script>
+    <script src="{% static 'assets/js/video.js' %}"></script>
+    <script src="{% static 'assets/js/counter.js' %}"></script>
+    <script src="{% static 'assets/js/custom.js' %}"></script>
+    <script src="{% static 'assets/js/animation_links.js' %}"></script>
+    <script src="{% static 'assets/js/animation.js' %}"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YeMN+dI9roa/W20STIYB6ZXI61jTcBn5QW6xlj5aWzP5m0bApH5GdktKxK9XAYtgFmVIBI+Wc2Mxso+Xg7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha512-pmD5k8J4HpY0eWkBdyAihWk5bU7gEB/8Qe2XHmkd0Y47i0Tr+0o+QGOZ6cwOBvQ8UbhG+YEv0gkk5USanF6sYQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    
+    <!-- Include jQuery and Owl Carousel JS files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YeMN+dI9roa/W20STIYB6ZXI61jTcBn5QW6xlj5aWzP5m0bApH5GdktKxK9XAYtgFmVIBI+Wc2Mxso+Xg7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha512-pmD5k8J4HpY0eWkBdyAihWk5bU7gEB/8Qe2XHmkd0Y47i0Tr+0o+QGOZ6cwOBvQ8UbhG+YEv0gkk5USanF6sYQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    
+    </body>
+
+</html>

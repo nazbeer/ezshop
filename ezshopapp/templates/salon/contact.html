@@ -1,0 +1,316 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <title>Salon Pro Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="{% static 'assets/images/favicon.svg' %}" type="image/x-icon">
+    <link rel="icon" href="{% static 'assets/images/favicon.svg' %}" type="image/x-icon">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{% static 'assets/images/ms-icon-144x144.png' %}">
+    <meta name="theme-color" content="#ffffff">
+    <link href="{% static 'assets/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'assets/js/bootstrap.min.js' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="{% static 'assets/css/style.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'assets/css/responsive.css' %}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'dependencies/owl.carousel/css/owl.carousel.min.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'dependencies/owl.carousel/css/owl.theme.default.min.css' %}" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" integrity="sha512-Y1HOODCqG5uKQ1yJeYGyZvh1KKlqMg4Fg4PdyULaMQFiB2rJ7E6qs3XrJ4BvjRsAj9YX8DWSTdXdsrIRuQHC5A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" integrity="sha512-utb/XI9W/2Ac99W9SOtZ4Sa9lMopWYIYB9PweD5QX50HGZWU9J08fX5Rup5KZhYCBt9jKTjIvIPSkUef70Pdsw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+
+
+<body>
+<!--Header  -->
+<div class="sub-banner">
+    <header>
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <a class="navbar-brand" href="/"><figure class="mb-0"><img src="{% static 'assets/images/banner-logo.svg' %}" alt="" class="img-fluid"></figure></a>
+                <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" 
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/feature/">Features</a>
+                        </li>
+                   
+                        <li class="nav-item">
+                            <a class="nav-link" href="/about/">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link login" href="/login/" target="_blank">Login</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link try_free_btn" href="/contact/">Try For Free</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <figure class="mb-0 bannersidelayer">
+        <img src="{% static 'assets/images/banner-sidelayer.png' %}" alt="">
+    </figure>
+<!-- Sub-Banner -->
+<section class="banner-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="banner_content" data-aos="fade-up">
+                    <div class="box">
+                        <span class="mb-0">Home</span><figure class="mb-0"><img src="{% static 'assets/images/subbanner_arrow.png' %}" alt="" class="img-fluid"></figure><span class="mb-0 box_span">Contact</span>
+                    </div>
+                    <h1>Contact Us</h1>
+                 
+                </div>
+            </div>
+        </div>
+        <figure class="mb-0 bannersidecircle1" data-aos="fade-left">
+            <img src="{% static 'assets/images/banner-sidecircle1.png' %}" alt="">
+        </figure>
+        <figure class="mb-0 bannersidecircle2" data-aos="fade-left">
+            <img src="{% static 'assets/images/banner-sidecircle2.png' %}" alt="">
+        </figure>
+    </div>    
+</section>
+</div>
+<!-- Message -->
+<section class="message-section about-section">
+    <div class="container">
+        <figure class="mb-0 price-circle">
+            <img class="img-fluid" src="{% static 'assets/images/price-circle.png' %}" alt="">
+        </figure>
+        <div class="row position-relative">
+            <figure class="mb-0 price-sidecircle">
+               <img class="img-fluid" src="{% static 'assets/images/price-sidecircle.png' %}" alt="">
+            </figure>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+                <div class="manage_wrapper">
+                    <figure class="mb-0 manage-phoneback">
+                        <img src="{% static 'assets/images/manage-phoneback.png' %}" alt="">
+                    </figure>
+                    <figure class="mb-0 manage-phone2">
+                        <img class="img-fluid" src="{% static 'assets/images/manage-phone2.png' %}" alt="">
+                    </figure>
+                    <figure class="mb-0 manage-phone1">
+                        <img class="img-fluid" src="{% static 'assets/images/manage-phone1.png' %}" alt="">
+                    </figure>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+                <div class="manage_content" data-aos="fade-up"> 
+                    <div class="message_content">
+                        <h2>Send Us a Message</h2>
+                        <form id="contactpage" method="POST" action="">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group mb-0">    
+                                    <input type="text" class="form_style" placeholder="Your Name" name="name"> 
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group mb-0">
+                                    <input type="email" class="form_style" placeholder="Your Email" name="email">
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class=" form-group mb-0">    
+                                    <textarea class="form_style" placeholder="Message" rows="3" name="message"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="manage-button text-center">
+                                <button type="submit" class="submit_now">Submit Now</button>
+                            </div>
+                        </form>
+                        {% if messages %}
+                        <div class="messages text-center">
+                            {% for message in messages %}
+                                <p {% if message.tags %} class="{{ message.tags }} mb-0 mt-2"{% endif %}>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Contact -->
+<section class="feature-aboutsection contact-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                <div class="feature_aboutheading">
+                    <h2>Our Contact Information</h2>
+                </div>
+            </div>
+        </div>
+        <div class="feature-block">
+            <div class="row" data-aos="fade-up">
+                <div class="col-lg-4 col-md-4 col-sm-12 col-12">
+                    <div class="feature_aboutcontent box hover1">
+                        <div class="icon-size1">
+                            <figure class="mb-0 contact-addressicon">
+                                <img src="{% static 'assets/images/contact-addressicon.png' %}" alt="" class="img-fluid">
+                            </figure>
+                        </div>
+                        <h5>Address</h5>
+                        <p class="mb-0 text-size-18">Block A, Office #62, <br/> Ajman Freezone <br/> P.O Box: 21146, Ajman UAE</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12 col-12">
+                    <div class="feature_aboutcontent box hover2">
+                        <div class="icon-size1 icon-size2">
+                            <figure class="mb-0 contact-phoneicon">
+                                <img src="{% static 'assets/images/contact-phoneicon.png' %}" alt="" class="img-fluid">
+                            </figure>
+                        </div>
+                        <h5>Phone</h5>
+                        <a href="tel:+61383766284" class="mb-0 text-decoration-none text-size-18">+971 (55) 3023232</a>
+                        <a href="tel:+80023456789" class="mb-0 text-decoration-none text-size-18">+971 (555) 450039</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12 col-12">
+                    <div class="feature_aboutcontent box hover3">
+                        <div class="icon-size1 icon-size3">
+                            <figure class="mb-0 contact-emailicon">
+                                <img src="{% static 'assets/images/contact-emailicon.png' %}" alt="" class="img-fluid">
+                            </figure>
+                        </div>
+                        <h5>Email</h5>
+                        <a href="mailto:info@apprista.com" class="mb-0 text-decoration-none text-size-18">info@mitesolutions.com</a>
+                     
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Available --> 
+<section class="available-section" id="get-app">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 col-md-7 col-sm-12 col-12">
+                <div class="available_content">
+                    <h4 class="text-white">Apps available For all Devices</h4>
+                    <h2 class="text-white">Apps available For IOS and Android</h2>
+                    <p class="text-white">Experience seamless salon management with our mobile app, available on both iOS and Android platforms. Whether you are using a smartphone or tablet, our app lets you manage ensuring smooth operations and enhanced client satisfaction anytime, anywhere.</p>
+                    <div class="available-imagewrapper">
+                        <a class="image_apple" href="https://apps.apple.com/ae/app/salon-pro-suite/id6502859075">
+                            <figure class="mb-0 available-apple">
+                                <img class="img-fluid" src="{% static 'assets/images/bannerapple-img1.png' %}" alt="">
+                            </figure>
+                        </a>
+                        <a class="image_google" href="https://play.google.com/store/apps/details?id=com.mite.saloonprosuite&hl=en">
+                            <figure class="mb-0 available-google"> 
+                                <img class="img-fluid" src="{% static 'assets/images/bannergoogle-img2.png' %}" alt="">
+                            </figure> 
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-5 col-sm-12 col-12">
+                <div class="available_wrapper">
+                    <figure class="mb-0 available-phone1">
+                        <img class="img-fluid" src="{% static 'assets/images/available-phone1.png' %}" alt="">
+                    </figure>
+                    <figure class="mb-0 available-phone3">
+                        <img src="{% static 'assets/images/available-phone3.png' %}" alt="">
+                    </figure>
+                </div>
+            </div>
+        </div>
+        <figure class="mb-0 available-phone2">
+            <img class="img-fluid" src="{% static 'assets/images/available-phone2.png' %}" alt="">
+        </figure>
+        <figure class="mb-0 available-sidelayer">
+            <img src="{% static 'assets/images/available-sidelayer.png' %}" alt="">
+        </figure>
+    </div>
+</section>
+<!-- Footer -->
+<section class="footer-section">
+    <div class="container">
+        <div class="middle-portion">
+            <div class="row">
+                <div class="col-lg-4 col-md-3 col-sm-6 col-12">
+                    <div class="icons">
+                        <a href="./">
+                            <figure class="footer-logo">
+                                <img src="{% static 'assets/images/footer-logo.svg' %}" alt="">
+                            </figure>
+                        </a>
+                        <ul class="list-unstyled mb-0">
+                            <li>
+                                <a href="ttps://www.facebook.com/MiteSolutionsFZE"><i class="fa-brands fa-facebook-f"></i></a> 
+                            </li>
+                          
+                            <li>
+                                <a href="https://www.linkedin.com/company/mite-solutions"><i class="fa-brands fa-linkedin-in"></i></a> 
+                            </li>
+                         
+                            <li>
+                            <a href="https://www.instagram.com/mitesolutions/"><i class="fa-brands fa-instagram"></i></a> 
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-3 col-sm-6 col-12 d-lg-block d-none">
+                    <div class="services">
+                        <h3 class="heading">Features</h3>
+                        <ul class="list-unstyled mb-0">
+                            <li><a href="/feature/" class=" text text-decoration-none">Friendly Interface</a></li>
+                            <li><a href="/feature/" class=" text text-decoration-none">Data Security</a></li>
+                            <li><a href="/feature/" class=" text text-decoration-none">Analytics & Reporting</a></li>
+                            <li><a href="/feature/" class=" text text-decoration-none">Mobile Accessibility</a></li>
+                            <li><a href="/feature/" class=" text text-decoration-none">Sales and Bookkeeping</a></li>
+                            <li><a href="/feature/" class=" text text-decoration-none">Staff Management</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-6 col-12 d-md-block d-none">
+                    <div class="aboutus">
+                        <h3 class="heading">Quick Links</h3>
+                        <ul class="list-unstyled mb-0">
+                            <li><a href="/feature/" class=" text text-decoration-none">Features</a></li>
+                            <li><a href="/about/" class=" text text-decoration-none">About Us</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-lower">
+            <div class="row">
+                <div class="col-lg-12 col-md-6 col-sm-12 col-12">
+                    <p class="mb-0 text-size-18" style="text-align: center;">Copyright ©️ Saloon Pro Suit | <a href="https://mitesolutions.com/" title=""> MITE Solutions</a>. All rights reserved</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="{% static 'assets/js/jquery-3.6.0.min.js' %}"> </script>
+<script src="{% static 'assets/js/bootstrap.min.js' %}"> </script>
+<script src="{% static 'assets/js/video_link.js' %}"></script>
+<script src="{% static 'assets/js/video.js' %}"></script>
+<script src="{% static 'assets/js/counter.js' %}"></script>
+<script src="{% static 'assets/js/custom.js' %}"></script>
+<script src="{% static 'assets/js/animation_links.js' %}"></script>
+<script src="{% static 'assets/js/animation.js' %}"></script>
+</body>
+</html>

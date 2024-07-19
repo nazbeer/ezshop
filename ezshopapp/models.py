@@ -166,6 +166,7 @@ class ReceiptTransaction(models.Model):
     date = models.DateField()
     receipt_type = models.ForeignKey(ReceiptType, on_delete=models.CASCADE)
     received_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    business_profile = models.CharField(max_length=255, null=True)
     narration = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -174,6 +175,7 @@ class PaymentTransaction(models.Model):
     expense_type = models.ForeignKey(ExpenseType, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     narration = models.TextField()
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
 class BankDeposit(models.Model):
@@ -239,13 +241,20 @@ class Employee(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
-        return f"{self.employee_id} - {self.first_name} {self.second_name}"
+        return f"{self.id} - {self.first_name} {self.second_name}"
     
     def id_expiration_due(self):
         business_profile = BusinessProfile.objects.get(id=self.business_profile_id)
         reminder_days = business_profile.employee_visa_expiration_reminder_days
         expiration_due_date = self.id_expiration_date - timedelta(days=reminder_days)
         return expiration_due_date <= timezone.now().date()
+    
+    def passport_expiration_due(self):
+        business_profile = BusinessProfile.objects.get(id=self.business_profile_id)
+        reminder_days = business_profile.employee_visa_expiration_reminder_days
+        expiration_due_date = self.passport_expiration_date - timedelta(days=reminder_days)
+        return expiration_due_date <= timezone.now().date()
+
 
 class EmployeeTransaction(models.Model):
     TRANSACTION_TYPE_CHOICES = [
@@ -278,16 +287,17 @@ class DayClosing(models.Model):
 
     def __str__(self):
         return f"Day Closing by {self.employee} on {self.date}"
-
+ 
 class DayClosingAdmin(models.Model):
     date = models.DateField(default=timezone.now)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True)  
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True) 
     total_services = models.PositiveIntegerField(default=0)
     total_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_collection = models.DecimalField(max_digits=10, decimal_places=2)
     advance = models.DecimalField(max_digits=10, decimal_places=2)
     net_collection = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='approved')
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
 class DailySummary(models.Model):
@@ -296,8 +306,10 @@ class DailySummary(models.Model):
     total_received_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_expense_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_bank_deposit = models.DecimalField(max_digits=10, decimal_places=2)
+    advance = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
-    narration = models.TextField()
+    narration = models.TextField(null=True,blank=True)
+    business_profile = models.CharField(max_length=255, null=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -320,6 +332,7 @@ class SaleByStaffService(models.Model):
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=100,choices=PAYMENT_METHOD_CHOICES)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
+    note = models.TextField(null=True,blank=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -334,6 +347,7 @@ class SaleByStaffItem(models.Model):
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
+    note = models.TextField(null=True,blank=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -348,6 +362,7 @@ class SaleByAdminService(models.Model):
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name=_("Payment Method"))
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
+    note = models.TextField(null=True,blank=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -362,6 +377,7 @@ class SalesByAdminItem(models.Model):
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Total Amount"), null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    note = models.TextField(null=True,blank=True)
     created_on = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
@@ -382,9 +398,19 @@ class SalesByStaffItemService(models.Model):
     created_on = models.DateTimeField(auto_now_add=True, null=True)
     itemtotal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Products Total"), null=True)
     servicetotal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Service Total"), null=True)
+    note = models.TextField(null=True,blank=True)
     
     def __str__(self):
         return f"Sale on {self.date}"
+
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
 
 @receiver(pre_save)
 def set_created_on_timezone(sender, instance, **kwargs):

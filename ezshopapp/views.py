@@ -2,6 +2,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 import logging
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
+import requests
+import urllib3
+from urllib.parse import urlencode
 from django.urls import reverse_lazy
 from django.views import View
 from django.db import IntegrityError, transaction
@@ -55,6 +63,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.cache import cache
 from django.http import HttpResponseNotFound
+from django.core.exceptions import ObjectDoesNotExist
 
 ####### admin cache clear
 
@@ -188,6 +197,56 @@ def error_404(request, exception):
 def error_500(request):
     return render(request, 'error.html', status=500)
 
+def get_employee_transaction_window(request):
+    user = request.user
+    shop_admin = ShopAdmin.objects.get(user=user)
+    shop = shop_admin.shop
+    employee_transaction_window = shop.employee_transaction_window
+    return JsonResponse({'employee_transaction_window': employee_transaction_window})
+
+
+
+def salonview(request):
+    return render(request, 'salon/index.html')
+
+def aboutview(request):
+    return render(request, 'salon/about.html')
+
+def landingview(request):
+    return render(request, 'salon/Landing-page.html')
+
+
+def featureview(request):
+    return render(request, 'salon/features.html')
+
+# def contactView(request):
+#     return render(request, 'salon/contact.html')
+
+
+def contact_view(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
+
+            send_mail(
+                f'Message from {name}',
+                message,
+                email,
+                ['info@mitesolutions.com'],  # Replace with your email
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Your message has been sent successfully!')
+            return redirect('contact')
+    else:
+        form = ContactForm()
+
+    return render(request, 'salon/contact.html', {'form':form})
+
 class CustomUserAddView(CreateView):
     model = User
     form_class = CustomUserCreationForm
@@ -254,6 +313,12 @@ def sidebar(request):
     is_superuser = request.user.is_superuser
     is_admin = request.user.groups.filter(name='Admin').exists()
     is_employee = not is_superuser and not is_admin
+
+    # user = request.user
+    # shop_admin = ShopAdmin.objects.get(user=user)
+    # shop = shop_admin.shop
+    # employee_transaction_window = shop.employee_transaction_window
+
 
     return render(request, 'sidebar.html', {'user': request.user, 'is_superuser': is_superuser, 'is_admin': is_admin, 'is_employee': is_employee})
 
@@ -576,6 +641,13 @@ def get_employee_data(request, employee_id):
     return JsonResponse(data)
 
 def employee_edit(request, pk):
+    shop_admin = ShopAdmin.objects.get(user=request.user)
+    shop = shop_admin.shop
+    business_profiles = BusinessProfile.objects.filter(name=shop)
+    business_profile = get_object_or_404(BusinessProfile, name=shop)
+    roles = Role.objects.filter(business_profile=business_profile)
+
+
     employee = get_object_or_404(Employee, pk=pk)
     if request.method == 'POST':
         form = EmployeeForm(request.POST, instance=employee)
@@ -584,7 +656,9 @@ def employee_edit(request, pk):
             return redirect('employee_list')
     else:
         form = EmployeeForm(instance=employee)
-    return render(request, 'employee_edit.html', {'form': form})
+    # return render(request, 'employee_edit.html', {'form': form})
+    return render(request, 'employee_edit.html', {'form': form,'nationalities': NATIONALITIES,'roles':roles})
+
 
 def employee_delete(request, pk):
     employee = get_object_or_404(Employee, pk=pk)
@@ -658,7 +732,7 @@ def employee_dashboard(request):
     last_day_of_month = timezone.datetime(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
 
     # Aggregate total services, total sales, and total advance for the current month
-    day_closings = DayClosing.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month)
+    day_closings = DayClosingAdmin.objects.filter(employee_id=employee_id, date__gte=first_day_of_month, date__lte=last_day_of_month)
 
     # If job_role exists, filter roles based on it
     role = Role.objects.filter(name=employee.job_role).first()
@@ -746,7 +820,7 @@ class ExpenseTypeListView(ListView):
         # Get the business profile associated with the shop
         business_profile = get_object_or_404(BusinessProfile, name=shop.name)
         # Return the queryset of DailySummary objects sorted by date in ascending order
-        return ExpenseType.objects.filter(business_profile=business_profile.id).order_by('-created_on')
+        return ExpenseType.objects.filter(business_profile=business_profile.id)
     
 class ExpenseTypeUpdateView(UpdateView):
     model = ExpenseType
@@ -763,14 +837,37 @@ class ReceiptTransactionListView(ListView):
     model = ReceiptTransaction
     template_name = 'receipt_transaction_list.html'
     def get_queryset(self):
-        # Return the queryset of DailySummary objects sorted by date in ascending order
-        return ReceiptTransaction.objects.order_by('-created_on')
+        shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+        shop = shop_admin.shop
+        business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+        return ReceiptTransaction.objects.filter(business_profile=business_profile.id).order_by('-date')
+    
+def receipt_type_list(request):
+    # Retrieve the current user's shop admin instance
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    shop = shop_admin.shop
+    
+    # Retrieve the business profile associated with the shop
+    business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+    
+    # Retrieve the receipt types associated with the business profile
+    receipt_types = ReceiptType.objects.filter(business_profile=business_profile.id)
+    # Render the template with the receipt types
+    return render(request, 'receipt_type_list.html', {'object_list': receipt_types})
 
-class ReceiptTypeListView(ListView):
-    model = ReceiptType
-    template_name = 'receipt_type_list.html'
-    context_object_name = 'object_list'  # Define the name used in the template for the queryset
-    success_url = reverse_lazy('receipt_type_list')
+# class ReceiptTypeListView(ListView):
+#     model = ReceiptType
+#     template_name = 'receipt_type_list.html'
+#     context_object_name = 'object_list'  # Define the name used in the template for the queryset
+#     success_url = reverse_lazy('receipt_type_list')
+    
+#     def get_queryset(self):
+#         shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+#         shop = shop_admin.shop
+#         business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+#         queryset = ReceiptType.objects.filter(business_profile=business_profile.id).order_by('-created_on')
+#         return list(queryset)
+
 
 class ReceiptTransactionUpdateView(UpdateView):
     model = ReceiptTransaction
@@ -786,28 +883,89 @@ class ReceiptTransactionDeleteView(DeleteView):
 class PaymentTransactionListView(ListView):
     model = PaymentTransaction
     template_name = 'payment_transaction_list.html'
-    def get_queryset(self):
-        # Return the queryset of DailySummary objects sorted by date in ascending order
-        return PaymentTransaction.objects.order_by('-created_on')
     
-class PaymentTransactionCreateView(CreateView):
-    model = PaymentTransaction
-    form_class = PaymentTransactionForm
-    template_name = 'create_payment_transaction.html'
-    success_url = reverse_lazy('payment_transaction_list')
+    def get_queryset(self):
+        shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+        shop = shop_admin.shop
+        business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+        return PaymentTransaction.objects.filter(business_profile=business_profile.id).order_by('-date')
+    
+# class PaymentTransactionCreateView(CreateView):
+#     model = PaymentTransaction
+#     form_class = PaymentTransactionForm
+#     template_name = 'create_payment_transaction.html'
+#     success_url = reverse_lazy('payment_transaction_list')
 
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            # Get the current shop admin
-            shop_admin = ShopAdmin.objects.get(user=request.user)
-            # Get the associated shop
-            shop = shop_admin.shop
-            # Get the business profile associated with the shop
-            self.business_profile = BusinessProfile.objects.get(name=shop.name)
-        except BusinessProfile.DoesNotExist:
-            messages.error(request, "Business profile is not created. Please create a business profile first.")
-            return redirect('create_business_profile')  # Redirect to the view where you create a business profile
-        return super().dispatch(request, *args, **kwargs)
+    
+#     def get_form_kwargs(self):
+#         """ Passes the request object to the form class.
+#          This is necessary to only display members that belong to a given user"""
+
+#         kwargs = super(PaymentTransactionCreateView, self).get_form_kwargs()
+#         kwargs['request'] = self.request
+#         return kwargs
+
+
+#     def dispatch(self, request, *args, **kwargs):
+#         try:
+#             # Get the current shop admin
+#             shop_admin = ShopAdmin.objects.get(user=self.request.user)
+#             # Get the associated shop
+#             shop = shop_admin.shop
+#             # Get the business profile associated with the shop
+#             self.business_profile = BusinessProfile.objects.get(name=shop.name)
+#         except BusinessProfile.DoesNotExist:
+#             messages.error(request, "Business profile is not created. Please create a business profile first.")
+#             return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+#         return super().dispatch(request, *args, **kwargs)
+
+
+def create_payment_transaction(request):
+    try:
+        # Get the current shop admin
+        shop_admin = ShopAdmin.objects.get(user=request.user)
+        # Get the associated shop
+        shop = shop_admin.shop
+        # Get the business profile associated with the shop
+        business_profile = BusinessProfile.objects.get(name=shop.name)
+    except BusinessProfile.DoesNotExist:
+        messages.error(request, "Business profile is not created. Please create a business profile first.")
+        return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
+    
+    if request.method == 'POST':
+        form = PaymentTransactionForm(request.POST,business_profile = business_profile.id)
+        if form.is_valid():
+            date = form.cleaned_data['date']
+            # day_closing_exists = DayClosingAdmin.objects.filter(
+            #     date=date,
+            #     business_profile=business_profile.id,
+            # ).exists()
+            
+            daily_summary_exists = DailySummary.objects.filter(
+                date=date,
+                business_profile=business_profile.id,
+            ).exists()
+            # if day_closing_exists:
+            #     messages.info(request, f'Day closing for {date} already submitted.')
+            #     return redirect('create_payment_transaction')
+            if daily_summary_exists:
+                messages.info(request, f'Daily summary for {date} already submitted.')
+                return redirect('create_payment_transaction')
+            form.save()
+            return redirect('payment_transaction_list')  
+    else:
+        form = PaymentTransactionForm(business_profile = business_profile.id)
+
+    expense_type = ExpenseType.objects.filter(business_profile = business_profile.id)
+
+    context = {
+        'form': form,
+        'expense_type': expense_type,
+        'business_profile': business_profile.id,
+    }
+    return render(request, 'create_payment_transaction.html', context)
+
 
 
 class PaymentTransactionUpdateView(UpdateView):
@@ -825,8 +983,13 @@ class BankDepositListView(ListView):
     model = BankDeposit
     template_name = 'bank_deposit_list.html'
     def get_queryset(self):
+        shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+        shop = shop_admin.shop
+        
+        # Retrieve the business profile associated with the shop
+        business_profile = get_object_or_404(BusinessProfile, name=shop.name)
         # Return the queryset of DailySummary objects sorted by date in ascending order
-        return BankDeposit.objects.order_by('-created_on')
+        return BankDeposit.objects.filter(business_profile=business_profile.id)
 
 def create_bank_deposit(request):
     try:
@@ -840,17 +1003,25 @@ def create_bank_deposit(request):
         messages.error(request, "Business profile is not created. Please create a business profile first.")
         return redirect('create_business_profile')  # Redirect to the view where you create a business profile
     
+    
     if request.method == 'POST':
-        form = BankDepositForm(request.POST)
+        form = BankDepositForm(request.POST,business_profile = business_profile.id)
         if form.is_valid():
-            form.business_profile = business_profile.id
+            date = form.cleaned_data['date']
+            daily_summary_exists = DailySummary.objects.filter(
+                date=date,
+                business_profile=business_profile.id,
+            ).exists()
+            if daily_summary_exists:
+                messages.info(request, f'Daily summary for {date} already submitted.')
+                return redirect('create_bank_deposit')
             form.save()
             return redirect('bank_deposit_list')  
     else:
-        form = BankDepositForm()
+        form = BankDepositForm(business_profile = business_profile.id)
 
     # Fetch all banks
-    banks = Bank.objects.all()
+    banks = Bank.objects.filter(business_profile = business_profile.id)
 
     context = {
         'form': form,
@@ -873,7 +1044,7 @@ class BankListView(ListView):
         business_profile = get_object_or_404(BusinessProfile, name=shop.name)
     
         # Return the queryset of Bank objects filtered by business profile and sorted by created_on date in descending order
-        return Bank.objects.filter(business_profile=business_profile.id).order_by('-created_on')
+        return Bank.objects.filter(business_profile=business_profile.id)
     
 def create_bank(request):
     try:
@@ -1074,35 +1245,86 @@ class DailySummaryListView(ListView):
     template_name = 'daily_summary_list.html'
 
     def get_queryset(self):
-        # Return the queryset of DailySummary objects sorted by date in ascending order
-        return DailySummary.objects.order_by('-created_on')
+        shop_admin = get_object_or_404(ShopAdmin, user=self.request.user)
+        shop = shop_admin.shop
+        business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+        return DailySummary.objects.filter(business_profile = business_profile.id).order_by('-date')
     
 logger = logging.getLogger(__name__)
 
 
 # @login_required
 def DailySummaryCreate(request):
+    
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    shop = shop_admin.shop
+    business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+  
+
     if request.method == 'POST':
         form = DailySummaryForm(request.POST)
         if form.is_valid():
             daily_summary = form.save()
             # Pass the created daily_summary object to send_daily_summary_email function
-            send_daily_summary_email(request, daily_summary)
+            # send_daily_summary_email(request, daily_summary)
+            msg_parts = []
+            
+            if daily_summary.opening_balance != 0:
+                msg_parts.append(f"Opening: {daily_summary.opening_balance}")
+            if daily_summary.total_received_amount != 0:
+                msg_parts.append(f"Collection: {daily_summary.total_received_amount}")
+            if daily_summary.total_expense_amount != 0:
+                msg_parts.append(f"Expense: {daily_summary.total_expense_amount}")
+            if daily_summary.total_bank_deposit != 0:
+                msg_parts.append(f"Bank: {daily_summary.total_bank_deposit}")
+            if daily_summary.balance != 0:
+                msg_parts.append(f"Closing: {daily_summary.balance}")
+            
+            msg = "\n".join(msg_parts)
+            # msg = f"Opening: {daily_summary.opening_balance}\n Collection: {daily_summary.total_received_amount}\n Expense: {daily_summary.total_expense_amount} \n Bank: {daily_summary.total_bank_deposit}\n Closing: {daily_summary.balance}"
+            send_message(request, msg)
+            subject = "Daily Summary"
+            message = msg
+            to_email = shop.admin_email
+            cc_emails = ['navas@mitesolutions.com']
+            send_mail(subject, message, None, [to_email], cc_emails)
+            messages.success(request, 'Email sent successfully')  # Add success message
             return redirect('daily_summary_list')
+        
     else:
-        last_daily_summary = DailySummary.objects.order_by('-date').first()
+        last_daily_summary = DailySummary.objects.filter(business_profile=business_profile.id).order_by('-date').first()
+    
+        # Get the date of the last DailySummary, if it exists
         if last_daily_summary:
-            last_daily_summary_date = last_daily_summary.date
+            formatted_date = last_daily_summary.date - timedelta(days=1)
+            last_summary_date = formatted_date.strftime('%Y-%m-%d')  
         else:
-            # If no daily summaries exist, set last_daily_summary_date to a default value
-            last_daily_summary_date = datetime.now().date() - timedelta(days=1)
+            formatted_date = datetime.now().date() - timedelta(days=1)
+            last_summary_date = formatted_date.strftime('%Y-%m-%d')
+            # print('last_summary_date dd', last_summary_date)
+        # last_daily_summary = DailySummary.objects.filter(business_profile=business_profile.id).order_by('-created_on').first()
+        # if last_daily_summary:
+        #     last_daily_summary_date = last_daily_summary.date
+        # else:
+        #     # If no daily summaries exist, set last_daily_summary_date to a default value
+        #     last_daily_summary_date = datetime.now().date() - timedelta(days=3)
 
         # Calculate the minimum date as last_daily_summary_date + 1 day
-        min_date = last_daily_summary_date + timedelta(days=1)
+        # min_date = last_daily_summary_date + timedelta(days=1)
         # Pass the minimum date to the form
-        form = DailySummaryForm(initial={'min_date': min_date})
+        form = DailySummaryForm(initial={'min_date': last_summary_date})
 
-    return render(request, 'create_daily_summary.html', {'form': form})
+    return render(request, 'create_daily_summary.html', {'form': form, 'business_profile': business_profile.id, 'min_date':last_summary_date})
+
+def get_daily_summary_exist(request,date):
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    shop = shop_admin.shop
+    business_profile = get_object_or_404(BusinessProfile, name=shop.name)
+    data_exists = DailySummary.objects.filter(date = date, business_profile=business_profile.id).exists()
+
+    return JsonResponse({'data_exists': data_exists})
+
+
 
 def fetch_summary_data(request, date):
 
@@ -1113,6 +1335,7 @@ def fetch_summary_data(request, date):
     total_bank_deposit = 0
     net_collection = 0
     balance = 0
+    total_advance = 0
 
     shop_admin = get_object_or_404(ShopAdmin, user=request.user)
     
@@ -1121,35 +1344,150 @@ def fetch_summary_data(request, date):
     
     # Get the business profile associated with the shop
     business_profile = get_object_or_404(BusinessProfile, name=shop.name)
-  
+   
+    employees = Employee.objects.filter(business_profile_id = business_profile.id)
+    
+    # staff_service_transactions = SaleByStaffService.objects.filter(date=date, employee__business_profile_id=business_profile.id).values_list('employee_id', flat=True)
+    # staff_item_transactions = SaleByStaffItem.objects.filter(date=date, employee__business_profile_id=business_profile.id).values_list('employee_id', flat=True)
+    # admin_service_transactions = SaleByAdminService.objects.filter(date=date, employee__business_profile_id=business_profile.id).values_list('employee_id', flat=True)
+    # admin_item_transactions = SalesByAdminItem.objects.filter(date=date, employee__business_profile_id=business_profile.id).values_list('employee_id', flat=True)
+    # staff_item_service_transactions = SalesByStaffItemService.objects.filter(date=date, employee__business_profile_id=business_profile.id).values_list('employee_id', flat=True)
+
+    # all_employee_ids = set(staff_service_transactions) | set(staff_item_transactions) | set(admin_service_transactions) | set(admin_item_transactions) | set(staff_item_service_transactions)
+
+    # employees_with_transactions = Employee.objects.filter(id__in=all_employee_ids, business_profile_id=business_profile.id)
+
+    # for emp in employees_with_transactions:
+    #     day_closing_completed = DayClosingAdmin.objects.filter(employee_id=emp.id, date=date, business_profile=business_profile.id).exists()
+    #     if not day_closing_completed:
+    #         response_data = [{
+    #             'id': emp.id,
+    #             'first_name': emp.first_name,
+    #             'second_name': emp.second_name,
+    #             'msg': 'Day closing pending for employee'
+    #         }]
+    #         return JsonResponse(response_data, status=status.HTTP_400_BAD_REQUEST, safe=False)
+
+    # yesterday = datetime.now() - timedelta(days=1)
+    # last_daliy_summary_date = DailySummary.objects.filter(business_profile = business_profile.id).order_by('-date').first()
+    # yesterday_date = last_daliy_summary_date.date
+    if DailySummary.objects.filter(business_profile = business_profile.id).exists():
+        last_daliy_summary_date = DailySummary.objects.filter(business_profile = business_profile.id).order_by('-date').first()
+        yesterday_date = last_daliy_summary_date.date
+    else:
+        yesterday_date = datetime.now().date()
     # Fetch the latest DailySummary for the selected date
     try:
-        daily_summary = DailySummary.objects.filter(date=date).latest('created_on')
-        opening_balance = daily_summary.opening_balance
+        daily_summary = DailySummary.objects.get(business_profile = business_profile.id, date=yesterday_date)
+        # print(daily_summary)
+        # daily_summary = DailySummary.objects.filter(business_profile=business_profile.id, date=date).latest('created_on')
+        opening_balance = daily_summary.balance
+        # print('opening', opening_balance)
     except DailySummary.DoesNotExist:
         pass
+    try:
+        day_closing_admin = DayClosingAdmin.objects.filter(date=date, business_profile=business_profile.id,status="approved").latest('created_on')
+        net_collection = day_closing_admin.net_collection
+    except DayClosingAdmin.DoesNotExist:
+        data = {
+            'opening_balance': opening_balance,
+            'net_collection': net_collection,
+            'total_received_amount': total_received_amount,
+            'total_expense_amount': total_expense_amount,
+            'total_bank_deposit': total_bank_deposit,
+            'balance': opening_balance + total_received_amount - total_expense_amount - total_bank_deposit,
+            'business_profile':business_profile.id,
+            'advance':total_advance,
+            'msg': 'DayClosingAdmin matching query does not exist',
+        }
+        return JsonResponse(data)
+
+
+    # try:
+    #     daily_summary = DailySummary.objects.filter(date=date).first()
+
+    #     if daily_summary:
+    #         opening_balance = daily_summary.opening_balance
+    #     else:
+    #         opening_balance = None 
+    # except DailySummary.DoesNotExist:
+    #     opening_balance = None  
+    selected_date = date
+    total_services = (
+    SaleByAdminService.objects.filter(date=selected_date, employee__business_profile_id=business_profile.id,payment_method='card')
+    .aggregate(total_services=Sum('total_amount'))['total_services'] or 0
+    )
+
+    # total_services = (
+    # SaleByAdminService.objects.filter(date=selected_date, employee_id=employee_id,payment_method='card')
+    # .aggregate(total_services=Sum('total_amount'))['total_services'] or 0
+    # )
+    total_services += (
+        SalesByStaffItemService.objects.filter(date=selected_date,employee__business_profile_id=business_profile.id,payment_method='card')
+        .aggregate(total_services=Sum('servicetotal'))['total_services'] or 0
+    )
+    total_services += (
+        SaleByStaffService.objects.filter(date=selected_date,employee__business_profile_id=business_profile.id,payment_method='card')
+        .aggregate(total_services=Sum('total_amount'))['total_services'] or 0
+    )
+    # Fetch total sales for the selected date and employee
+    total_sales = (
+        SalesByAdminItem.objects.filter(date=selected_date,employee__business_profile_id=business_profile.id,payment_method='card')
+        .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+    )
+    total_sales += (
+        SalesByStaffItemService.objects.filter(date=selected_date,employee__business_profile_id=business_profile.id,payment_method='card')
+        .aggregate(total_sales=Sum('itemtotal'))['total_sales'] or 0
+    )
+    total_sales += (
+        SaleByStaffItem.objects.filter(date=selected_date,employee__business_profile_id=business_profile.id,payment_method='card')
+        .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+    )
+    # Calculate total collection
+    # total_collection = total_sales + total_services
+    total_card_collection = total_sales + total_services
 
     # Fetch the DayClosingAdmin objects for the given date
-    day_closing_admins = DayClosingAdmin.objects.filter(date=date)
+    day_closing_admin_net_collection = DayClosingAdmin.objects.filter(date = date, business_profile = business_profile.id, employee__in = employees,status="approved").aggregate(total_amount=Sum('total_collection'))['total_amount'] or 0
+    total_advance = DayClosingAdmin.objects.filter(date = date, business_profile = business_profile.id, employee__in = employees,status="approved").aggregate(total_advance=Sum('advance'))['total_advance'] or 0
+
+
+    
+    
+    day_closing_admins = DayClosingAdmin.objects.filter(date = date, business_profile = business_profile.id, employee__in = employees)
     # if day_closing_admins.exists():
-        # If there are multiple DayClosingAdmin objects, take the latest one
-    day_closing_admin = day_closing_admins.latest('created_on')
-    net_collection = day_closing_admin.net_collection
+    try:
+        day_closing_admin = day_closing_admins.latest('created_on')
+        net_collection = day_closing_admin.net_collection
+    except ObjectDoesNotExist:
+        return redirect('dayclosing_admin')
+    # day_closing_admin = day_closing_admins.latest('created_on')
+    
 
     # Calculate total_received_amount from ReceiptTransactions
-    receipt_transactions_total = ReceiptTransaction.objects.filter(date=date).aggregate(total_amount=Sum('received_amount'))['total_amount'] or 0
-    total_received_amount = receipt_transactions_total + net_collection
+    receipt_transactions_total = ReceiptTransaction.objects.filter(date=date, business_profile = business_profile.id).aggregate(total_amount=Sum('received_amount'))['total_amount'] or 0
+    # total_received_amount = receipt_transactions_total + net_collection
+    total_received_amount= (receipt_transactions_total + day_closing_admin_net_collection) 
+
 
     # Calculate total_bank_deposit from BankDeposit
-    total_bank_deposit = BankDeposit.objects.filter(date=date, business_profile=business_profile.id).aggregate(amount=Sum('amount'))['amount'] or 0
+    bank_deposit = BankDeposit.objects.filter(date=date, business_profile=business_profile.id).aggregate(amount=Sum('amount'))['amount'] or 0
+    total_bank_deposit = bank_deposit + total_card_collection
 
     # Calculate total_expense_amount from PaymentTransactions
-    payment_transactions_total = PaymentTransaction.objects.filter(date=date).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+    payment_transactions_total = PaymentTransaction.objects.filter(date=date, business_profile = business_profile.id).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
     total_expense_amount = payment_transactions_total
 
     # Calculate the balance
-    balance = opening_balance + total_received_amount - total_expense_amount - total_bank_deposit
-
+    balance = (opening_balance + total_received_amount ) - (total_expense_amount + total_bank_deposit + total_advance)
+    # balance = balance - bank_deposit
+    last_daliy_summary_date_o = DailySummary.objects.filter(business_profile=business_profile.id).order_by('-date').first()
+    if last_daliy_summary_date_o:
+        last_daliy_summary_date = last_daliy_summary_date_o.date
+    else:
+        last_daliy_summary_date = datetime.now().date()
+    
+    
     # Construct data dictionary
     data = {
         'opening_balance': opening_balance,
@@ -1157,7 +1495,12 @@ def fetch_summary_data(request, date):
         'total_received_amount': total_received_amount,
         'total_expense_amount': total_expense_amount,
         'total_bank_deposit': total_bank_deposit,
-        'balance': balance
+        'balance': balance,
+        'total_card_sale': total_sales,
+        'total_card_service': total_services,
+        'advance':total_advance,
+        'last_daliy_summary_date':last_daliy_summary_date,
+
     }
 
     return JsonResponse(data)
@@ -1184,6 +1527,8 @@ def send_daily_summary_email(request, daily_summary):
     except Exception as e:
         logger.error(f'Failed to send email: {e}')  # Log error message
         messages.error(request, f'Failed to send email: {e}')  # Add error message
+
+
 class DailySummaryUpdateView(UpdateView):
     model = DailySummary
     form_class = DailySummaryForm
@@ -1332,17 +1677,39 @@ def login_view(request):
 
     return render(request, 'login.html', {'serializer': serializer})
 
+# def sales_by_admin_item(request):
+#     # Get the business profile associated with the logged-in user
+    
+#     try:
+#         shop_admin = ShopAdmin.objects.get(user=request.user)
+#         business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
+#         employees = Employee.objects.filter(business_profile=shop_admin.shop)
+#         products = Product.objects.filter(business_profile=business_profile.id)
+#     except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
+#         employees = Employee.objects.none()
+#         messages.error(request, "Business profile is not created. Please create a business profile first.")
+#         return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
+
+#     if request.method == 'POST':
+#         form = SalesByAdminItemForm(request.POST)
+#         if form.is_valid():
+#             form = form.save()
+#             # return HttpResponse(f'Sale created successfully')  
+#             return redirect('sales_report_admin')
+#     else:
+#         form = SalesByAdminItemForm()
+
+#     return render(request, 'sales_by_admin_item.html', {'form': form, 'employees': employees, 'products': products})
+
 def sales_by_admin_item(request):
     # Get the business profile associated with the logged-in user
     
     try:
         shop_admin = ShopAdmin.objects.get(user=request.user)
         business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
-        # print(business_profile)
         employees = Employee.objects.filter(business_profile=shop_admin.shop)
-        
         products = Product.objects.filter(business_profile=business_profile.id)
-        # print(products)
     except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
         employees = Employee.objects.none()
         messages.error(request, "Business profile is not created. Please create a business profile first.")
@@ -1350,11 +1717,61 @@ def sales_by_admin_item(request):
     
 
     if request.method == 'POST':
-        form = SalesByAdminItemForm(request.POST)
-        if form.is_valid():
-            form = form.save()
-            # return HttpResponse(f'Sale created successfully')  
-            return redirect('sales_report_admin')
+        sales_form = SalesByAdminItemForm(request.POST)
+        if sales_form.is_valid():
+            date = request.POST.get('date')
+            emp_id = int(request.POST.get('employee'))
+            product_id =request.POST.get('item')
+            price =request.POST.get('price')
+            quantity =request.POST.get('quantity')
+            product_list =request.POST.getlist('item')
+            quantity_list = request.POST.getlist('quantity')
+            price_list = request.POST.getlist('price')
+
+            items = []
+            for product, quantity, price in zip(product_list, quantity_list, price_list):
+                product_obj = get_object_or_404(Product, id=int(product))
+                product_name = product_obj.name
+                items.append({
+                    'product':product_name,
+                    'quantity': int(quantity),
+                    'price': float(price)
+                })
+            total_amount = float(request.POST.get('total_amount'))
+            discount = int(request.POST.get('discount'))
+            payment_method = request.POST.get('payment_method')
+            employee = get_object_or_404(Employee ,id=emp_id)
+            day_closing_exists = DayClosingAdmin.objects.filter(
+                date=date,
+                business_profile=employee.business_profile_id,
+                employee__id__in=[employee.id]
+            ).exists()
+            
+            daily_summary_exists = DailySummary.objects.filter(
+                date=date,
+                business_profile=employee.business_profile_id,
+            ).exists()
+            if day_closing_exists:
+                # formatted_date = datetime.strptime(date, '%d/%m/%Y').date()  
+                messages.info(request, f'Day closing for {date} already submitted.')
+                return redirect('sales_by_admin_item')
+            elif daily_summary_exists:
+                # formatted_date = datetime.strptime(date, '%d/%m/%Y').date()  
+                messages.info(request, f'Daily summary for {date} already submitted.')
+                return redirect('sales_by_admin_item')
+            else:
+                SalesByAdminItem.objects.create(
+                    date=date,
+                    employee=employee,
+                    item = get_object_or_404(Product ,id=product_id),
+                    note=items,
+                    total_amount=total_amount,
+                    discount=discount,
+                    payment_method=payment_method,
+                    price=price,
+                    quantity=quantity
+                )
+                return redirect('sales_report_admin')
     else:
         form = SalesByAdminItemForm()
 
@@ -1365,9 +1782,7 @@ def sale_by_admin_service(request):
     try:
         shop_admin = ShopAdmin.objects.get(user=request.user)
         business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
-        # print(business_profile)
         employees = Employee.objects.filter(business_profile=shop_admin.shop)
-
         services = Service.objects.filter(business_profile=business_profile.id)
     except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
         employees = Employee.objects.none()
@@ -1377,15 +1792,89 @@ def sale_by_admin_service(request):
     if request.method == 'POST':
         sales_form = SaleByAdminServiceForm(request.POST)
         if sales_form.is_valid():
-            sales_form = sales_form.save(commit=False)
-            # sales_form.itemtotal = request.POST['itemTotal']
-            # sales_form.servicetotal = request.POST['serviceTotal']
-            sales_form.save()
-            return redirect('sales_report_admin')
+            date = request.POST.get('date')
+            emp_id = int(request.POST.get('employee'))
+            service_id =request.POST.get('service')
+            price =request.POST.get('price')
+            quantity =request.POST.get('quantity')
+            service_list =request.POST.getlist('service')
+            quantity_list = request.POST.getlist('quantity')
+            price_list = request.POST.getlist('price')
+
+            items = []
+            for service, quantity, price in zip(service_list, quantity_list, price_list):
+                service_obj = get_object_or_404(Service, id=int(service))
+                service_name = service_obj.name
+                items.append({
+                    'service':service_name,
+                    'quantity': int(quantity),
+                    'price': float(price)
+                })
+            total_amount = float(request.POST.get('total_amount'))
+            discount = int(request.POST.get('discount'))
+            payment_method = request.POST.get('payment_method')
+            employee = get_object_or_404(Employee ,id=emp_id)
+            day_closing_exists = DayClosingAdmin.objects.filter(
+                date=date,
+                business_profile=employee.business_profile_id,
+                employee__id__in=[employee.id]
+            ).exists()
+            
+            daily_summary_exists = DailySummary.objects.filter(
+                date=date,
+                business_profile=employee.business_profile_id,
+            ).exists()
+            if day_closing_exists:
+                messages.info(request, f'Day closing for {date} already exists.')
+                return redirect('sales_by_admin_service')
+            elif daily_summary_exists:
+                messages.info(request, f'Daily summary for {date} already exists.')
+                return redirect('sales_by_admin_service')
+            else:
+                SaleByAdminService.objects.create(
+                    date=date,
+                    employee=employee,
+                    service = get_object_or_404(Service ,id=service_id),
+                    note=items,
+                    total_amount=total_amount,
+                    discount=discount,
+                    payment_method=payment_method,
+                    price=price,
+                    quantity=quantity
+        
+                )
+                return redirect('sales_report_admin')
     else:
         sales_form = SaleByAdminServiceForm()
 
     return render(request, 'sales_by_admin_service.html', {'sales_form': sales_form, 'services': services, 'employees':employees})
+
+
+# def sale_by_admin_service(request):
+#     try:
+#         shop_admin = ShopAdmin.objects.get(user=request.user)
+#         business_profile = BusinessProfile.objects.get(name=shop_admin.shop.name)
+#         # print(business_profile)
+#         employees = Employee.objects.filter(business_profile=shop_admin.shop)
+
+#         services = Service.objects.filter(business_profile=business_profile.id)
+#     except (ShopAdmin.DoesNotExist, BusinessProfile.DoesNotExist):
+#         employees = Employee.objects.none()
+#         messages.error(request, "Business profile is not created. Please create a business profile first.")
+#         return redirect('create_business_profile')  # Redirect to the view where you create a business profile
+    
+#     if request.method == 'POST':
+#         sales_form = SaleByAdminServiceForm(request.POST)
+#         if sales_form.is_valid():
+#             sales_form = sales_form.save(commit=False)
+#             # sales_form.itemtotal = request.POST['itemTotal']
+#             # sales_form.servicetotal = request.POST['serviceTotal']
+#             sales_form.save()
+#             return redirect('sales_report_admin')
+#     else:
+#         sales_form = SaleByAdminServiceForm()
+
+#     return render(request, 'sales_by_admin_service.html', {'sales_form': sales_form, 'services': services, 'employees':employees})
 
 # class SaleListCreateView(generics.ListCreateAPIView):
 #     queryset = Sale.objects.all()
@@ -1422,17 +1911,45 @@ def submit_sale(request):
     if request.method == 'POST':
         sales_form = SalesByStaffServiceForm(request.POST)
         if sales_form.is_valid():
-            sales_form = sales_form.save(commit=False)
-            # sales_form.itemtotal = request.POST['itemTotal']
-            # sales_form.servicetotal = request.POST['serviceTotal']
-            sales_form.save()
+            date = request.POST.get('date')
+            emp_id = int(request.POST.get('employee'))
+            employee = get_object_or_404(Employee ,id=emp_id)
+            service_id = request.POST.get('service')
+            price = request.POST.get('price')
+            quantity = request.POST.get('quantity')
+            service_list = request.POST.getlist('service')
+            quantity_list = request.POST.getlist('quantity')
+            price_list = request.POST.getlist('price')
+            items = []
+            for service, quantity, price in zip(service_list, quantity_list, price_list):
+                service_obj = get_object_or_404(Service, id=int(service))
+                service_name = service_obj.name
+                items.append({
+                    'service':service_name,
+                    'quantity': int(quantity),
+                    'price': float(price)
+                })
+            total_amount = float(request.POST.get('total_amount'))
+            discount = int(request.POST.get('discount'))
+            payment_method = request.POST.get('payment_method')
+
+            SaleByStaffService.objects.create(
+                date=date,
+                employee=employee,
+                service = get_object_or_404(Service ,id=service_id),
+                note=items,
+                total_amount=total_amount,
+                discount=discount,
+                payment_method=payment_method,
+                price=price,
+                quantity=quantity
+            )
+            # sales_form = sales_form.save(com
             return redirect('sales_report')
     else:
         sales_form = SalesByStaffServiceForm()
 
     return render(request, 'sales-by-staff-service.html', {'sales_form': sales_form, 'services': services,'employees':employees, 'active_modules':active_modules})
-
-# @login_required
 
 def DayClosingCreate(request):
     # Retrieve the logged-in employee's ID from the session
@@ -1459,22 +1976,31 @@ def DayClosingCreate(request):
     current_date = timezone.now().strftime('%Y-%m-%d')
 
     if request.method == 'POST':
-        form = DayClosingForm(request.POST)
+        form = DayClosingAdminForm(request.POST)
         if form.is_valid():
             day_closing = form.save(commit=False)
-            
+            # date = form.cleaned_data['date']  
+            # if DailySummary.objects.filter(date=date, business_profile=business_profile.id).exists():
+            #     messages.warning(request, f'A daily summary for {date} already exists.')
+            #     return redirect('day_closing_report')
+
+            # subject = "Day Closing"
+            # message = f"Total collection {day_closing.total_collection}\n Advance {day_closing.advance}\n Net collection {day_closing.net_collection}"
+            # to_email = shop.admin_email
+            # send_mail(subject, message, None, [to_email])
             # Assign the logged-in employee to the day closing object
-            #day_closing.employee = logged_in_employee
-            
+            #day_closing.employee = logged    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, blank=True, null=True)  
+    
             day_closing.save()  # Save the day closing object
+
             return redirect('day_closing_report')
     else:
-        form = DayClosingForm()
+        form = DayClosingAdminForm()
 
     # Pass the logged-in employee to the template as a list
     #employees = logged_in_employee
 
-    return render(request, 'dayclosing.html', {'current_date': current_date, 'form': form, 'employees':employees, 'active_modules':active_modules})
+    return render(request, 'dayclosing.html', {'current_date': current_date, 'form': form, 'employees':employees, 'active_modules':active_modules,'business_profile':business_profile.id})
 
 
 def fetch_data(request, employee_id):
@@ -1516,7 +2042,7 @@ def day_closing_admin(request):
     shop = shop_admin.shop
     
     # Get the business profile associated with the shop
-    business_profile = shop
+    business_profile = BusinessProfile.objects.get(license_number=shop.license_number)
     all_employees = Employee.objects.filter(business_profile=business_profile)
 
     # Get the list of employees who have completed day closing for the selected date
@@ -1524,45 +2050,72 @@ def day_closing_admin(request):
 
     # Exclude employees who have completed day closing for the selected date
     remaining_employees = all_employees.exclude(id__in=employees_with_day_closing.values_list('id', flat=True))
-
+    # last_day_closing1 = DayClosingAdmin.objects.filter(business_profile=business_profile.id).latest('created_on')
+    # last_day_closing_date = last_day_closing1.date
+    # next_date = last_day_closing_date + timedelta(days=1)
+    # last_day_closing = next_date.strftime('%Y-%m-%d')
     if request.method == 'POST':
         form = DayClosingAdminForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('day_closing_admin_report')
+            date = form.cleaned_data['date']  
+            if DailySummary.objects.filter(date=date, business_profile=business_profile.id).exists():
+                messages.warning(request, f'A daily summary for {date} already exists.')
+                return redirect('dayclosing_admin')
+            else:
+                form.save()
+                return redirect('day_closing_admin_report')
     else:
         form = DayClosingAdminForm(initial={'date': current_date.strftime('%Y-%m-%d')})  # Initialize with current date
     #print(current_date.strftime('%Y-%m-%d'))
-    return render(request, 'dayclosing_admin.html', {'current_date': current_date, 'remaining_employees':remaining_employees,'form': form})
+    return render(request, 'dayclosing_admin.html', {'current_date': current_date, 'remaining_employees':remaining_employees,'form': form,'business_profile':business_profile.id})
+
 def fetch_data_admin(request, selected_date, employee_id):
     # Convert the employee_id to an integer
     employee_id = int(employee_id)
     #print("emp id", employee_id)
+    shop_admin = get_object_or_404(ShopAdmin, user=request.user)
+    
+    # Get the shop associated with the shop admin
+    shop = shop_admin.shop
+    
+    # Get the business profile associated with the shop
+    business_profile = BusinessProfile.objects.get(license_number=shop.license_number)
+    all_employees = Employee.objects.filter(business_profile=business_profile)
+
+    # Get all employees associated with the business profile
+    # all_employees = Employee.objects.filter(business_profile=business_profile)
     # Fetch total services for the selected date and employee
+    # last_day_closing = DayClosingAdmin.objects.filter(business_profile=business_profile.id).latest('date')
+    try:
+        last_day_closing = DayClosingAdmin.objects.filter(business_profile=business_profile.id).latest('date')
+        last_day_closing_date = last_day_closing.date
+    except DayClosingAdmin.DoesNotExist:
+        last_day_closing_date = None
+
     total_services = (
-        SaleByAdminService.objects.filter(date=selected_date, employee_id=employee_id)
+        SaleByAdminService.objects.filter(date=selected_date, employee__id=employee_id)
         .aggregate(total_services=Sum('total_amount'))['total_services'] or 0
     )
     total_services += (
-        SalesByStaffItemService.objects.filter(date=selected_date, employee_id=employee_id)
+        SalesByStaffItemService.objects.filter(date=selected_date, employee__id=employee_id)
         .aggregate(total_services=Sum('servicetotal'))['total_services'] or 0
     )
     total_services += (
-        SaleByStaffService.objects.filter(date=selected_date, employee_id=employee_id)
+        SaleByStaffService.objects.filter(date=selected_date, employee__id=employee_id)
         .aggregate(total_services=Sum('total_amount'))['total_services'] or 0
     )
     #print(total_services)
     # Fetch total sales for the selected date and employee
     total_sales = (
-        SalesByAdminItem.objects.filter(date=selected_date, employee_id=employee_id)
+        SalesByAdminItem.objects.filter(date=selected_date, employee__id=employee_id)
         .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
     )
     total_sales += (
-        SalesByStaffItemService.objects.filter(date=selected_date, employee_id=employee_id)
+        SalesByStaffItemService.objects.filter(date=selected_date, employee__id=employee_id)
         .aggregate(total_sales=Sum('itemtotal'))['total_sales'] or 0
     )
     total_sales += (
-        SaleByStaffItem.objects.filter(date=selected_date, employee_id=employee_id)
+        SaleByStaffItem.objects.filter(date=selected_date, employee__id=employee_id)
         .aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
     )
 
@@ -1571,7 +2124,7 @@ def fetch_data_admin(request, selected_date, employee_id):
 
     # Fetch advance for the selected date
     advance = (
-        DayClosing.objects.filter(date=selected_date)
+        DayClosingAdmin.objects.filter(date=selected_date, employee__id=employee_id)
         .aggregate(total_advance=Sum('advance'))['total_advance'] or 0
     )
 
@@ -1580,13 +2133,15 @@ def fetch_data_admin(request, selected_date, employee_id):
         'total_services': total_services,
         'total_sales': total_sales,
         'total_collection': total_collection,
-        'advance': advance
+        'advance': advance, 
+        'last_day_closing':last_day_closing_date,
+        'emploee':employee_id
     }
 
     # Return the data as a JSON response
     return JsonResponse(data)
 
-def fetch_remaining_employees(request, selected_date):
+def fetch_remaining_employees(request, selected_date,employeeId):
     # Get the shop admin associated with the current user
     shop_admin = get_object_or_404(ShopAdmin, user=request.user)
     
@@ -1594,10 +2149,10 @@ def fetch_remaining_employees(request, selected_date):
     shop = shop_admin.shop
     
     # Get the business profile associated with the shop
-    business_profile = shop
+    business_profile = get_object_or_404(BusinessProfile,license_number=shop.license_number)
 
     # Get all employees associated with the business profile
-    all_employees = Employee.objects.filter(business_profile=business_profile)
+    all_employees = Employee.objects.filter(business_profile_id=business_profile.id)
 
     # Get the list of employees who have completed day closing for the selected date
     employees_with_day_closing = DayClosingAdmin.objects.filter(date=selected_date).values_list('employee', flat=True)
@@ -1605,7 +2160,7 @@ def fetch_remaining_employees(request, selected_date):
     # Filter employees who haven't done day closing on the selected date
     remaining_employees = all_employees.exclude(id__in=employees_with_day_closing)
     
-    # #print('remaing:', remaining_employees)
+    # print('remaing:', remaining_employees)
     # Serialize remaining employees data
     
     if not remaining_employees:
@@ -1614,13 +2169,14 @@ def fetch_remaining_employees(request, selected_date):
 
     # Serialize remaining employees data
     serialized_data = [{'id': emp.id, 'first_name': emp.first_name, 'second_name': emp.second_name} for emp in remaining_employees]
+    # print('serii',serialized_data)
 
     # Return the serialized data as a JSON response
     return JsonResponse({'remaining_employees': serialized_data})
 
 
 def edit_day_closing(request, pk):
-    day_closing = get_object_or_404(DayClosing, pk=pk)
+    day_closing = get_object_or_404(DayClosingAdmin, pk=pk)
     employees = Employee.objects.all()
     status_choices = STATUS_CHOICES 
     if request.method == 'POST':
@@ -1639,7 +2195,7 @@ def day_closing_report(request):
     # logged_in_employee_id = localStorage.getItem('employee_id')  # If using local storage in JavaScript
 
     # Filter the DayClosing queryset to get only the day closings associated with the logged-in employee
-    day_closings_list = DayClosing.objects.filter(employee__id=logged_in_employee_id).order_by('-created_on')
+    day_closings_list = DayClosingAdmin.objects.filter(employee__id=logged_in_employee_id).order_by('-created_on')
     employees = Employee.objects.get(id=logged_in_employee_id)
     # #print(employees.id)
       
@@ -1675,24 +2231,34 @@ def day_closing_admin_report(request):
     all_employees = Employee.objects.filter(business_profile=business_profile)
     
     # Get all day closings from DayClosing and DayClosingAdmin
-    day_closings_list = DayClosing.objects.filter(employee__in=all_employees)
-    day_closings_admin_list = DayClosingAdmin.objects.filter(employee__in=all_employees)
+
+    # day_closings_list = DayClosing.objects.filter(employee__in=all_employees).order_by('-date')
+    day_closings_admin_list = DayClosingAdmin.objects.filter(employee__in=all_employees).order_by('-date')
 
     # Combine the querysets
-    day_closings = list(chain(day_closings_list, day_closings_admin_list))
+    # day_closings = list(chain(day_closings_list, day_closings_admin_list))
+    day_closings = list(day_closings_admin_list)
+
 
     return render(request, 'day_closing_admin_report.html', {'day_closings': day_closings})
 
 
 
+# def approve_day_closing(request, dayclosing_id):
+#     # dayclosing = DayClosingAdmin.objects.get(pk=dayclosing_id)
+#     dayclosingadmin = DayClosingAdmin.objects.get(pk=dayclosing_id)
+#     # dayclosing.status = 'approved'
+#     dayclosingadmin.status = 'approved'
+#     # dayclosing.save()
+#     dayclosingadmin.save()
+#     return redirect('day_closing_report')
+
 def approve_day_closing(request, dayclosing_id):
-    dayclosing = DayClosing.objects.get(pk=dayclosing_id)
     dayclosingadmin = DayClosingAdmin.objects.get(pk=dayclosing_id)
-    dayclosing.status = 'approved'
     dayclosingadmin.status = 'approved'
-    dayclosing.save()
     dayclosingadmin.save()
-    return redirect('day_closing_report')
+    return redirect('day_closing_admin_report')
+
 
 def error_view(request):
     # Your condition to choose between base.html and emp_base.html
@@ -1704,6 +2270,8 @@ def error_view(request):
 def handler404(request, exception):
     # Call error_view with 404 condition
     return error_view(request)
+
+
 def sales_by_staff_item(request):
     employee_id = request.session.get('employee_id')
     
@@ -1728,10 +2296,45 @@ def sales_by_staff_item(request):
     if request.method == 'POST':
         sales_form = SaleByStaffItemForm(request.POST)
         if sales_form.is_valid():
-            sales_form = sales_form.save(commit=False)
+            date = request.POST.get('date')
+            emp_id = int(request.POST.get('employee'))
+            product_id =request.POST.get('item')
+            price =request.POST.get('price')
+            quantity =request.POST.get('quantity')
+            product_list =request.POST.getlist('item')
+            quantity_list = request.POST.getlist('quantity')
+            price_list = request.POST.getlist('price')
+
+            items = []
+            for product, quantity, price in zip(product_list, quantity_list, price_list):
+                product_obj = get_object_or_404(Product, id=int(product))
+                product_name = product_obj.name
+                items.append({
+                    'product':product_name,
+                    'quantity': int(quantity),
+                    'price': float(price)
+                })
+            total_amount = float(request.POST.get('total_amount'))
+            discount = int(request.POST.get('discount'))
+            payment_method = request.POST.get('payment_method')
+            employee = get_object_or_404(Employee ,id=emp_id)
+
+            SaleByStaffItem.objects.create(
+                date=date,
+                employee=employee,
+                item = get_object_or_404(Product ,id=product_id),
+                note=items,
+                total_amount=total_amount,
+                discount=discount,
+                payment_method=payment_method,
+                price=price,
+                quantity=quantity
+            )
+
+            # sales_form = sales_form.save(commit=False)
             # sales_form.itemtotal = request.POST['itemTotal']
             # sales_form.servicetotal = request.POST['serviceTotal']
-            sales_form.save()
+            # sales_form.save()
             return redirect('sales_report')
     else:
         sales_form = SaleByStaffItemForm()
@@ -1764,10 +2367,70 @@ def sales_by_staff_item_service(request):
     if request.method == 'POST':
         sales_form = SalesByStaffItemServiceForm(request.POST)
         if sales_form.is_valid():
-            sales_form = sales_form.save(commit=False)
+            # sales_form = sales_form.save(commit=False)
             # sales_form.itemtotal = request.POST['itemTotal']
             # sales_form.servicetotal = request.POST['serviceTotal']
-            sales_form.save()
+            date = request.POST.get('date')
+            emp_id = int(request.POST.get('employee'))
+            product_id =request.POST.get('product')
+            service_id =request.POST.get('service')
+            pquantity =request.POST.get('pquantity')
+            squantity =request.POST.get('squantity')
+            sprice =request.POST.get('sprice')
+            pprice =request.POST.get('pprice')
+
+            product_list = request.POST.getlist('product')
+            service_list = request.POST.getlist('service')
+            pquantity_list =request.POST.getlist('pquantity')
+            squantity_list =request.POST.getlist('squantity')
+            pprice_list =request.POST.getlist('pprice')
+            sprice_list =request.POST.getlist('sprice')
+            itemtotal =float(request.POST.get('itemtotal'))
+            servicetotal =float(request.POST.get('servicetotal'))
+            total_amount =float(request.POST.get('total_amount'))
+            sub_total =float(request.POST.get('sub_total'))
+            discount = int(request.POST.get('discount'))
+            payment_method = request.POST.get('payment_method')
+            items = []
+            for product, quantity, price in zip(product_list, pquantity_list, pprice_list):
+                product_obj = get_object_or_404(Product, id=int(product))
+                product_name = product_obj.name
+                items.append({
+                    'product':product_name,
+                    'quantity': int(quantity),
+                    'price': float(price)
+                })
+
+            for service, quantity, price in zip(service_list, squantity_list, sprice_list):
+                service_obj = get_object_or_404(Service, id=int(service))
+                service_name = service_obj.name
+                items.append({
+                    'service':service_name,
+                    'quantity': int(quantity),
+                    'price': float(price)
+                })
+            employee_instance = get_object_or_404(Employee ,id = emp_id)
+            product_instance = get_object_or_404(Product ,id = product_id)
+            service_instance = get_object_or_404(Service ,id = service_id)
+            
+            SalesByStaffItemService.objects.create(
+                date = date,
+                employee = employee_instance,
+                product = product_instance,
+                pquantity = pquantity,
+                pprice = pprice,
+                service = service_instance,
+                squantity = squantity,
+                sprice = sprice,
+                sub_total = sub_total,
+                discount = discount,
+                total_amount = total_amount,
+                payment_method = payment_method,
+                itemtotal = itemtotal,
+                servicetotal = servicetotal,
+                note = items
+            )
+
             return redirect('sales_report')
     else:
         sales_form = SalesByStaffItemServiceForm()
@@ -1780,9 +2443,9 @@ def sales_report(request):
     logged_in_employee_id = request.session.get('employee_id') 
 
     # Query the sales data filtered by the logged-in employee's ID
-    sales = SalesByStaffItemService.objects.filter(employee__id=logged_in_employee_id)
-    sales_staff_service = SaleByStaffService.objects.filter(employee__id=logged_in_employee_id)
-    sales_staff_item = SaleByStaffItem.objects.filter(employee__id=logged_in_employee_id)
+    sales = SalesByStaffItemService.objects.filter(employee__id=logged_in_employee_id).order_by('-date')
+    sales_staff_service = SaleByStaffService.objects.filter(employee__id=logged_in_employee_id).order_by('-date')
+    sales_staff_item = SaleByStaffItem.objects.filter(employee__id=logged_in_employee_id).order_by('-date')
     employees = Employee.objects.get(id=logged_in_employee_id)
     role = Role.objects.filter(name=employees.job_role).first()
     # print("Role:", role)
@@ -1803,11 +2466,11 @@ def sales_report_admin(request):
         employees = Employee.objects.filter(business_profile=business)
 
         # Get all types of sales data
-        sales_by_staff_item = SaleByStaffItem.objects.filter(employee__in=employees).select_related('employee', 'item')
-        sales_by_staff_item_service = SalesByStaffItemService.objects.filter(employee__in=employees).select_related('employee')
-        sales_by_staff_service = SaleByStaffService.objects.filter(employee__in=employees).select_related('employee', 'service')
-        sales_by_admin_item = SalesByAdminItem.objects.filter(employee__in=employees).select_related('employee', 'item')
-        sales_by_admin_service = SaleByAdminService.objects.filter(employee__in=employees).select_related('employee', 'service')
+        sales_by_staff_item = SaleByStaffItem.objects.filter(employee__in=employees).select_related('employee', 'item').order_by('-date')
+        sales_by_staff_item_service = SalesByStaffItemService.objects.filter(employee__in=employees).select_related('employee').order_by('-date')
+        sales_by_staff_service = SaleByStaffService.objects.filter(employee__in=employees).select_related('employee', 'service').order_by('-date')
+        sales_by_admin_item = SalesByAdminItem.objects.filter(employee__in=employees).select_related('employee', 'item').order_by('-date')
+        sales_by_admin_service = SaleByAdminService.objects.filter(employee__in=employees).select_related('employee', 'service').order_by('-date')
 
         # Combine sales data
         service_sales = [(sale, 'Staff') for sale in sales_by_staff_service] + [(sale, 'Admin') for sale in sales_by_admin_service]
@@ -1930,13 +2593,30 @@ def create_receipt_transaction(request):
         return redirect('create_business_profile')  # Redirect to the view where you create a business profile
     
     if request.method == 'POST':
-        form = ReceiptTransactionForm(request.POST)
+        form = ReceiptTransactionForm(request.POST,business_profile=business_profile.id)
         if form.is_valid():
+            date = form.cleaned_data['date']
+            # day_closing_exists = DayClosingAdmin.objects.filter(
+            #     date=date,
+            #     business_profile=business_profile.id,
+            # ).exists()
+            
+            daily_summary_exists = DailySummary.objects.filter(
+                date=date,
+                business_profile=business_profile.id,
+            ).exists()
+            # if day_closing_exists:
+            #     messages.info(request, f'Day closing for {date} already submitted.')
+            #     return redirect('create_receipt_transaction')
+            if daily_summary_exists:
+                messages.info(request, f'Daily summary for {date} already submitted.')
+                return redirect('create_receipt_transaction')
             form.save()
             return redirect('receipt_transaction_list')  
     else:
-        form = ReceiptTransactionForm()
-    return render(request, 'create_receipt_transaction.html', {'form': form})
+        form = ReceiptTransactionForm(business_profile = business_profile.id)
+    return render(request, 'create_receipt_transaction.html', {'form': form,'business_profile':business_profile.id  })
+
 
 def create_receipt_type(request):
     try:
@@ -1953,7 +2633,9 @@ def create_receipt_type(request):
     if request.method == "POST":
         form = ReceiptTypeForm(request.POST)
         if form.is_valid():
-            form.save()
+            receipt_type= form.save(commit=False)
+            receipt_type.business_profile = business_profile.id
+            receipt_type.save()
             return redirect('create_receipt_transaction')  
     else:
         form = ReceiptTypeForm()
@@ -2002,16 +2684,94 @@ def notification_view(request):
 
         if business_profile.vat_submission_date_reminder_due():
             earliest_due_date = business_profile.vat_submission_date_1
-            earliest_due_reminder = 'VAT submission date'
+            # earliest_due_reminder = 'VAT submission date'
+            msg = f"This is a reminder that vat submission date is set to be expire on {earliest_due_date}"
+            send_message(request,msg)
+
+            vat_due_date = business_profile.vat_submission_date_1
+            days_until_vat = (vat_due_date - timezone.now().date()).days
+            notifications.append({
+                'reminder_type': 'VAT Submission Date',
+                'expiration_date': vat_due_date,
+                'reminder_days': days_until_vat,
+                'employee_visa_reminder_days': business_profile.employee_visa_expiration_reminder_days,
+            })
+
+
         if business_profile.license_expiration_reminder_due():
             if earliest_due_date is None or earliest_due_date > business_profile.license_expiration:
                 earliest_due_date = business_profile.license_expiration
-                earliest_due_reminder = 'License expiration'
-        if any(employee.id_expiration_due() for employee in employees):
-            earliest_id_due_date = min([employee.id_expiration_date for employee in employees if employee.id_expiration_due()])
-            if earliest_due_date is None or earliest_due_date > earliest_id_due_date:
-                earliest_due_date = earliest_id_due_date
-                earliest_due_reminder = 'Employee ID expiration'
+                # earliest_due_reminder = 'License expiration'
+                msg = f"This is a reminder that license submission date is set to be expire on {earliest_due_date}"
+                send_message(request,msg)
+                license_due_date = business_profile.license_expiration
+                days_until_license = (license_due_date - timezone.now().date()).days
+                notifications.append({
+                    'reminder_type': 'License Expiration',
+                    'expiration_date': license_due_date,
+                    'reminder_days': days_until_license,
+                    'employee_visa_reminder_days': business_profile.employee_visa_expiration_reminder_days,
+                })
+                
+
+        for employee in employees:
+            if employee.id_expiration_due():
+                id_expiration_date = employee.id_expiration_date                
+                days_until_license = (id_expiration_date - timezone.now().date()).days
+                notifications.append({
+                    'reminder_type': 'Employee ID expiration',
+                    'expiration_date': id_expiration_date,
+                    'reminder_days': days_until_license,
+                    'employee_visa_reminder_days': business_profile.employee_visa_expiration_reminder_days,
+                    'reminder_name':'Reminder'
+                })
+                message_body = f"Employee name {employee.first_name} {employee.second_name}, with ID {employee.employee_id} is expiring on {employee.id_expiration_date}. Please renew it as soon as possible."
+                send_message(request,msg=message_body)
+
+
+        # for employee in employees:
+        #     if employee.id_expiration_due():
+        #         id_expiration_date = employee.id_expiration_date                
+        #         if earliest_due_date is None or id_expiration_date < earliest_due_date:
+        #             earliest_due_date = id_expiration_date
+        #             earliest_due_reminder = 'EmployeeID expiration'
+
+        #         # Send SMS notification to the Admin
+        #         message_body = f"Employee name {employee.first_name} {employee.second_name}, with ID {employee.employee_id} is expiring on {employee.id_expiration_date}. Please renew it as soon as possible."
+        #         send_message(request,msg=message_body)
+
+   
+        for employee in employees:
+            if employee.passport_expiration_due():
+                passport_expiration_date = employee.passport_expiration_date                
+                days_until_license = (passport_expiration_date - timezone.now().date()).days
+                notifications.append({
+                    'reminder_type': 'Employee Passport Expiration',
+                    'expiration_date': id_expiration_date,
+                    'reminder_days': days_until_license,
+                    'employee_visa_reminder_days': business_profile.employee_visa_expiration_reminder_days,
+                    'reminder_name':'Reminder'
+
+                })
+                message_body = f"Employee name {employee.first_name} {employee.second_name}, passport with ID {employee.passport_no} is expiring on {employee.passport_expiration_date}. Please renew it as soon as possible."
+                send_message(request,msg=message_body)
+
+
+
+        # if business_profile.vat_submission_date_reminder_due():
+        #     earliest_due_date = business_profile.vat_submission_date_1
+        #     earliest_due_reminder = 'VAT submission date'
+        # if business_profile.license_expiration_reminder_due():
+        #     if earliest_due_date is None or earliest_due_date > business_profile.license_expiration:
+        #         earliest_due_date = business_profile.license_expiration
+        #         earliest_due_reminder = 'License expiration'
+        # if any(employee.id_expiration_due() for employee in employees):
+        #     earliest_id_due_date = min([employee.id_expiration_date for employee in employees if employee.id_expiration_due()])
+        #     if earliest_due_date is None or earliest_due_date > earliest_id_due_date:
+        #         earliest_due_date = earliest_id_due_date
+        #         earliest_due_reminder = 'Employee ID expiration'
+
+
         # if any(employee.passport_expiration_due() for employee in employees):
         #     earliest_passport_due_date = min([employee.passport_expiration_date for employee in employees if employee.passport_expiration_due()])
         #     if earliest_due_date is None or earliest_due_date > earliest_passport_due_date:
@@ -2019,14 +2779,14 @@ def notification_view(request):
         #         earliest_due_reminder = 'Employee passport expiration'
 
         # If there's a due reminder, add it to the notifications
-        if earliest_due_reminder:
-            days_until_reminder = (earliest_due_date - timezone.now().date()).days
-            notifications.append({
-                'reminder_type': earliest_due_reminder,
-                'expiration_date': earliest_due_date,
-                'reminder_days': days_until_reminder,
-                'employee_visa_reminder_days': business_profile.employee_visa_expiration_reminder_days
-            })
+        # if earliest_due_reminder:
+        #     days_until_reminder = (earliest_due_date - timezone.now().date()).days
+        #     notifications.append({
+        #         'reminder_type': earliest_due_reminder,
+        #         'expiration_date': earliest_due_date,
+        #         'reminder_days': days_until_reminder,
+        #         'employee_visa_reminder_days': business_profile.employee_visa_expiration_reminder_days
+        #     })
 
     # Render the template with the notifications
     return render(request, 'notification_list.html', {'notifications': notifications})
@@ -2096,13 +2856,13 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 total_services_all = 0
                 total_sales_all = 0
                 # Fetch day closings from both models using a Union query
-                day_closings1 = DayClosing.objects.filter(
-                    Q(date__range=[start_of_month, end_of_month]) & Q(employee__in=employees)
-                ).annotate(
-                    total_services_annotated=Cast('total_services', output_field=DecimalField()),
-                    total_sales_annotated=Cast('total_sales', output_field=DecimalField()),
-                    total_advance_annotated=Cast('advance', output_field=DecimalField())  # Assuming advance is a DecimalField
-                ).values('date', 'employee', 'total_services_annotated', 'total_sales_annotated', 'total_advance_annotated')
+                # day_closings1 = DayClosing.objects.filter(
+                #     Q(date__range=[start_of_month, end_of_month]) & Q(employee__in=employees)
+                # ).annotate(
+                #     total_services_annotated=Cast('total_services', output_field=DecimalField()),
+                #     total_sales_annotated=Cast('total_sales', output_field=DecimalField()),
+                #     total_advance_annotated=Cast('advance', output_field=DecimalField())  # Assuming advance is a DecimalField
+                # ).values('date', 'employee', 'total_services_annotated', 'total_sales_annotated', 'total_advance_annotated')
 
                 day_closings_admin = DayClosingAdmin.objects.filter(
                     Q(date__range=[start_of_month, end_of_month]) & Q(employee__in=employees)
@@ -2113,7 +2873,10 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 ).values('date', 'employee', 'total_services_annotated', 'total_sales_annotated', 'total_advance_annotated')
                 # print(day_closings_admin)
                 # Combine the two querysets using Union
-                combined_day_closings = day_closings1.union(day_closings_admin)
+
+                # combined_day_closings = day_closings1.union(day_closings_admin)
+                combined_day_closings = day_closings_admin
+
 
                 for closing in combined_day_closings:
                     # Extract relevant information from the closing
@@ -2224,3 +2987,397 @@ class HomeView(LoginRequiredMixin, TemplateView):
             # Redirect to login page if user is not logged in
             return redirect(reverse('login'))  # Adjust 'login' to your login URL name
         return super().dispatch(request, *args, **kwargs)
+
+
+def send_message(request,msg):
+    # Define the base URL and parameters
+    base_url = "http://mshastra.com/sendurl.aspx"
+    # msgtext = "This is a reminder that VAT is expired Nasbeer Django May 15 Live testing"
+    msgtext = msg
+    user = "MITESOL"
+    pwd = "41y4j1eb"
+    senderid = "MITE FZC"
+    countrycode = "971"
+    mobileno = "553023232"
+    # Construct the URL with parameters
+    sms_url = f"{base_url}?msgtext={msgtext}&user={user}&pwd={pwd}&senderid={senderid}&countrycode={countrycode}&mobileno={mobileno}"
+    # Send the GET request
+    response = requests.get(sms_url)
+    # Check if the request was successful
+    if response.status_code == 200:
+        return HttpResponse("SMS sent successfully", response)
+    else:
+        return HttpResponse("Failed to send SMS")
+
+
+# def send_message(request):
+#     # Define the base URL and parameters
+#     base_url = "http://mshastra.com/sendurl.aspx"
+#     msgtext = "This is a reminder that VAT is expired Nasbeer Django May 15 Live testing"
+#     user = "MITESOL"
+#     pwd = "41y4j1eb"
+#     senderid = "MITE FZC"
+#     countrycode = "971"
+#     mobileno = "553023232"
+
+#     # Construct the URL with parameters
+#     sms_url = f"{base_url}?msgtext={msgtext}&user={user}&pwd={pwd}&senderid={senderid}&countrycode={countrycode}&mobileno={mobileno}"
+
+#     # Send the GET request
+#     response = requests.get(sms_url)
+
+#     # Check if the request was successful
+#     if response.status_code == 200:
+#         return HttpResponse("SMS sent successfully", response)
+#     else:
+#         return HttpResponse("Failed to send SMS")
+
+
+# def send_message(request):
+#     # Fetch summary data for the current date
+#     date = datetime.now().date()  # Assuming the current date is used
+#     summary_data = fetch_summary_data(request, date)
+
+#     # Extract summary data
+#     opening_balance = summary_data['opening_balance']
+#     net_collection = summary_data['net_collection']
+#     total_received_amount = summary_data['total_received_amount']
+#     total_expense_amount = summary_data['total_expense_amount']
+#     total_bank_deposit = summary_data['total_bank_deposit']
+#     balance = summary_data['balance']
+
+#     # Construct the message text
+#     msgtext = f"Collections: {net_collection}\nPayments: {total_expense_amount}\nBanking: {total_bank_deposit}\nClosing: {balance}"
+
+#     # Define the base URL and parameters for the SMS gateway
+#     base_url = "http://mshastra.com/sendurl.aspx"
+#     user = settings.MITESOL
+#     pwd = settings.MITEPASS
+#     senderid = settings.MITESENDER
+#     countrycode = "971"
+#     mobileno = "553023232"
+
+#     # Construct the URL with parameters
+#     sms_url = f"{base_url}?msgtext={msgtext}&user={user}&pwd={pwd}&senderid={senderid}&countrycode={countrycode}&mobileno={mobileno}"
+#     http = urllib3.PoolManager()
+#     # Send the GET request
+#     response = requests.get(sms_url)
+#     req = http.request('GET', sms_url)
+
+# # Print the response
+#     print(req.data)
+    
+#     # Check if the request was successful
+#     if response.status_code == 200:
+#         return HttpResponse("SMS sent successfully", response)
+#     else:
+#         return HttpResponse("Failed to send SMS")
+    
+
+# def generate_invoice_pdf(request, id,type):
+#     invoice_instance =None
+#     if type == 'salebyadminservice':
+#         invoice_instance = get_object_or_404(SaleByAdminService, id=id)
+#         invoice_id = f"INV_SAS_{invoice_instance.pk}"
+#         data_source = "Admin"
+#     elif type == 'salebyadminproduct':
+#         invoice_instance = get_object_or_404(SalesByAdminItem, id=id)
+#         invoice_id = f"INV_SAP_{invoice_instance.pk}"
+#         data_source = "Admin"
+#     elif type == 'salesbystaffitemservice':
+#         invoice_instance = get_object_or_404(SalesByStaffItemService, id=id)
+#         invoice_id = f"INV_SSPS_{invoice_instance.pk}"
+#         data_source = "Staff"
+#     elif type == 'salebystaffitem':
+#         invoice_instance = get_object_or_404(SaleByStaffItem, id=id)
+#         invoice_id = f"INV_SSP_{invoice_instance.pk}"
+#         data_source = "Staff"
+#     elif type == 'salebystaffservice':
+#         invoice_instance = get_object_or_404(SaleByStaffService, id=id)
+#         invoice_id = f"INV_SSS_{invoice_instance.pk}"
+#         data_source = "Staff"
+#     else:
+#         pass
+#     if invoice_instance is None:
+#         return HttpResponse("Invoice not found")
+
+#     business_profile = get_object_or_404(BusinessProfile ,id=invoice_instance.employee.business_profile_id) 
+#     vat = business_profile.vat_percentage
+#     if invoice_instance.note:
+#         note_str = invoice_instance.note
+#         note_list = eval(note_str)
+#         invoice_details = []
+
+#         for item in note_list:
+#             note = ""
+#             if 'service' in item: 
+#                 note = item['service']
+#             elif 'product' in item: 
+#                 note = item['product']
+#             elif 'service' in item and 'product' in item:
+#                 note = item['product']
+#                 note = item['service']
+            
+#             quantity = item['quantity']
+#             price = item['price']
+
+#             invoice_details.append({
+#                 'note': note,
+#                 'quantity': quantity,
+#                 'price': price,
+#             })
+#     else:
+#         invoice_details = []
+
+#     invoice = {
+#         'id': invoice_id,
+#         'date': invoice_instance.date,
+#         'employee': invoice_instance.employee,
+#         'payment_method': invoice_instance.payment_method,
+#         'total_amount': invoice_instance.total_amount,
+#         'details': invoice_details,
+#         'discount':invoice_instance.discount,
+#         'data_source': data_source,
+#         'VAT' :vat
+#     }
+#     template_path = 'preview_invoice.html'
+#     template = get_template(template_path)
+#     html = template.render(invoice)
+#     # return render(request,'preview_invoice.html')
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'attachment; filename="invoice_{id}.pdf"'
+
+#     pisa_status = pisa.CreatePDF(html, dest=response)
+#     if pisa_status.err:
+#         return HttpResponse('We had some errors <pre>' + html + '</pre>')
+#     return response
+
+
+def generate_invoice_pdf(request, id,type):
+    invoice_instance =None
+    sub_total = 0
+    if type == 'salebyadminservice' or type=='salebyadminserviceAdmin':
+        invoice_instance = get_object_or_404(SaleByAdminService, id=id)
+        invoice_id = f"INV_SAS_{invoice_instance.pk}"
+        data_source = "Admin"
+        sub_total = (invoice_instance.total_amount) + (invoice_instance.discount)
+    elif type == 'salebyadminproduct' or type == 'salebyadminproductAdmin':
+        invoice_instance = get_object_or_404(SalesByAdminItem, id=id)
+        invoice_id = f"INV_SAP_{invoice_instance.pk}"
+        data_source = "Admin"
+        sub_total = (invoice_instance.total_amount) + (invoice_instance.discount)
+    elif type == 'salesbystaffitemservice':
+        invoice_instance = get_object_or_404(SalesByStaffItemService, id=id)
+        invoice_id = f"INV_SSPS_{invoice_instance.pk}"
+        data_source = "Staff"
+        sub_total = invoice_instance.sub_total
+    elif type == 'salebystaffitem' or type == 'salebyadminproductStaff':
+        invoice_instance = get_object_or_404(SaleByStaffItem, id=id)
+        invoice_id = f"INV_SSP_{invoice_instance.pk}"
+        data_source = "Staff"
+        sub_total = (invoice_instance.total_amount) + (invoice_instance.discount)
+
+    elif type == 'salebystaffservice' or type == 'salebyadminserviceStaff':
+        invoice_instance = get_object_or_404(SaleByStaffService, id=id)
+        invoice_id = f"INV_SSS_{invoice_instance.pk}"
+        data_source = "Staff"
+        sub_total = (invoice_instance.total_amount) + (invoice_instance.discount)
+
+    else:
+        invoice_instance = None
+
+    if invoice_instance is None:
+        messages.error(request, 'Unable to download invoice.')
+        previous_page = request.META.get('HTTP_REFERER', '/')
+        return redirect(previous_page)
+
+    business_profile = get_object_or_404(BusinessProfile ,id=invoice_instance.employee.business_profile_id) 
+    vat = business_profile.vat_percentage
+    if invoice_instance.note:
+        note_str = invoice_instance.note
+        note_list = eval(note_str)
+        invoice_details = []
+
+        for item in note_list:
+            note = ""
+            if 'service' in item: 
+                note = item['service']
+            elif 'product' in item: 
+                note = item['product']
+            elif 'service' in item and 'product' in item:
+                note = item['product']
+                note = item['service']
+            else:
+                pass
+            quantity = item['quantity']
+            price = item['price']
+
+            invoice_details.append({
+                'note': note,
+                'quantity': quantity,
+                'price': price,
+                'total':price*quantity
+            })
+    else:
+        invoice_details = []
+
+    invoice = {
+        'id': invoice_id,
+        'date': invoice_instance.date,
+        'employee': invoice_instance.employee,
+        'payment_method': invoice_instance.payment_method,
+        'total_amount': invoice_instance.total_amount,
+        'details': invoice_details,
+        'discount':invoice_instance.discount,
+        'data_source': data_source,
+        'VAT' :vat,
+        'sub_total':sub_total
+    }
+    template_path = 'preview_invoice.html'
+    template = get_template(template_path)
+    html = template.render(invoice)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice_{id}.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+
+
+class ReceiptTypeUpdateView(UpdateView):
+    model = ReceiptType
+    form_class = ReceiptTypeForm
+    template_name = 'update_receipt_type.html'
+    success_url = reverse_lazy('receipt_type_list')
+
+class BankUpdateView(UpdateView):
+    model = Bank
+    form_class = BankForm
+    template_name = 'update_bank.html'
+    success_url = reverse_lazy('bank_list')
+
+
+
+
+# def dayclosing_exists_for_transactions(request, date, business_profile_id):
+#     # Get all employee IDs within the specified business profile
+#     employee_ids = Employee.objects.filter(business_profile_id=business_profile_id).values_list('id', flat=True)
+
+#     # Check if there are any transactions for the given date and business profile
+#     business_profile_transactions = (
+#         ReceiptTransaction.objects.filter(date=date, business_profile=business_profile_id).exists() or
+#         PaymentTransaction.objects.filter(date=date, business_profile=business_profile_id).exists() or
+#         BankDeposit.objects.filter(date=date, business_profile=business_profile_id).exists()
+#     )
+
+#     # Check if there is a day closing record for the given date and business profile for all employees
+#     business_profile_day_closing = DayClosingAdmin.objects.filter(
+#         date=date,
+#         employee__in=employee_ids,
+#         status ="approved"
+#     ).exists()
+
+#     if business_profile_transactions and not business_profile_day_closing:
+#         return JsonResponse({"msg":"DayClosing must be added before adding a DailySummary"})
+#     return JsonResponse({"msg":"Day closing check completed."})
+
+
+
+def last_day_closing_day(request, employee_id):
+    try:
+        employee = Employee.objects.get(id=employee_id)
+        business_profile_id = employee.business_profile_id
+        last_day_closing = DayClosingAdmin.objects.filter(
+            employee__business_profile_id=business_profile_id
+        ).latest('date')
+        return JsonResponse({"date": last_day_closing.date})
+    except Employee.DoesNotExist:
+        return JsonResponse({"error": "Employee not found"})
+    except DayClosingAdmin.DoesNotExist:
+        return JsonResponse({"error": "No day closing found for the employee's business profile"})
+
+def last_daliy_summary(request, employee_id):
+    try:
+        employee = Employee.objects.get(id=employee_id)
+        business_profile_id = employee.business_profile_id
+        last_day_closing = DailySummary.objects.filter(
+            business_profile_id=business_profile_id
+        ).latest('date')
+        return JsonResponse({"date": last_day_closing.date})
+    except Employee.DoesNotExist:
+        return JsonResponse({"error": "Employee not found"})
+    except DayClosingAdmin.DoesNotExist:
+        return JsonResponse({"error": "No day Daily summary found for the employee's business profile"})
+    
+
+    
+
+def dayclosing_exists_for_transactions(request, date, business_profile_id):
+    # Get all employee IDs within the specified business profile
+    employee_ids = Employee.objects.filter(business_profile_id=business_profile_id).values_list('id', flat=True)
+    a = SalesByStaffItemService.objects.filter(date=date,employee__id__in=employee_ids)
+    b = SalesByAdminItem.objects.filter(date=date,employee__id__in=employee_ids)
+    c = SaleByAdminService.objects.filter(date =date,employee__id__in=employee_ids)
+    d = SaleByStaffService.objects.filter(date =date,employee__id__in=employee_ids)
+    e = SaleByStaffItem.objects.filter(date =date,employee__id__in=employee_ids)
+
+
+    # Assuming a, b, and c are QuerySets
+    employee_ids_a = set(a.values_list('employee__id', flat=True))
+    employee_ids_b = set(b.values_list('employee__id', flat=True))
+    employee_ids_c = set(c.values_list('employee__id', flat=True))
+    employee_ids_d = set(d.values_list('employee__id', flat=True))
+    employee_ids_e = set(e.values_list('employee__id', flat=True))
+
+
+    all_employee_ids = employee_ids_a.union(employee_ids_b).union(employee_ids_c).union(employee_ids_d).union(employee_ids_e)
+
+    # Convert the set to a list if needed
+    all_employee_ids_list = list(all_employee_ids)
+
+    # day_closings = DayClosingAdmin.objects.filter(date=date,employee__id__in = all_employee_ids_list)
+    day_closings_employee_ids = set(DayClosingAdmin.objects.filter(date=date, employee__id__in=all_employee_ids).values_list('employee__id', flat=True))
+
+    # Determine if all employees have completed transactions
+    all_transactions_completed = all_employee_ids.issubset(all_employee_ids_list) and all_employee_ids.issubset(day_closings_employee_ids)
+
+    return JsonResponse({"msg":all_transactions_completed})
+
+# def dayclosing_exists_for_transactions(request, date, business_profile_id):
+#     staff_service_transactions = SaleByStaffService.objects.filter(date=date, employee__business_profile_id=business_profile_id).values_list('employee_id', flat=True)
+#     staff_item_transactions = SaleByStaffItem.objects.filter(date=date,employee__business_profile_id = business_profile_id).values_list('employee_id', flat=True)
+#     admin_service_transactions = SaleByAdminService.objects.filter(date=date,employee__business_profile_id = business_profile_id).values_list('employee_id', flat=True)
+#     admin_item_transactions = SalesByAdminItem.objects.filter(date=date,employee__business_profile_id = business_profile_id).values_list('employee_id', flat=True)
+#     staff_item_service_transactions = SalesByStaffItemService.objects.filter(date=date,employee__business_profile_id = business_profile_id).values_list('employee_id', flat=True)
+
+#     # Combine and deduplicate employee IDs
+#     all_employee_ids = set(staff_service_transactions) | set(staff_item_transactions) | set(admin_service_transactions) | set(admin_item_transactions) | set(staff_item_service_transactions)
+
+#     # Retrieve employee details
+#     employees = Employee.objects.filter(id__in=all_employee_ids, business_profile_id=business_profile_id)
+#     response_data = []
+
+#     if DailySummary.objects.filter(date=date,business_profile = business_profile_id).exists():
+#         data = "You are already complete the  daily summary"
+#         return JsonResponse({"message":data},status=status.HTTP_200_OK,safe=False)
+    
+#     elif all_employee_ids == {}:
+#         data = "No sales and services is available"
+#         return JsonResponse({"message":data},status=status.HTTP_200_OK,safe=False)
+#     else:
+#         for employee in employees:
+#             employee_id = employee.id
+#             day_closing_completed = DayClosingAdmin.objects.filter(employee_id=employee_id, date=date ,business_profile = business_profile_id).exists()
+
+#             if not day_closing_completed:
+#                 serialized_data = {
+#                     'id': employee.id,
+#                     'first_name': employee.first_name,
+#                     'second_name': employee.second_name
+#                 }
+#                 response_data.append(serialized_data)
+#     if response_data == []:
+#         data = "employee has completed the day closing"
+#         return JsonResponse({"message":data},status=status.HTTP_200_OK,safe=False)        
+#     return JsonResponse(response_data, status=status.HTTP_200_OK,safe=False)

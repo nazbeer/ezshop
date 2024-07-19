@@ -166,7 +166,10 @@
         <div class="form-group">
             <label for="username">Username:</label>
            
-            {{ form.username }}
+            <input type="tel" id="id_username" name="username" placeholder="05XXXXXXXX" class="form-control" pattern="^05\d{8}$" onkeypress="if(this.value.length==10) return false;" required>
+            <!-- <input type="tel" id="id_username" name="username" placeholder="05XXXXXXXX"  class="form-control" pattern="/^-?\d+\.?\d*$/" onkeypress="if(this.value.length==10) return false;" required> -->
+
+            <!-- <input type="tel" id="id_username" name="username" placeholder="05XXXXXXXX"  class="form-control" pattern="/^-?\d+\.?\d*$/" onKeyPress="if(this.value.length==10) return false;" required> -->
             <div id="usernameAvailability" class="text-success"></div>
         </div>
         <div class="form-group">

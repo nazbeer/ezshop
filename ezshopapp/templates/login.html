@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>EzShop </title>
+    <title>Salon Pro Suite Admin </title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="Nasbeer Ahammed | CTO | Mite Solutions LLC | www.nasbeer.com">
@@ -49,11 +49,7 @@
             </div>
             </div>
             <div class="card-body p-4">
-                {% for message in messages %}
-                    <div class="alert alert-danger text-center" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
+              
 
                 <form method="post">
                     {% csrf_token %}
@@ -70,7 +66,7 @@
                     <button type="submit" class="btn btn-success fs-16 fw-semibold text-dark heading-fornt py-2 py-md-3 px-4 text-white w-100">Login</button>
                 </div>
                 </form>
-                <div class="form-group text-center align-items-center justify-content-center mt-3 mb-3"><a href="/employee-login/" class="text-center  btn btn-warning" style="font-size:16px;">Employee Login</a></div>
+                <!--<div class="form-group text-center align-items-center justify-content-center mt-3 mb-3"><a href="/employee-login/" class="text-center  btn btn-warning" style="font-size:16px;">Employee Login</a></div>--!>
             </div>
         </div>
     </div>

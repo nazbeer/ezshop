@@ -42,24 +42,34 @@
       <div class="col-md-6">
       <div class="form-group">
         <label for="employee_id">Employee ID:</label>
-        <input type="text" id="employee_id" name="employee_id" value="{{ form.employee_id.value }}" class="form-control" readonly>
+        <input type="text" id="employee_id" name="employee_id" value="{{ form.employee_id.value }}" class="form-control">
       </div>
       
       <div class="form-group">
         <label for="emirates_id">Emirates ID:</label>
-        <input type="text" id="emirates_id" name="emirates_id" value="{{ form.emirates_id.value }}" class="form-control" readonly>
+        <input type="text" id="emirates_id" name="emirates_id" value="{{ form.emirates_id.value }}" class="form-control" >
       </div>
       <div class="form-group">
         <label for="first_name">First Name:</label>
-        <input type="text" id="first_name" name="first_name" value="{{ form.first_name.value }}" class="form-control" readonly>
+        <input type="text" id="first_name" name="first_name" value="{{ form.first_name.value }}" class="form-control" >
       </div>
       <div class="form-group">
         <label for="second_name">Last Name:</label>
-        <input type="text" id="second_name" name="second_name" value="{{ form.second_name.value }}" class="form-control" readonly>
+        <input type="text" id="second_name" name="second_name" value="{{ form.second_name.value }}" class="form-control" >
       </div>
       <div class="form-group">
         <label for="nationality">Nationality:</label>
-        <input type="text" id="nationality" name="nationality" value="{{ form.nationality.value }}" class="form-control" readonly>
+        <!-- {% for nationality in nationalities %}
+        <option value="{{ nationality }}">{{ nationality }}</option>
+        {% endfor %} -->
+        <select id="nationality" name="nationality" class="form-control">
+          {% for nationality in nationalities %}
+          <option value="{{ nationality }}" {% if nationality == form.nationality.value %} selected {% endif %}>{{ nationality }}</option>
+          {% endfor %}
+        </select>
+
+
+        <!-- <input type="text" id="nationality" name="nationality" value="{{ form.nationality.value }}" class="form-control" > -->
       </div>
       <div class="form-group">
         <label for="mobile_no">Mobile No:</label>
@@ -67,7 +77,7 @@
       </div>
       <div class="form-group">
         <label for="passport_no">Passport No:</label>
-        <input type="text" id="passport_no" name="passport_no" value="{{ form.passport_no.value }}" class="form-control" readonly>
+        <input type="text" id="passport_no" name="passport_no" value="{{ form.passport_no.value }}" class="form-control" >
       </div>
       <div class="form-group">
         <label for="passport_expiration_date">Passport Expiration Date:</label>
@@ -75,8 +85,8 @@
       </div>
       <div class="form-group">
         <label for="username">Username:</label>
-        
-        <input type="text" id="username" name="username" class="form-control"  required>
+        <input type="tel" id="id_username" value="{{ form.username.value }}" name="username" placeholder="05XXXXXXXX" class="form-control" pattern="^05\d{8}$" onkeypress="if(this.value.length==10) return false;" required>
+        <!-- <input type="text" id="username" name="username" class="form-control"  required> -->
         <div id="usernameAvailability" class="text-success"></div>
     </div>
     </div>
@@ -112,9 +122,14 @@
       </div>
       <div class="form-group mb-0">
         <label for="job_role">Job Role:</label>
-        {{ form.job_role }}
-        
-    </div>
+        <!-- {{ form.job_role }} -->
+        <select id="job_role" name="job_role" class="form-control">
+          {% for role in roles %}
+          <option value="{{ role.id }}" {% if role.id == employee.job_role.id %} selected {% endif %}>{{ role.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
     
      
     <div class="form-group mt-2">
@@ -160,6 +175,18 @@
         input.value = inputValue.slice(0, 12);
     }
 }
+
+document.getElementById("emirates_id").addEventListener("input", function() {
+        const input = this.value.trim();
+        const digitsOnly = input.replace(/\D/g, ""); // Remove non-digit characters
+        if (digitsOnly.length > 15) {
+            // If the input contains more than 15 digits, truncate it
+            this.value = digitsOnly.slice(0, 15);
+        } else {
+            // Otherwise, update the input value with the digits-only version
+            this.value = digitsOnly;
+        }
+    });
 
 
 function checkUsernameAvailability() {

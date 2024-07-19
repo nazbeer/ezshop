@@ -7,6 +7,14 @@
 
 {% block content %}
     <div class="container">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    
         <div class="card">
             <div class="card-header">
                 <h4 class="mb-0">Add Payment Transaction</h4>
@@ -24,6 +32,8 @@
                 <label for="expense_type">Expense Type *:</label>
                 {{ form.expense_type }}
             </div>
+      <input type="hidden" name="business_profile" value="{{ business_profile }}">
+
             <div class="form-group">
                 <label for="amount">Amount *:</label>
                 <input type="number" name="amount" id="amount" class="form-control" step="0.01" required>

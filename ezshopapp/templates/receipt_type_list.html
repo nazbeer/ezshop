@@ -2,8 +2,8 @@
 {% extends 'base.html' %}
 
 {% block title %}Receipt Type List{% endblock %}
-
 {% block content %}
+
 <div class="container">
   <div class="card">
     <div class="card-header">
@@ -17,17 +17,22 @@
     <thead>
       <tr>
         <th scope="col">#</th>
-        <th scope="col">Name</th>
+         <th scope="col">Name</th>
         <th scope="col">Created On</th>
+        <th scope="col">Actions</th>
+
         
       </tr>
     </thead>
     <tbody>
-      {% for receipt_type in object_list %}
+     {% for receipt_type in object_list %}
         <tr>
           <th scope="row">{{ forloop.counter }}</th>
           <td>{{ receipt_type.name }}</td>
           <td>{{ receipt_type.created_on }}</td>
+          <td>
+            <a href="{% url 'update_receipt_type' receipt_type.id %}" class="btn btn-primary btn-sm">Edit</a>
+		</td>
         </tr>
       {% endfor %}
     </tbody>

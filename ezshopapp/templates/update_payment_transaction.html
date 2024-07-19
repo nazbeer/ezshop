@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Update Payment Transaction{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <h4 class="mb-0">Update Payment Transaction</h4>
+    </div>
+    <div class="card-body">
+
+
+      <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="id_date">Date:</label>
+          <input type="date" name="date" id="id_date" class="form-control" value="{{ form.date.value|date:'Y-m-d' }}" readonly>
+        </div>
+
+  <div class="form-group">
+          <label for="id_expense_type ">Receipt Type:</label>
+          <select name="expense_type " id="id_expense_type " class="form-control" disabled>
+            {% for option in form.expense_type.field.queryset %}
+              <option value="{{ option.pk }}" {% if option.pk == form.expense_type.value %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
+          <input type="hidden" name="expense_type" value="{{ form.expense_type.value }}">
+        </div>
+
+        <div class="form-group">
+          <label for="id_amount">Amount:</label>
+          <input type="text" name="amount" id="id_amount" class="form-control" value="{{ form.amount.value }}" readonly>
+        </div>
+
+        <div class="form-group">
+          <input type="hidden" name="business_profile" id="id_business_profile" class="form-control" value="{{ form.business_profile.value }}" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="id_narration">Narration:</label>
+          <textarea name="narration" id="id_narration" class="form-control" >{{ form.narration.value }}</textarea>
+        </div>
+
+        
+
+        <button type="submit" class="btn btn-primary">Update</button>
+      </form>
+</div>
+</div>
+</div>
+{% endblock %}

@@ -6,6 +6,15 @@
 
 {% block content %}
 <div class="container mt-4">
+    {% if messages %}
+    <div class="row">
+      <div class="col-12">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
     <div class="card">
         <div class="card-header">
             <h3 class="card-title mb-0">Day Closing Admin</h3>
@@ -24,7 +33,7 @@
                 <div class="col-md-6">
                 <div class="mb-3">
                     <label for="date" class="form-label">Date</label>
-                    <input type="date" name="date" id="date" class="form-control" value="{{ current_date }}" max="{{ current_date }}"  required>
+                    <input type="date" name="date" id="date" class="form-control" required>
                 </div>
             </div>
             <div class="col-md-6">
@@ -38,6 +47,8 @@
                 </div>
             </div>
         </div>
+      <input type="hidden" name="business_profile" value="{{ business_profile }}">
+
                 <div class="mb-3">
                     <label for="id_total_services" class="form-label">Total Services</label>
                     <input type="number" name="total_services" id="id_total_services" class="form-control" readonly>
@@ -52,7 +63,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="id_advance" class="form-label">Advance</label>
-                    <input type="text" name="advance" id="id_advance" class="form-control" >
+                    <input type="number" name="advance" id="id_advance" class="form-control">
                 </div>
                 <div class="mb-3">
                     <label for="id_net_collection" class="form-label">Net Collection</label>
@@ -60,27 +71,136 @@
                 </div>
                 <div class="mb-3">
                     <!-- <label for="status" class="form-label">Status</label> -->
-                    <input type="hidden" id="status" name="status" value="approved" class="form-control" readonly>
+                    <input type="hidden" id="status" name="status" value="approved" class="form-control">
                 </div>
                 
-                <button type="submit" id="submitBtn" class="btn btn-primary">Submit</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary">Approve</button>
             </form>
         </div>
     </div>
 </div>
 <script>
     // Get today's date
+    // var today = new Date();
+
+    // // Function to fetch data, remaining employees, and validate date when changed
+    // document.getElementById("date").addEventListener("change", function() {
+    //     var selectedDate = this.value;
+    //     var todayFormatted = today.toISOString().split('T')[0];
+    //     var yesterday = new Date(today);
+    //     yesterday.setDate(yesterday.getDate() - 1);
+    //     var yesterdayFormatted = yesterday.toISOString().split('T')[0];
+
+    //     if (this.value !== todayFormatted && this.value !== yesterdayFormatted) {
+    //         alert("You can only select today's date or yesterday's date.");
+    //         this.value = ""; // Clear the selected date
+
+    //         // Reset all input fields
+    //         resetInputFields();
+
+    //         // Disable the submit button
+    //         disableSubmitButton();
+
+    //         // Set employee select to default message
+    //         setDefaultEmployeeMessage();
+    //     } else {
+    //         // Fetch list of remaining employees for the selected date
+    //         fetchRemainingEmployees(selectedDate);
+    //     }
+    // });
+window.addEventListener("DOMContentLoaded", function() {
+
+var selectedDate = document.getElementById("date").value;
+var employeeId = document.getElementById("employee").value;
+
+var selectedEmployeeId = employeeId;
+// console.log(selectedEmployeeId);
+// console.log(selectedDate);
+fetchRemainingEmployees(selectedDate, employeeId);
+fetchAdminData(selectedDate, selectedEmployeeId);
+
+});
+
+
+
+//     window.addEventListener("DOMContentLoaded", function() {
+//     var selectedDate = document.getElementById("date").value;
+//     console.log('Selected Date:', selectedDate);
+
+//     var employeeId = document.getElementById("employee").value;
+//     console.log('Employee ID:', employeeId);
+
+//     fetchDayClosing(employeeId);
+// });
+
+// document.getElementById("employee").addEventListener("change", function() {
+//     var employeeId = this.value;
+//     fetchDayClosing(employeeId);
+// });
+
+// document.getElementById("employee").addEventListener("change", function() {
+// var employeeId = this.value;
+// fetchDayClosing(employeeId);
+// });
+
+// function fetchDayClosing(employeeId) {
+//     fetch(`/last_day_closing/${employeeId}/`)
+//         .then(response => response.json())
+//         .then(data => {
+//             console.log('data',data.date);
+//             var lastDate = new Date(data.date);
+//             setMinimumDate(lastDate);
+//         })
+//         .catch(error => console.error('Error:', error));
+// }
+
+// function setMinimumDate(lastDate) {
+//     var formattedLastDate = lastDate.toISOString().split('T')[0];
+//     // Get today's date
+//     var today = new Date();
+//     var formattedToday = today.toISOString().split('T')[0];
+    
+//     // Set initial date to today
+//     document.getElementById("date").value = formattedToday;
+//     // Set minimum and maximum date
+//     document.getElementById("date").setAttribute("min", formattedLastDate);
+//     document.getElementById("date").setAttribute("max", formattedToday);
+// }
+
+// document.getElementById("date").addEventListener("change", function() {
+//     var selectedDate = this.value;
+//     var lastDate = document.getElementById("date").getAttribute("min");
+//     if (selectedDate !== lastDate && selectedDate !== formattedToday) {
+//         alert("You can only select today's date or the last day.");
+//         this.value = ""; // Clear the selected date
+//         // Reset all input fields
+//         resetInputFields();
+//         // Disable the submit button
+//         disableSubmitButton();
+//         // Set employee select to default message
+//         setDefaultEmployeeMessage();
+//     } else {
+//         // Fetch list of remaining employees for the selected date
+//         fetchRemainingEmployees(selectedDate);
+//     }
+// });
+
+    var yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    var formattedYesterday = yesterday.toISOString().split('T')[0];
+
+    // Get today's date
     var today = new Date();
+    var formattedToday = today.toISOString().split('T')[0];
 
-    // Function to fetch data, remaining employees, and validate date when changed
+    // Set initial date to today
+    document.getElementById("date").value = formattedToday;
+    
     document.getElementById("date").addEventListener("change", function() {
+    // if (this.value !== formattedToday && this.value !== formattedToday) {
         var selectedDate = this.value;
-        var todayFormatted = today.toISOString().split('T')[0];
-        var yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        var yesterdayFormatted = yesterday.toISOString().split('T')[0];
-
-        if (this.value !== todayFormatted && this.value !== yesterdayFormatted) {
+        var employeeId = document.getElementById("employee").value;
+     if (this.value !== formattedToday && this.value !== formattedYesterday) {
             alert("You can only select today's date or yesterday's date.");
             this.value = ""; // Clear the selected date
 
@@ -93,25 +213,32 @@
             // Set employee select to default message
             setDefaultEmployeeMessage();
         } else {
+            // var selectedDate = this.value;
             // Fetch list of remaining employees for the selected date
-            fetchRemainingEmployees(selectedDate);
+            fetchRemainingEmployees(selectedDate,employeeId);
         }
     });
-
+    // Disable future dates
+    document.getElementById("date").setAttribute("max", formattedToday);
+    document.getElementById("date").setAttribute("min", formattedYesterday);
+ 
     // Add event listener for employee selection change
     document.getElementById("employee").addEventListener("change", function() {
         var selectedDate = document.getElementById("date").value;
         var selectedEmployeeId = this.value;
+      
         fetchAdminData(selectedDate, selectedEmployeeId);
     });
 
     // Function to reset input fields
     function resetInputFields() {
-        document.getElementById("id_total_services").value = "";
-        document.getElementById("id_total_sales").value = "";
-        document.getElementById("id_total_collection").value = "";
-        document.getElementById("id_advance").value = "";
-        document.getElementById("id_net_collection").value = "";
+         console.log('l');
+        document.getElementById("id_total_services").value = "0";
+        document.getElementById("id_total_sales").value = "0";
+        document.getElementById("id_total_collection").value = "0";
+        document.getElementById("id_advance").value = "0";
+        document.getElementById("id_net_collection").value = "0";
+        document.getElementById("submitBtn").disabled = true;
     }
 
     // Function to disable submit button
@@ -123,18 +250,99 @@
     function setDefaultEmployeeMessage() {
         var employeeSelect = document.getElementById("employee");
         employeeSelect.innerHTML = "<option disabled selected>Day Closing for all employees is completed</option>";
+        resetInputFields();
+     
     }
+    window.addEventListener("DOMContentLoaded", function() {
+        var selectedDate = document.getElementById("date").value;
+        var employeeId = document.getElementById("employee").value;
+        // console.log('selectedDate',selectedDate,employeeId);
 
-    // Function to fetch remaining employees
-    function fetchRemainingEmployees(selectedDate) {
-        fetch('/fetch-remaining-employees/' + selectedDate + '/')
+        function fetchRemainingEmployees(selectedDate,employeeId) {
+        // console.log( '/fetch-remaining-employees/' , selectedDate , employeeId)
+        
+        fetch('/fetch-remaining-employees/' + selectedDate + '/'+ employeeId + '/')
+
             .then(response => response.json())
             .then(data => {
-                var employeeSelect = document.getElementById("employee");
+                // console.log('data',data);
+                var employeeSelect = document.getElementById('employee');
+                // console.log('employeeSelect',employeeSelect);
+                
 
+                if (data) {
+                    
+                    // If there is a message indicating that day closing is completed for all employees
+                    employeeSelect.innerHTML = "<option disabled selected>Day Closing for all employees is completed</option>";
+                    resetInputFields();
+                    // Disable the submit button
+                    // console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkk');
+
+                    disableSubmitButton();
+                } else {
+                    // console.log('ooooooooooooooooooooooooooooooo');
+
+                    // If there are remaining employees for day closing
+                    employeeSelect.innerHTML = ""; // Clear existing options
+                    data.remaining_employees.forEach(employee => {
+                        var option = document.createElement("option");
+                        option.value = employee.id;
+                        // console.log('employeeId',employee.id);
+
+                        option.text = employee.first_name + " " + employee.second_name;
+                        employeeSelect.appendChild(option);
+                    });
+                    // Enable the submit button
+                    document.getElementById("submitBtn").disabled = false;
+
+                    // Fetch data for the selected date and employee
+                    var employeeId = document.getElementById("employee").value;
+                    // console.log('employeeId',employeeId);
+                    fetchAdminData(selectedDate, employeeId);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        function fetchAdminData(selectedDate, employeeId) {
+        fetch('/fetch-data-admin/' + selectedDate + '/' + employeeId + '/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("id_total_services").value = data.total_services;
+                document.getElementById("id_total_sales").value = data.total_sales;
+                document.getElementById("id_total_collection").value = data.total_collection;
+                document.getElementById("id_advance").value = data.advance;
+                var totalCollection = parseFloat(data.total_collection);
+                var advance = parseFloat(document.getElementById("id_advance").value);
+                var netCollection = totalCollection - advance;
+                document.getElementById("id_net_collection").value = netCollection.toFixed(2);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        // Update net collection when advance value changes
+        document.getElementById("id_advance").addEventListener("input", function() {
+            var totalCollection = parseFloat(document.getElementById("id_total_collection").value);
+            var advance = parseFloat(document.getElementById("id_advance").value);
+            var netCollection = totalCollection - advance;
+
+            // Update net collection input field
+            document.getElementById("id_net_collection").value = netCollection.toFixed(2);
+        });
+    });
+    // Function to fetch remaining employees
+    var employeeId = document.getElementById("employee").value;
+    function fetchRemainingEmployees(selectedDate,employeeId) {
+        var employeeId = document.getElementById("employee").value;
+        fetch('/fetch-remaining-employees/' + selectedDate + '/' + employeeId + '/')
+            .then(response => response.json())
+            .then(data => {
+               
+                var employeeSelect = document.getElementById('employee');
+
+                // console.log('2',employeeSelect)
                 if (data.message) {
                     // If there is a message indicating that day closing is completed for all employees
                     employeeSelect.innerHTML = "<option disabled selected>Day Closing for all employees is completed</option>";
+                    resetInputFields();
                     // Disable the submit button
                     disableSubmitButton();
                 } else {
@@ -182,6 +390,7 @@
         // Update net collection input field
         document.getElementById("id_net_collection").value = netCollection.toFixed(2);
     });
+   
 </script>
 
 
