@@ -20,6 +20,7 @@
             <th scope="col">Total Received</th>
             <th scope="col">Total Expense</th>
             <th scope="col">Total Bank Deposit</th>
+            <th scope="col">Advance</th>
             <th scope="col">Balance</th>
             <th scope="col">Narration</th>
           </tr>
@@ -33,6 +34,7 @@
               <td>{{ summary.total_received_amount }}</td>
               <td>{{ summary.total_expense_amount }}</td>
               <td>{{ summary.total_bank_deposit }}</td>
+              <td>{{ summary.advance|default_if_none:"0.00" }}</td>
               <td>{{ summary.balance }}</td>
               <td>{{ summary.narration }}</td>
             </tr>
@@ -48,6 +50,7 @@
   new DataTable('#dailysummary', {
             responsive: true,
             dom: 'lBfrtip',
+		order:[],
             buttons: [
                 {
                     extend: 'print',

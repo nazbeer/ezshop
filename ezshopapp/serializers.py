@@ -137,3 +137,10 @@ class JobRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = '__all__'
+
+
+
+class BusinessProfileDetailsSerilaizer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessProfile
+        fields =['name','license_number','vat_percentage','vat_number']

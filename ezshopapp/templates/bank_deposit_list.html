@@ -22,7 +22,7 @@
               <th scope="col">Amount</th>
               <th scope="col">Transaction Type</th>
               <th scope="col">Narration</th>
-              
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -35,6 +35,12 @@
                 <td>{{ bank_deposit.amount }}</td>
                 <td>{{ bank_deposit.transaction_type }}</td>
                 <td>{{ bank_deposit.narration }}</td>
+
+<td>
+            <a href="{% url 'update_bank_deposit' bank_deposit.id %}" class="btn btn-primary btn-sm">Edit</a>
+
+</td>
+
                 
               </tr>
             {% endfor %}

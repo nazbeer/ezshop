@@ -4,6 +4,16 @@
 
 
 <div class="container-fluid">
+    {% if messages %}
+    <div class="row d-none">
+      <div class="col-12">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  
     <!-- Day Closing Report -->
     <div class="card mt-3">
         <div class="card-header">
@@ -36,7 +46,7 @@
                         <th>Advance</th>
                         <th>Net Collection</th>
                         <th>Status</th>
-                        <!-- <th>Action</th> -->
+                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,7 +60,7 @@
                         <td>{{ day_closing.advance }}</td>
                         <td>{{ day_closing.net_collection }}</td>
                         <td class="text-capitalize">{{ day_closing.status }}</td>
-                        <!-- <td>
+                        <td>
                             <div class="d-flex justify-content-between align-items-center gap-3">
                                 {% if day_closing.status == 'pending' %}
                                     <a href="{% url 'approve_day_closing' day_closing.id %}" class="btn btn-success btn-sm">Approve</a>
@@ -63,7 +73,7 @@
                                     <span class="pl-3 d-none"><button class="btn btn-primary btn-sm d-none" disabled>Edit</button></span>
                                 {% endif %}
                             </div>
-                        </td> -->
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -76,6 +86,7 @@
     new DataTable('#dayclosingadmin', {
             responsive: true,
             dom: 'lBfrti',
+            order: [],
             buttons: [
                 {
                     extend: 'print',

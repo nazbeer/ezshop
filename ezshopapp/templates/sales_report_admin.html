@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block content %}
+<style>
+    .daterangepicker .calendar-table th, .daterangepicker .calendar-table td{
+        border-radius: 0px !important;
+    }
+</style>
 <div class="card">
     <div class="card-header">
         <h5 class="mb-0 text-white">Sales Report - Sales By Staff Product & Service</h5>
@@ -16,17 +21,17 @@
                     <tr>
                         <th>Date</th>
                         <th>Employee Details</th>
-                        <th>Product</th>
-                      
+                        {% comment %} <th>Product</th> {% endcomment %}
+                        <th>Particulars</th>
                         <th>Product Total</th>
-                        <th>Service</th>
-                        
+                        {% comment %} <th>Service</th> {% endcomment %}
                         <th>Service Total</th>
                         <th>Sub Total</th>
                         <th>Discount</th>
                         <th>Total Amount</th>
                         <th>Payment Method</th>
                         <th>Data Source</th> <!-- Added column for data source -->
+                        <th>Invoice</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,17 +39,22 @@
                     <tr>
                         <td>{{ sale.date }}</td>
                         <td class="text-capitalize">{{ sale.employee.employee_id }} - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
-                        <td>{{ sale.product.name }}</td>
-                       
+                        {% comment %} <td>{{ sale.product.name }}</td> {% endcomment %}
+                       <td>Product & Service</td>
                         <td>{{ sale.itemtotal }}</td>
-                        <td>{{ sale.service.name }}</td>
-                     
+                        {% comment %} <td>{{ sale.service.name }}</td> {% endcomment %}
                         <td>{{ sale.servicetotal }}</td>
                         <td>{{ sale.sub_total }}</td>
                         <td>{{ sale.discount }}</td>
                         <td>{{ sale.total_amount }}</td>
                         <td class="text-capitalize">{{ sale.payment_method }}</td>
                         <td>Staff</td> <!-- Indicate data source -->
+                        <td class="text-center">
+                        <a href="{% url 'generate_invoice_pdf' sale.id 'salesbystaffitemservice' %}" class="text-center">
+                            <i class="fas fa-download"></i>
+                        </a>
+
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -59,7 +69,7 @@
     </div>
     <div class="card-body">
         <form method="GET" action="{% url 'sales_report_admin' %}" id="item-filter-form" class="mb-1">
-            <div class="row">
+            <div class="row d-none">
                 <div class="col-md-4">
                     <label for="date_range_item">Date Range:</label>
                     <input type="text" id="date_range_item" name="date_range_item">
@@ -72,27 +82,36 @@
                     <tr>
                         <th>Date</th>
                         <th>Employee Details</th>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
+                        <th>Particulars</th>
+                        {% comment %} <th>Quantity</th>{% endcomment %}
+                        <th>Sub Total</th> 
                         <th>Discount</th>
                         <th>Total Amount</th>
                         <th>Payment Method</th>
                         <th>Data Source</th> <!-- Added column for data source -->
+                        <th>Invoice</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for sale, data_source in sales %}
                     <tr>
                         <td>{{ sale.date }}</td>
-                        <td>{{ sale.employee.employee_id }} - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
-                        <td>{{ sale.item }}</td>
-                        <td>{{ sale.quantity }}</td>
-                        <td>{{ sale.price }}</td>
+                        <td class="text-capitalize">{{ sale.employee.employee_id }} - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                        <td>Product</td>
+                            {% comment %} <td>{{ sale.quantity }}</td>
+                            <td>{{ sale.price }}</td> {% endcomment %}
+                        <td>{{ sale.total_amount|add:sale.discount|floatformat:"2" }}</td>
+
                         <td>{{ sale.discount }}</td>
                         <td>{{ sale.total_amount }}</td>
-                        <td>{{ sale.payment_method }}</td>
+                        <td class="text-capitalize">{{ sale.payment_method }}</td>
                         <td>{{ data_source }}</td> <!-- Indicate data source -->
+                        <td class="text-center">
+                    <a href="{% url 'generate_invoice_pdf' sale.id 'salebyadminproduct'|add:data_source %}" class="text-center">
+                        <i class="fas fa-download"></i>
+                    </a>
+
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -107,7 +126,7 @@
     </div>
     <div class="card-body">
         <form method="GET" action="{% url 'sales_report_admin' %}" id="service-filter-form" class="mb-1">
-            <div class="row">
+            <div class="row d-none">
                 <div class="col-md-4">
                     <label for="date_range_service">Date Range:</label>
                     <input type="text" id="date_range_service" name="date_range_service">
@@ -120,27 +139,34 @@
                     <tr>
                         <th>Date</th>
                         <th>Employee Details</th>
-                        <th>Service</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
+                        <th>Particulars</th>
+                        {% comment %}  <th>Quantity</th>{% endcomment %}
+                        <th>Sub Total</th> 
                         <th>Discount</th>
                         <th>Total Amount</th>
                         <th>Payment Method</th>
                         <th>Data Source</th> <!-- Added column for data source -->
+                        <th>Invoice</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for sale, data_source in service_sales %}
                     <tr>
                         <td>{{ sale.date }}</td>
-                        <td>{{ sale.employee.employee_id }} - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
-                        <td>{{ sale.service.name }}</td>
-                        <td>{{ sale.quantity }}</td>
-                        <td>{{ sale.price }}</td>
+                        <td class="text-capitalize">{{ sale.employee.employee_id }} - {{ sale.employee.first_name }} {{ sale.employee.second_name }}</td>
+                        <td>Service</td>
+                        <td>{{ sale.total_amount|add:sale.discount|floatformat:"2" }}</td>
                         <td>{{ sale.discount }}</td>
                         <td>{{ sale.total_amount }}</td>
-                        <td>{{ sale.payment_method }}</td>
+                        <td class="text-capitalize">{{ sale.payment_method }}</td>
                         <td>{{ data_source }}</td> <!-- Indicate data source -->
+                        <td class="text-center">
+                    <a href="{% url 'generate_invoice_pdf' sale.id 'salebyadminservice'|add:data_source %}" class="text-center">
+                        <i class="fas fa-download"></i>
+                   
+                </a>
+
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -156,7 +182,7 @@
         new DataTable('#item-sales-table', {
             responsive: true,
             dom: 'lBfrtip',
-            
+            order: [],
             buttons: [
                 {
                     extend: 'print',
@@ -178,6 +204,7 @@
         new DataTable('#service-sales-table', {
             responsive: true,
             dom: 'lBfrtip',
+            order: [],
             buttons: [
                 {
                     extend: 'print',
@@ -198,7 +225,7 @@
         new DataTable('#ssis', {
               responsive: true,
               dom: 'lBfrtip',
-              
+              order: [],
               buttons: [
                   {
                       text: 'Print',
@@ -276,6 +303,7 @@
                                 '<td>' + item.discount + '</td>' +
                                 '<td>' + item.total_amount + '</td>' +
                                 '<td>' + item.payment_method + '</td>' +
+                                
                                 '</tr>';
 
                              $('#item-sales-table tbody').append(tableRow);
@@ -303,12 +331,13 @@
                             var tableRow = '<tr>' +
                                 '<td>' + item.date + '</td>' +
                                 '<td>' + item.employee__first_name + ' ' + item.employee__second_name + ' (' + item.employee__id+') - '+ item.employee__employee_id+'</td>' +
-                                '<td>' + item.service__name + '</td>' +
-                                '<td>' + item.quantity + '</td>' +
+                                '<td>Service</td>' +
                                 '<td>' + item.price + '</td>' +
                                 '<td>' + item.discount + '</td>' +
                                 '<td>' + item.total_amount + '</td>' +
-                                '<td>' + item.payment_method + '</td>' +
+                                '<td class="text-capitalize">' + item.payment_method + '</td>' +
+                                '<td>Staff</td>' +
+                                
                                 '</tr>';
 
                              $('#service-sales-table tbody').append(tableRow);

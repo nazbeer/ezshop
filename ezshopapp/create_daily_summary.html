@@ -1,0 +1,173 @@
+<!-- create_daily_summary.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+    Daily Summary Form
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0 text-white">Create Daily Summary</h4>
+        </div>
+        <div class="card-body">
+            
+    
+    <form method="post" id="dailySummaryForm" action="#" >
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" name="date" id="date" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="opening_balance">Opening Balance:</label>
+            <input type="number" name="opening_balance" id="opening_balance" class="form-control" required readonly>
+        </div>
+        <div class="form-group">
+            <label for="total_received_amount">Total Received Amount:</label>
+            <input type="number" name="total_received_amount" id="total_received_amount" class="form-control" step="0.01" required readonly>
+        </div>
+        <div class="form-group">
+            <label for="total_expense_amount">Total Expense Amount:</label>
+            <input type="number" name="total_expense_amount" id="total_expense_amount" class="form-control" step="0.01" required readonly>
+        </div>
+        <div class="form-group">
+            <label for="total_bank_deposit">Total Bank Deposit:</label>
+            <input type="number" name="total_bank_deposit" id="total_bank_deposit" class="form-control" step="0.01" required readonly>
+        </div>
+        <div class="form-group">
+            <label for="balance">Closing Balance:</label>
+            <input type="number" name="balance" id="balance" class="form-control" step="0.01" required readonly>
+        </div>
+        <div class="form-group">
+            <label for="narration">Narration:</label>
+            <textarea name="narration" id="narration" class="form-control" rows="3" required></textarea>
+        </div>
+    <input type="hidden" id="business_profile" name="business_profile" value="{{ business_profile }}">
+        <!-- <p id="value1"> value</p> -->
+        <button type="submit" id="submitButton" class="btn btn-primary">Submit</button>
+    </form>
+
+</div>
+</div>
+</div>
+
+<script>
+    var yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    var formattedYesterday = yesterday.toISOString().split('T')[0];
+
+    // start by amal
+    var business_profile = document.getElementById("business_profile").value
+    var new_date = document.getElementById("date").value
+    console.log('kk',business_profile,new_date)
+
+
+    const submitButton = document.getElementById("submitButton");
+    function disableButton() {
+        submitButton.disabled = true;
+        }
+
+    // end by amal
+
+    // Get today's date
+    var today = new Date();
+    var formattedToday = today.toISOString().split('T')[0];
+    console.log(formattedToday);
+    // Set initial date to today
+    document.getElementById("date").value = formattedToday;
+
+    // Disable future dates
+    document.getElementById("date").setAttribute("max", formattedToday);
+    document.getElementById("date").setAttribute("min", formattedYesterday);
+    // var currentDate = new Date();
+    // var formattedDate = currentDate.toISOString().split('T')[0];
+    // document.getElementById("date").value = formattedDate;
+
+    // // Date validation script
+    document.getElementById("date").addEventListener("change", function() {
+        var selectedDate = new Date(this.value);
+        var currentDate = new Date();
+        
+        if (selectedDate > currentDate) {
+            alert("Selected date cannot be in the future.");
+            this.value = formattedDate; // Reset the value to the current date
+        }
+    });
+
+    // Fetch summary data based on the selected date
+    document.getElementById("date").addEventListener("change", function() {
+        var selectedDate = this.value;
+        fetch(`/fetch-summary-data/${selectedDate}/`)
+            .then(response => response.json())
+            .then(data => {
+                // document.getElementById("value1").value=data.value1;
+                document.getElementById("opening_balance").value = data.opening_balance;
+                document.getElementById("total_received_amount").value = data.total_received_amount;
+                document.getElementById("total_expense_amount").value = data.total_expense_amount;
+                document.getElementById("total_bank_deposit").value = data.total_bank_deposit;
+                document.getElementById("balance").value = data.balance;
+            })
+            .catch(error => console.error('Error:', error));
+
+             fetch(`/get-daily-summary-exist/${selectedDate}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.data_exists) {
+                    document.getElementById("submitButton").disabled = true;
+                } else {
+                    document.getElementById("submitButton").disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+                        // check the all day closing is completed or not by amal start
+            fetch(`/dayclosing_exists/${new_date}/${business_profile}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.msg === true) {
+                    
+                } else {
+                    alert('DayClosing must be complete before adding a DailySummary');
+                    disableButton()
+                }
+            })
+            .catch(error => console.error('Error:', error));
+            // by amal end
+
+
+    });
+    window.addEventListener("DOMContentLoaded", function() {
+    // Get reference to the date element (error handling included)
+        var dateElement = document.getElementById("date");
+        if (dateElement) {
+            var selectedDate = dateElement.value;
+
+            // Fetch summary data
+            fetch(`/fetch-summary-data/${selectedDate}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("opening_balance").value = data.opening_balance;
+                document.getElementById("total_received_amount").value = data.total_received_amount;
+                document.getElementById("total_expense_amount").value = data.total_expense_amount;
+                document.getElementById("total_bank_deposit").value = data.total_bank_deposit;
+                document.getElementById("balance").value = data.balance;
+            })
+            .catch(error => console.error('Error fetching summary data:', error));
+
+
+            // Check for daily summary existence
+            fetch(`/get-daily-summary-exist/${selectedDate}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("submitButton").disabled = data.data_exists;
+            })
+            .catch(error => console.error('Error checking daily summary:', error));
+        } else {
+            console.warn("Element with ID 'date' not found.");
+        }
+    });
+</script>
+{% endblock %}

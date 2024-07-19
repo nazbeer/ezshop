@@ -19,6 +19,8 @@
             <th scope="col">Receipt Type</th>
             <th scope="col">Received Amount</th>
             <th scope="col">Narration</th>
+            <th scope="col">Actions</th>
+
           </tr>
         </thead>
         <tbody>
@@ -29,6 +31,7 @@
               <td>{{ receipt_transaction.receipt_type.name }}</td>
               <td>{{ receipt_transaction.received_amount }}</td>
               <td>{{ receipt_transaction.narration }}</td>
+	<td><a href="{% url 'update_receipt_transaction' receipt_transaction.id %}" class="btn btn-primary btn-sm">Edit</a></td>
             </tr>
           {% endfor %}
         </tbody>
@@ -45,6 +48,7 @@
   new DataTable('#rtlist', {
             responsive: true,
             dom: 'lBfrtip',
+		order:[],
             
             buttons: [
                 {

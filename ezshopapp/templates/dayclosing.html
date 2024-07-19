@@ -27,6 +27,9 @@
             <form method="post" id="dayClosingForm">
                 {% csrf_token %}
                 <div class="row">
+
+      <input type="hidden" name="business_profile" value="{{ business_profile }}">
+
                     
                 <div class="col-md-6">
                     <div class="form-group">

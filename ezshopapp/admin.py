@@ -7,16 +7,16 @@ from .models import *
 from .forms import *
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-admin.site.site_header = "Ezshop Admin"
-admin.site.site_title = "Ezshop Admin Portal"
-admin.site.index_title = "Welcome to Ezshop Mite Solution App"
+admin.site.site_header = "Salon Pro Suite Admin"
+admin.site.site_title = "Salon Pro Suite Admin Portal"
+admin.site.index_title = "Welcome to Salon Pro Suite"
 
 class CustomUserAdmin(BaseUserAdmin):
     add_form = CustomUserCreationForm
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'shop'),
+            'fields': ('shop','username', 'password1', 'password2'),
         }),
     )
 
@@ -57,7 +57,7 @@ class ModuleAdmin(admin.ModelAdmin):
 
 @admin.register(BusinessProfile)
 class BusinessProfileAdmin(admin.ModelAdmin):
-    list_display = ['name', 'license_number', 'license_expiration', 'shop_phone_number', 'vat_percentage', 'vat_number', 'vat_submission_date_1', 'vat_submission_date_2', 'vat_submission_date_3', 'address', 'license_expiration_reminder_days', 'vat_submission_date_reminder_days', 'employee_visa_expiration_reminder_days', 'created_on', 'license_expiration_reminder_due', 'vat_submission_date_reminder_due']
+    list_display = ['id', 'name', 'license_number', 'license_expiration', 'shop_phone_number', 'vat_percentage', 'vat_number', 'vat_submission_date_1', 'vat_submission_date_2', 'vat_submission_date_3', 'address', 'license_expiration_reminder_days', 'vat_submission_date_reminder_days', 'employee_visa_expiration_reminder_days', 'created_on', 'license_expiration_reminder_due', 'vat_submission_date_reminder_due']
 
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
@@ -81,7 +81,7 @@ class ReceiptTransactionAdmin(admin.ModelAdmin):
 
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
-    list_display = ['date', 'expense_type', 'amount', 'narration', 'created_on']
+    list_display = ['date', 'expense_type', 'amount', 'narration','business_profile', 'created_on']
 
 @admin.register(BankDeposit)
 class BankDepositAdmin(admin.ModelAdmin):
@@ -101,7 +101,7 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 @admin.register(DayClosingAdmin)
 class DayClosingAdminAdmin(admin.ModelAdmin):
-    list_display = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection', 'status', 'created_on']
+    list_display = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection', 'status','business_profile', 'created_on']
 
 @admin.register(DailySummary)
 class DailySummaryAdmin(admin.ModelAdmin):
@@ -143,4 +143,8 @@ class Service(admin.ModelAdmin):
 @admin.register(DayClosing)
 class DayClosing(admin.ModelAdmin):
     list_display = ['date', 'employee', 'total_services', 'total_sales', 'total_collection', 'advance', 'net_collection', 'status', 'created_on']
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email','message', 'created_on']
 

@@ -132,8 +132,7 @@ class EmployeeForm(forms.ModelForm):
         passport_no = cleaned_data.get('passport_no')
         emirates_id = cleaned_data.get('emirates_id')
         business_profile_id = cleaned_data.get('business_profile_id')
-
-        # Check if Emirates ID, Passport No, and Username are unique
+        print(business_profile_id)
         if Employee.objects.exclude(pk=self.instance.pk).filter( business_profile_id=business_profile_id,employee_id=employee_id).exists():
             self.add_error('employee_id', 'Employee ID must be unique.')
         if Employee.objects.exclude(pk=self.instance.pk).filter(business_profile_id=business_profile_id,passport_no=passport_no).exists():
@@ -157,6 +156,7 @@ class DayClosingForm(forms.ModelForm):
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
         }
+        
 class DayClosingAdminForm(forms.ModelForm):
     class Meta:
         model = DayClosingAdmin
@@ -167,6 +167,7 @@ class DayClosingAdminForm(forms.ModelForm):
             'advance': forms.NumberInput(attrs={'class': 'form-control', 'required': 'required'}),
             'net_collection': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly', 'required': 'required'}),
         }
+
 class ExpenseTypeForm(forms.ModelForm):
     class Meta:
         model = ExpenseType
@@ -175,30 +176,64 @@ class ExpenseTypeForm(forms.ModelForm):
 class ReceiptTypeForm(forms.ModelForm):
     class Meta:
         model = ReceiptType
-        fields = '__all__'
+        fields = ['name']
 
 class BankForm(forms.ModelForm):
     class Meta:
         model = Bank
         fields = '__all__'
 
+
 class ReceiptTransactionForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        business_profile = kwargs.pop('business_profile', None)
+        super(ReceiptTransactionForm, self).__init__(*args, **kwargs)
+        if business_profile:
+            self.fields['receipt_type'].queryset = ReceiptType.objects.filter(business_profile = business_profile)
+
     class Meta:
         model = ReceiptTransaction
-        fields = ['date', 'receipt_type', 'received_amount', 'narration']
+        fields = ['date', 'receipt_type', 'business_profile', 'received_amount', 'narration']
 
 class PaymentTransactionForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        business_profile = kwargs.pop('business_profile', None)
+        super(PaymentTransactionForm, self).__init__(*args, **kwargs)
+        if business_profile:
+            self.fields['expense_type'].queryset = ExpenseType.objects.filter(business_profile = business_profile)
+
+    # def __init__(self, *args, **kwargs):
+    #     """ Grants access to the request object so that only members of the current user
+    #     are given as options"""
+
+    #     self.request = kwargs.pop('request')
+    #     super(PaymentTransactionForm, self).__init__(*args, **kwargs)
+    #     shop_admin = ShopAdmin.objects.get(user=self.request.user)
+    #     shop = shop_admin.shop
+    #     self.business_profile = BusinessProfile.objects.get(name=shop.name)
+    #     self.fields['expense_type'].queryset = ExpenseType.objects.filter(
+    #         business_profile=self.business_profile.id)
+
     class Meta:
         model = PaymentTransaction
         fields = '__all__'
 
 
+
+
 class BankDepositForm(forms.ModelForm):
-    bank = forms.ModelChoiceField(queryset=Bank.objects.all(), empty_label="Select Bank", label="Bank")
+    
+    def __init__(self, *args, **kwargs):
+        business_profile = kwargs.pop('business_profile', None)
+        super(BankDepositForm, self).__init__(*args, **kwargs)
+        if business_profile:
+            self.fields['bank'].queryset = Bank.objects.filter(business_profile = business_profile)
     
     class Meta:
         model = BankDeposit
-        fields = '__all__'
+        fields = ['date','deposit_date','amount','transaction_type','narration','bank','business_profile']
 
 class ServiceForm(forms.ModelForm):
     class Meta:
@@ -218,7 +253,7 @@ class EmployeeTransactionForm(forms.ModelForm):
 class DailySummaryForm(forms.ModelForm):
     class Meta:
         model = DailySummary
-        fields = '__all__'
+        fields = ['date','opening_balance','total_received_amount','total_expense_amount','total_bank_deposit','balance','narration','business_profile','advance']
         widgets = {
                 'date': forms.DateInput(attrs={'type': 'date'}),
             }
@@ -280,3 +315,15 @@ class SalesByStaffItemServiceForm(forms.ModelForm):
     class Meta:
         model = SalesByStaffItemService
         fields = '__all__'
+
+
+class ContactForm(forms.ModelForm):
+
+    class Meta:
+        model = Contact
+        fields = ['name', 'email', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form_style', 'placeholder': 'Your Name'}),
+            'email': forms.EmailInput(attrs={'class': 'form_style', 'placeholder': 'Your Email'}),
+            'message': forms.Textarea(attrs={'class': 'form_style', 'placeholder': 'Message', 'rows': 3}),
+        }

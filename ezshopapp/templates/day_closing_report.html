@@ -50,18 +50,18 @@
                         <td>{{ day_closing.net_collection }}</td>
                         <td class="text-capitalize">{{ day_closing.status }}</td>
                         <td>
-                            <div class="d-flex justify-content-between align-items-center gap-3">
+                          <!--  <div class="d-flex justify-content-between align-items-center gap-3">
                                 {% if day_closing.status == 'pending' %}
                                     <a href="{% url 'approve_day_closing' day_closing.id %}" class="btn btn-success btn-sm">Approve</a>
                                 {% else %}
                                     <button class="btn btn-secondary btn-sm" disabled>Approved</button>
                                 {% endif %}
-                                <!-- {% if day_closing.status != 'approved' %}
+                                {% if day_closing.status != 'approved' %}
                                     <span class="pl-3"><a href="{% url 'edit_day_closing' day_closing.id %}" class="btn btn-primary btn-sm">Edit</a></span>
                                 {% else %}
                                     <span class="pl-3"><button class="btn btn-primary btn-sm" disabled>Edit</button></span>
-                                {% endif %} -->
-                            </div>
+                                {% endif %}
+                            </div>--!>
                         </td>
                     </tr>
                     {% endfor %}

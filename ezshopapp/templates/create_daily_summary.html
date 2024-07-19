@@ -7,6 +7,7 @@
 
 {% block content %}
 <div class="container">
+    <p id="message" class="alert alert-info mt-3 d-none"></p>
     <div class="card">
         <div class="card-header">
             <h4 class="mb-0 text-white">Create Daily Summary</h4>
@@ -18,7 +19,8 @@
         {% csrf_token %}
         <div class="form-group">
             <label for="date">Date:</label>
-            <input type="date" name="date" id="date" class="form-control" required min="{{ min_date }}">
+            <input type="hidden" name="lastdate" id="lastdate" value="{{ min_date }}">
+            <input type="date" name="date" id="date" class="form-control" required>
         </div>
         <div class="form-group">
             <label for="opening_balance">Opening Balance:</label>
@@ -37,15 +39,21 @@
             <input type="number" name="total_bank_deposit" id="total_bank_deposit" class="form-control" step="0.01" required readonly>
         </div>
         <div class="form-group">
+            <label for="advance">Total Advance:</label>
+            <input type="number" name="advance" id="advance" class="form-control" step="0.01" required readonly>
+        </div>
+        <div class="form-group">
             <label for="balance">Closing Balance:</label>
             <input type="number" name="balance" id="balance" class="form-control" step="0.01" required readonly>
         </div>
         <div class="form-group">
             <label for="narration">Narration:</label>
-            <textarea name="narration" id="narration" class="form-control" rows="3" required></textarea>
+            <textarea name="narration" id="narration" class="form-control" rows="3" ></textarea>
         </div>
+    <input type="hidden" id="business_profile" name="business_profile" value="{{ business_profile }}">
+    <!-- <input type="hidden" id="emp" name="emp"> -->
         <!-- <p id="value1"> value</p> -->
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" id="submitButton" class="btn btn-primary">Submit</button>
     </form>
 
 </div>
@@ -53,11 +61,40 @@
 </div>
 
 <script>
-    var currentDate = new Date();
-    var formattedDate = currentDate.toISOString().split('T')[0];
-    document.getElementById("date").value = formattedDate;
+   // var yesterday = new Date();
+    var formattedYesterday = document.getElementById('lastdate').value;
+    console.log('l',formattedYesterday);
+    //yesterday.setDate(yesterday.getDate());
+    // var formattedYesterday = yesterday.toISOString().split('T')[0];
 
-    // Date validation script
+    // start by amal
+    var business_profile = document.getElementById("business_profile").value
+    var new_date = document.getElementById("date").value
+    console.log('kk',business_profile,new_date)
+
+
+    const submitButton = document.getElementById("submitButton");
+    function disableButton() {
+        submitButton.disabled = true;
+        }
+
+    // end by amal
+
+    // Get today's date
+    var today = new Date();
+    var formattedToday = today.toISOString().split('T')[0];
+    console.log(formattedToday);
+    // Set initial date to today
+    document.getElementById("date").value = formattedToday;
+
+    // Disable future dates
+    document.getElementById("date").setAttribute("max", formattedToday);
+    document.getElementById("date").setAttribute("min", formattedYesterday);
+    // var currentDate = new Date();
+    // var formattedDate = currentDate.toISOString().split('T')[0];
+    // document.getElementById("date").value = formattedDate;
+
+    // // Date validation script
     document.getElementById("date").addEventListener("change", function() {
         var selectedDate = new Date(this.value);
         var currentDate = new Date();
@@ -71,17 +108,174 @@
     // Fetch summary data based on the selected date
     document.getElementById("date").addEventListener("change", function() {
         var selectedDate = this.value;
-        fetch(`/fetch-summary-data/${selectedDate}/`)
-            .then(response => response.json())
-            .then(data => {
-                // document.getElementById("value1").value=data.value1;
+        
+    fetch(`/fetch-summary-data/${selectedDate}/`)
+        .then(response => {
+            const statusCode = response.status;
+            console.log(statusCode);
+            if (statusCode === 302) {
+                console.log('DayClosing must be complete before adding a DailySummary');
+                window.location.href = "/dayclosing/admin/";
+                return;
+            }
+            return response.json().then(data => {
+                return { data, statusCode };
+            });
+        })
+        .then(result => {
+            if (!result) return; // Exit if already redirected
+            const { data, statusCode } = result;
+            
+
+            if (data.response !== '') {
                 document.getElementById("opening_balance").value = data.opening_balance;
                 document.getElementById("total_received_amount").value = data.total_received_amount;
                 document.getElementById("total_expense_amount").value = data.total_expense_amount;
                 document.getElementById("total_bank_deposit").value = data.total_bank_deposit;
                 document.getElementById("balance").value = data.balance;
+                document.getElementById("advance").value = data.advance;
+
+            } else {
+                alert('DayClosing must be complete before adding a DailySummary');
+                window.location.href = "/dayclosing/admin/";
+                // disableButton();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // window.location.href = "/error-page/"; // Redirect to an error page if the fetch fails
+        });
+             fetch(`/get-daily-summary-exist/${selectedDate}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.data_exists) {
+                    document.getElementById("submitButton").disabled = false;
+                } else {
+                    alert('DayClosing must be complete before adding a DailySummary');
+                     document.getElementById("submitButton").disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            var new_date = document.getElementById("date").value
+            console.log('pp',new_date);
+
+                        // check the all day closing is completed or not by amal start
+            fetch(`/dayclosing_exists/${new_date}/${business_profile}/`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('data',data)
+                if (data.msg === true) {
+                    
+                } else {
+                    alert('DayClosing must be complete before adding a DailySummary');
+                    // window.location.href = "/dayclosing/admin/";
+                    // disableButton()
+                }
             })
             .catch(error => console.error('Error:', error));
+            // by amal end
+
+
+    });
+    window.addEventListener("DOMContentLoaded", function() {
+    // Get reference to the date element (error handling included)
+
+        var dateElement = document.getElementById("date");
+        if (dateElement) {
+            var selectedDate = dateElement.value;
+
+            // Fetch summary data
+        fetch(`/fetch-summary-data/${selectedDate}/`)
+        .then(response => {
+            const statusCode = response.status;
+            console.log(statusCode);
+            if (statusCode === 302) {
+                //console.log('DayClosing must be complete before adding a DailySummary');
+                // window.location.href = "/dayclosing/admin/";
+                return;
+            }
+            return response.json().then(data => {
+                return { data, statusCode };
+            });
+        })
+        .then(result => {
+            if (!result) return; // Exit if already redirected
+            const { data, statusCode } = result;
+            
+
+            if (data.response !== '') {
+                document.getElementById("opening_balance").value = data.opening_balance;
+                document.getElementById("total_received_amount").value = data.total_received_amount;
+                document.getElementById("total_expense_amount").value = data.total_expense_amount;
+                document.getElementById("total_bank_deposit").value = data.total_bank_deposit;
+                document.getElementById("balance").value = data.balance;
+                document.getElementById("advance").value = data.advance;
+
+            } else {
+                alert('DayClosing must be complete before adding a DailySummary');
+                // window.location.href = "/dayclosing/admin/";
+                // disableButton();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // window.location.href = "/error-page/"; // Redirect to an error page if the fetch fails
+        });
+
+            // // check the all day closing is completed or not by amal start
+            //  fetch(`/dayclosing_exists/${new_date}/${business_profile}/`)
+            // .then(response => response.json())
+            // .then(data => {
+            //     if (data.msg === true) {
+                    
+            //     } else {
+            //         alert('DayClosing must be complete before adding a DailySummary');
+            //         disableButton()
+            //     }
+            // })
+            // .catch(error => console.error('Error:', error));
+            // // by amal end
+
+            // Check for daily summary existence
+            // fetch(`/dayclosing_exists/${new_date}/${business_profile}/`)
+            // .then(response => response.json())
+            // .then(data => {
+            //     console.log('data',data)
+            //     if (data.msg === true) {
+                    
+            //     } else {
+            //         alert('DayClosing must be complete before adding a DailySummary');
+            //         window.location.href = "/dayclosing/admin/";
+            //         document.getElementById("submitButton").disabled = data.data_exists;
+            //     }
+            // })
+            // .catch(error => console.error('Error:', error));
+            fetch(`/get-daily-summary-exist/${selectedDate}/`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('data',data)
+                if (data.msg === true) {
+                    
+                } else {
+                   // alert('DayClosing must be complete before adding a DailySummary');
+                    // window.location.href = "/dayclosing/admin/";
+                    document.getElementById("submitButton").disabled = data.data_exists;
+                    if (data.data_exists === true) {
+                        message.style.display = "block";
+                        message.innerHTML = "Daily summary already submitted";
+                        message.classList.remove('d-none');
+                    }
+                    else {
+                        // document.getElementById("date").disabled = false;
+                    }
+                }
+            })
+            .catch(error => console.error('Error checking daily summary:', error));
+        } else {
+            console.warn("Element with ID 'date' not found.");
+        }
     });
 </script>
 {% endblock %}

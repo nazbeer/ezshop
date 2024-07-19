@@ -1,3 +1,5 @@
+#Please do not change and details in this file or use this file in the localhost as there are hosting credentials in this page for AWS
+
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -11,12 +13,12 @@ SECRET_KEY = 'django-insecure-$^&k6)rkdqe$++!*^-(&kojpfpi*-%2#_f!1sf898rkb-ju^zq
 # EMAIL_HOST_USER = 'nasbeer@mitesolutions.com'  # Replace with your email address
 # EMAIL_HOST_PASSWORD = 'MTqa@#748857'  # Replace with your email password
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mx.mailslurp.com'  # Replace 'smtp.example.com' with your SMTP server
-EMAIL_PORT = 25  # Replace with the port of your SMTP server
-EMAIL_USE_TSL = False  # Set it to True if your SMTP server uses TLS
-EMAIL_HOST_USER = '3XuAF86a05YLhLwO2vYB3oykQflir7J1'  # Replace with your email address
-EMAIL_HOST_PASSWORD = 'y05g7jL61VapbV2eFOrCqrd2FVNJeWrB'  # Replace with your email password
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'mx.mailslurp.com'  # Replace 'smtp.example.com' with your SMTP server
+# EMAIL_PORT = 25  # Replace with the port of your SMTP server
+# EMAIL_USE_TSL = False  # Set it to True if your SMTP server uses TLS
+# EMAIL_HOST_USER = '3XuAF86a05YLhLwO2vYB3oykQflir7J1'  # Replace with your email address
+# EMAIL_HOST_PASSWORD = 'y05g7jL61VapbV2eFOrCqrd2FVNJeWrB'  # Replace with your email password
 
 # EMPLOYEE_LOGIN_URL = 'employee_login'  # Define the URL for employee login
 
@@ -26,10 +28,88 @@ LOGIN_URL = '/login/'
 
 DEBUG = True
 USE_TZ = True
-ALLOWED_HOSTS = ['ezshopapp.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["*"]
+
+# CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1","http://localhost","http://127.0.0.1:8000", "http://15.207.21.107:8000/", "http://0.0.0.0:8000/", "http://biztrackpro.com"]
+# SECURE_SSL_REDIRECT = False
+# SESSION_COOKIE_SECURE = True
+# SESSION_COOKIE_DOMAIN = None
+# CSRF_COOKIE_DOMAIN = 'localhost'
+# if os.environ.get("IS_SERVER", "False") == "True":
+#     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# ALLOWED_HOSTS = ["*", "biztrackpro.com", "localhost"]
+# CORS_ALLOW_HEADERS = ['*', "biztrackpro.com", "localhost"]
+# SESSION_COOKIE_HTTPONLY = False
+# CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ORIGIN_ALLOW_ALL = True
+# SECURE_CROSS_ORIGIN_OPENER_POLICY=None
+# CORS_ALLOW_CREDENTIALS = True
+# # CSRF_COOKIE_SAMESITE = 'None'
+# # SESSION_COOKIE_SAMESITE = 'None'
+# CSRF_COOKIE_SECURE = False  # Ensure CSRF cookie is marked as secure for HTTPS
+# CSRF_COOKIE_HTTPONLY = True  # Ensure CSRF cookie is marked as HTTP-only
+# # CSRF_COOKIE_SAMESITE = 'Strict'  # Ensure CSRF cookie is only sent with same-site requests
+# SESSION_COOKIE_AGE = 19800
+# # SESSION_COOKIE_SECURE = True  # Ensure session cookie is marked as secure for HTTPS
+# # SESSION_COOKIE_HTTPONLY = True  # Ensure session cookie is marked as HTTP-only
+
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+#     'http://localhost:59917',
+#     # Add other allowed origins as needed
+# ]
+
+# CSRF_TRUSTED_ORIGINS = [
+#     "http://127.0.0.1",
+#     "http://localhost",
+#     "http://127.0.0.1:8000",
+#     "http://15.207.21.107:8000",
+#     "http://0.0.0.0:8000", 
+#     "http://biztrackpro.com"
+# ]
+
+# ALLOWED_HOSTS = ['http://localhost:3000',
+#     'http://localhost:8000',
+#     'http://15.207.21.107:8000',
+#     'https://15.207.21.107:8000',
+#     '15.207.21.107:8000',
+#     '15.207.21.107',
+#     'http://0.0.0.0:8000', 
+#     'https://0.0.0.0:8000', 
+#     'salonprosuite.com:8000',
+#     'http://salonprosuite.com:8000',
+#     'https://salonprosuite.com:8000',
+#     'https://www.salonprosuite.com:8000',
+#     'salonprosuite.com',
+#     'www.salonprosuite.com',
+#     'www.salonprosuite.com:8000',
+#     'https://salonprosuite.com',
+#     'salonprosuite.com:443',
+#     'https://salonprosuite.com:443',
+#     'http://172.31.5.142:8000/'
+#     ]
+
+CORS_ALLOW_HEADERS = ['*']
+# CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ALLOW_CREDENTIALS = True
+
+# SESSION_COOKIE_SECURE = True
+# SESSION_COOKIE_DOMAIN = None
+# SESSION_COOKIE_HTTPONLY = False  # corrected from SESSION_COOKIE_HTTPONLY
+# SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:59917',
+     'http://15.207.21.107:8000',
+    'http://0.0.0.0:8000', 
+    'http://salonprosuite.com:8000',
+    'http://salonprosuite.com',
+    # Add other allowed origins as needed
+]
 
 INSTALLED_APPS = [
-    # 'clearcache',
+    'clearcache',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -59,21 +139,13 @@ MIDDLEWARE = [
     
 ]
 
-CSRF_COOKIE_SECURE = True  # Ensure CSRF cookie is marked as secure for HTTPS
-CSRF_COOKIE_HTTPONLY = True  # Ensure CSRF cookie is marked as HTTP-only
-CSRF_COOKIE_SAMESITE = 'Strict'  # Ensure CSRF cookie is only sent with same-site requests
-SESSION_COOKIE_AGE = 19800
-SESSION_COOKIE_SECURE = True  # Ensure session cookie is marked as secure for HTTPS
-SESSION_COOKIE_HTTPONLY = True  # Ensure session cookie is marked as HTTP-only
-
-
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:59917',
-    # Add other allowed origins as needed
-]
-
+# REST_FRAMEWORK = {
+#     # Use Django's standard `django.contrib.auth` permissions,
+#     # or allow read-only access for unauthenticated users.
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+#     ]
+# }
 
 
 ROOT_URLCONF = 'ezshop.urls'
@@ -138,6 +210,13 @@ DATABASES = {
 #         "PORT": "5432",
 #     }
 # }
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "devmpamal@gmail.com"
+EMAIL_HOST_PASSWORD = "dtqi rntu rhoe zane"
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
